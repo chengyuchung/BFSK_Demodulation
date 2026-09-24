@@ -1,0 +1,107 @@
+# ============================================================
+# BFSK_Demodulation 项目 .gitignore
+# 工程基于 STM32CubeMX 生成 + Keil MDK-ARM 编译
+# ============================================================
+
+# ---------- 通用（系统/编辑器临时文件） ----------
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.log
+*.tmp
+
+# ---------- IDE / 编辑器 ----------
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# ---------- Keil MDK-ARM ----------
+# 用户级 GUI 布局（每台机器不同，强烈建议忽略）
+*.uvguix.*
+*.scvd
+
+# Keil 编译产物
+*.o
+*.d
+*.crf
+*.htm
+*.map
+*.bin
+*.hex
+*.elf
+*.axf
+*.lnp
+*.dep
+*.sct
+*.iex
+*.htmdep
+
+# Keil 输出目录
+DebugConfig/
+Objects/
+Listings/
+
+# Keil RTE 缓存（RTE/_<ProjectName> 下的本地索引）
+RTE/_*/
+
+# J-Link 调试日志
+JLinkLog.txt
+JLinkSettings.ini
+*.ini
+
+# ---------- STM32CubeIDE（如果切换到此 IDE）----------
+.cproject
+.project
+.settings/
+.pydevproject
+.cxx
+.cdtbuildstorage
+*.launch
+
+# ---------- 构建/调试通用输出 ----------
+Debug/
+Release/
+build/
+cmake-build-*/
+
+# ---------- Doxygen 文档 ----------
+docs/html/
+docs/latex/
+
+# ---------- Python（仿真/上位机相关）----------
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+
+# ---------- QT 上位机（05_host_software 可能用到）----------
+*.user
+*.user.*
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+*.autosave
+
+# ---------- Matlab/Simulink 仿真 ----------
+*.asv
+*.slx.autosave
+*.mat.bak
+slprj/
+slexec/
+*.mex*
+*.mexw64

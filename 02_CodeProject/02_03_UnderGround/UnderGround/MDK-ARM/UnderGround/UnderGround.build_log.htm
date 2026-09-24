@@ -1,0 +1,114 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¶ÃVision V5.43.1.0
+Copyright (C) 2025 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Z hp, HP Inc., LIC=76F5U-SWHDQ-UH68H-W3ARM-XTR51-AI3P3
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Plus  Version: 5.43.0.0
+Toolchain Path:  D:\Keil5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 5 (build 528)
+Assembler:       Armasm.exe V5.06 update 5 (build 528)
+Linker/Locator:  ArmLink.exe V5.06 update 5 (build 528)
+Library Manager: ArmAr.exe V5.06 update 5 (build 528)
+Hex Converter:   FromElf.exe V5.06 update 5 (build 528)
+CPU DLL:         SARMCM3.DLL V5.43.0.0
+Dialog DLL:      DCM.DLL V1.17.5.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.3.1.0
+Dialog DLL:      TCM.DLL V1.56.6.0
+ 
+<h2>Project:</h2>
+D:\work_code\BFSK_Demodulation\02_CodeProject\02_03_UnderGround\UnderGround\MDK-ARM\UnderGround.uvprojx
+Project File Date:  09/24/2026
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 5 (build 528)', folder: 'D:\Keil5\ARM\ARMCC\Bin'
+Build target 'UnderGround'
+compiling bsw_ds18b20...
+../../BSW/bsw_ds18b20/bsw_ds18b20.h(17): error:  #5: cannot open source input file "mcal_ds18b20.h": No such file or directory
+  #include "mcal_ds18b20.h"
+../../BSW/bsw_ds18b20/bsw_ds18b20.c: 0 warnings, 1 error
+compiling app_main...
+../../APP/app_main/app_main.c(3): error:  #5: cannot open source input file "app_task.h": No such file or directory
+  #include "app_task.h"
+../../APP/app_main/app_main.c: 0 warnings, 1 error
+compiling app_fsm...
+../../APP/app_fsm/app_fsm.h(7): error:  #5: cannot open source input file "app_main.h": No such file or directory
+  #include "app_main.h"
+../../APP/app_fsm/app_fsm.c: 0 warnings, 1 error
+compiling mcal_ds18b20...
+../../MCAL/mcal_ds18b20/mcal_ds18b20.c(13): error:  #5: cannot open source input file "mcal_gpio.h": No such file or directory
+  #include "mcal_gpio.h"
+../../MCAL/mcal_ds18b20/mcal_ds18b20.c: 0 warnings, 1 error
+compiling bsw_frame...
+../../BSW/bsw_frame/bsw_frame.h(17): error:  #5: cannot open source input file "bsw_crc.h": No such file or directory
+  #include "bsw_crc.h"
+../../BSW/bsw_frame/bsw_frame.c: 0 warnings, 1 error
+compiling app_frame_handler...
+../../APP/app_frame_handler/app_frame_handler.h(8): error:  #5: cannot open source input file "bsw_frame.h": No such file or directory
+  #include "bsw_frame.h"
+../../APP/app_frame_handler/app_frame_handler.c: 0 warnings, 1 error
+compiling bsw_scanner...
+../../BSW/bsw_scanner/bsw_scanner.c(3): error:  #5: cannot open source input file "bsw_bfsk.h": No such file or directory
+  #include "bsw_bfsk.h"
+../../BSW/bsw_scanner/bsw_scanner.c: 0 warnings, 1 error
+compiling app_sensor...
+../../APP/app_sensor/app_sensor.h(15): error:  #5: cannot open source input file "bsw_ds18b20.h": No such file or directory
+  #include "bsw_ds18b20.h"
+../../APP/app_sensor/app_sensor.c: 0 warnings, 1 error
+compiling mcal_uart...
+../../MCAL/mcal_uart/mcal_uart.c(8): error:  #5: cannot open source input file "usart.h": No such file or directory
+  #include "usart.h"       /* CubeMX ÁîüÊàêÁö? huart1 */
+../../MCAL/mcal_uart/mcal_uart.c: 0 warnings, 1 error
+compiling mcal_timer...
+../../MCAL/mcal_timer/mcal_timer.c(22): error:  #20: identifier "DWT_LAR" is undefined
+      DWT_LAR = 0xC5ACCE55;
+../../MCAL/mcal_timer/mcal_timer.c(28): error:  #20: identifier "DWT_CTRL" is undefined
+      DWT_CTRL |= 0x01;
+../../MCAL/mcal_timer/mcal_timer.c(39): error:  #20: identifier "DWT_CTRL" is undefined
+      if ((DWT_CTRL & 0x01) == 0) {
+../../MCAL/mcal_timer/mcal_timer.c(42): error:  #20: identifier "DWT_CYCCNT" is undefined
+      DWT_CYCCNT = 0;
+../../MCAL/mcal_timer/mcal_timer.c(55): error:  #20: identifier "DWT_CYCCNT" is undefined
+      uint32_t start = DWT_CYCCNT;
+../../MCAL/mcal_timer/mcal_timer.c: 0 warnings, 5 errors
+compiling bsw_bfsk...
+../../BSW/bsw_bfsk/bsw_bfsk.c(3): error:  #5: cannot open source input file "mcal_spi.h": No such file or directory
+  #include "mcal_spi.h"
+../../BSW/bsw_bfsk/bsw_bfsk.c: 0 warnings, 1 error
+compiling app_task...
+../../APP/app_task/app_task.c(7): error:  #5: cannot open source input file "bsw_bfsk.h": No such file or directory
+  #include "bsw_bfsk.h"
+../../APP/app_task/app_task.c: 0 warnings, 1 error
+"UnderGround\UnderGround.axf" - 16 Error(s), 0 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                https://www.keil.com/pack/ARM.CMSIS.6.3.0.pack
+                ARM::CMSIS@6.3.0
+                CMSIS (Common Microcontroller Software Interface Standard)
+   * Component: CORE Version: 6.2.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32L4xx_DFP.1.4.0.pack
+                Keil::STM32L4xx_DFP@1.4.0
+                STMicroelectronics STM32L4 Series Device Support, Drivers and Examples
+
+<h2>Collection of Component include folders:</h2>
+  ./RTE/_UnderGround
+  D:/Keil5/ARM/PACK/ARM/CMSIS/6.3.0/CMSIS/Core/Include
+  D:/Keil5/ARM/PACK/Keil/STM32L4xx_DFP/1.4.0/Device/Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE@6.2.0
+      Include file:  CMSIS/Core/Include/tz_context.h
+Target not created.
+Build Time Elapsed:  00:00:13
+</pre>
+</body>
+</html>
