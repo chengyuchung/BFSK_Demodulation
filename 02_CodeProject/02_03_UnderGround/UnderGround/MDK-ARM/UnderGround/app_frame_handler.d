@@ -40,3 +40,7 @@ underground\app_frame_handler.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_h
 underground\app_frame_handler.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
 underground\app_frame_handler.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h
 underground\app_frame_handler.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+underground\app_frame_handler.o: ../../BSW/bsw_frame/bsw_frame.h
+underground\app_frame_handler.o: ../../BSW/bsw_crc/bsw_crc.h
+underground\app_frame_handler.o: ../../APP/app_fsm/app_fsm.h
+underground\app_frame_handler.o: ../../APP/app_main/app_main.h

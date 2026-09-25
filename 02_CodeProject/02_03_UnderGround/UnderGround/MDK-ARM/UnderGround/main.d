@@ -53,3 +53,4 @@ underground\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 underground\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 underground\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 underground\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+underground\main.o: ../../APP/app_main/app_main.h

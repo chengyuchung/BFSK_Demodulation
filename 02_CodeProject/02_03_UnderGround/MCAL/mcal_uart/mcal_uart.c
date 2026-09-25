@@ -1,97 +1,112 @@
 /**
  * @file    mcal_uart.c
  * @brief   UART 驱动 - MCAL 层实现
- * @note    用于调试打印日志，阻塞发送
+ * @note    原 main.c 的 MX_USART1_UART_Init() 已移植到本文件
+ *          - USART1: 调试串口，默认 115200bps，TX:PA9 / RX:PA10
  */
 
 #include "mcal_uart.h"
-#include "usart.h"       /* CubeMX 生成的 huart1 */
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
 
+extern void Error_Handler(void);
+
 /* ========== 内部宏 ========== */
-#define MCAL_UART_MAX_CH  3   /* 支持最多 3 个串口通道 */
+#define MCAL_UART_MAX_CH  3
 
 /* ========== 内部类型 ========== */
 typedef struct {
-    UART_HandleTypeDef *huart;   /* 指向 CubeMX 生成的 huart 句柄 */
-    uint8_t             inited;  /* 是否已初始化 */
+    UART_HandleTypeDef *huart;
+    uint8_t             inited;
 } mcal_uart_ch_t;
 
-/* ========== 内部变量 ========== */
-/* 串口通道映射表 */
+/* ========== 内部句柄 ========== */
+static UART_HandleTypeDef s_huart1;
+
+/* ========== Getter ========== */
+UART_HandleTypeDef *mcal_uart_get_handle1(void) { return &s_huart1; }
+
+/* ========== 通道表 ========== */
 static mcal_uart_ch_t s_uart_ch[MCAL_UART_MAX_CH] = {0};
 
-/* ========== 内部函数声明 ========== */
-static void _putc(uint8_t ch, uint8_t data);
+/* ========== HAL UART MSP 重写 ========== */
+void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    if (huart == &s_huart1) {
+        __HAL_RCC_GPIOA_CLK_ENABLE();
+        GPIO_InitStruct.Pin       = GPIO_PIN_9 | GPIO_PIN_10;   /* PA9=TX, PA10=RX */
+        GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull      = GPIO_NOPULL;
+        GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+}
+
+/* ================================================================ */
+/*              原 MX_USART1_UART_Init 内容（移植）                  */
+/* ================================================================ */
+static void _usart1_init(uint32_t baud)
+{
+    s_huart1.Instance             = USART1;
+    s_huart1.Init.BaudRate        = baud;
+    s_huart1.Init.WordLength      = UART_WORDLENGTH_8B;
+    s_huart1.Init.StopBits        = UART_STOPBITS_1;
+    s_huart1.Init.Parity          = UART_PARITY_NONE;
+    s_huart1.Init.Mode            = UART_MODE_TX_RX;
+    s_huart1.Init.HwFlowCtl       = UART_HWCONTROL_NONE;
+    s_huart1.Init.OverSampling    = UART_OVERSAMPLING_16;
+    s_huart1.Init.OneBitSampling  = UART_ONE_BIT_SAMPLE_DISABLE;
+    s_huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+
+    if (HAL_UART_Init(&s_huart1) != HAL_OK) {
+        Error_Handler();
+    }
+}
 
 /* ================================================================ */
 /*                           公共接口实现                              */
 /* ================================================================ */
-
-/**
- * @brief   UART 初始化 - 建立 ID 到硬件句柄的映射
- * @param   id    UART 通道号 (0, 1, 2)
- * @param   baud  波特率（校验用，实际参数由 CubeMX 配置）
- */
 void mcal_uart_init(uint8_t id, uint32_t baud)
 {
-    (void)baud;  /* 波特率由 CubeMX 配置，此参数仅作预留 */
-
     if (id >= MCAL_UART_MAX_CH) {
         return;
     }
 
     switch (id) {
-        case 0:
-            s_uart_ch[id].huart = &huart1;
+        case UART_ID_DEBUG:
+            _usart1_init(baud);
+            s_uart_ch[id].huart  = &s_huart1;
+            s_uart_ch[id].inited = 1;
             break;
-        /* 如果有第二个串口，在这里添加 case 1: ... */
-        /* 如果有第三个串口，在这里添加 case 2: ... */
         default:
             return;
     }
-
-    s_uart_ch[id].inited = 1;
 }
 
-/**
- * @brief   UART 发送一个字节
- * @param   id    UART 通道号
- * @param   data  数据
- */
 void mcal_uart_putc(uint8_t id, uint8_t data)
 {
-    _putc(id, data);
+    if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited) {
+        return;
+    }
+    HAL_UART_Transmit(s_uart_ch[id].huart, &data, 1, HAL_MAX_DELAY);
 }
 
-/**
- * @brief   UART 发送字符串
- * @param   id    UART 通道号
- * @param   str   字符串（以 '\0' 结尾）
- */
 void mcal_uart_puts(uint8_t id, const char *str)
 {
     if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited || str == NULL) {
         return;
     }
-
     HAL_UART_Transmit(s_uart_ch[id].huart, (uint8_t *)str,
                       (uint16_t)strlen(str), HAL_MAX_DELAY);
 }
 
-/**
- * @brief   UART printf（支持 %d %u %x %c %s，不支持 %f）
- * @param   id    UART 通道号
- * @param   fmt   格式化字符串
- * @param   ...   可变参数
- * @note    不支持浮点打印（%f），如需浮点请在 Keil 中开启 MicroLIB
- */
 void mcal_uart_printf(uint8_t id, const char *fmt, ...)
 {
-    char   buf[128];
-    va_list args;
+    char     buf[128];
+    va_list  args;
 
     if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited || fmt == NULL) {
         return;
@@ -103,20 +118,4 @@ void mcal_uart_printf(uint8_t id, const char *fmt, ...)
 
     HAL_UART_Transmit(s_uart_ch[id].huart, (uint8_t *)buf,
                       (uint16_t)strlen(buf), HAL_MAX_DELAY);
-}
-
-/* ================================================================ */
-/*                           内部函数实现                             */
-/* ================================================================ */
-
-/**
- * @brief   内部：发送单个字符
- */
-static void _putc(uint8_t id, uint8_t data)
-{
-    if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited) {
-        return;
-    }
-
-    HAL_UART_Transmit(s_uart_ch[id].huart, &data, 1, HAL_MAX_DELAY);
 }

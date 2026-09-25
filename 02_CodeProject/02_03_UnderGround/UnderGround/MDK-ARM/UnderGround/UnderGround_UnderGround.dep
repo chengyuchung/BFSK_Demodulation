@@ -1,7 +1,7 @@
 Dependencies for Project 'UnderGround', Target 'UnderGround': (DO NOT MODIFY !)
 CompilerVersion: 5060528::V5.06 update 5 (build 528)::ARMCC
 F (startup_stm32l476xx.s)(0x6AB49526)(--cpu Cortex-M4.fp.sp -g --apcs=interwork -I ../Drivers/CMSIS/Include-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include--pd "__UVISION_VERSION SETA 543" --pd "STM32L476xx SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32l476xx.lst --xref -o underground\startup_stm32l476xx.o --depend underground\startup_stm32l476xx.d)
-F (../Core/Src/main.c)(0x6AB49524)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\main.o --omf_browse underground\main.crf --depend underground\main.d)
+F (../Core/Src/main.c)(0x6AB6120A)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\main.o --omf_browse underground\main.crf --depend underground\main.d)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -55,7 +55,8 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h)(0x6A44CBFC)
-F (../Core/Src/freertos.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\freertos.o --omf_browse underground\freertos.crf --depend underground\freertos.d)
+I (../../APP/app_main/app_main.h)(0x6AB61587)
+F (../Core/Src/freertos.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\freertos.o --omf_browse underground\freertos.crf --depend underground\freertos.d)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -104,7 +105,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Core/Src/stm32l4xx_it.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_it.o --omf_browse underground\stm32l4xx_it.crf --depend underground\stm32l4xx_it.d)
+F (../Core/Src/stm32l4xx_it.c)(0x6AB61587)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_it.o --omf_browse underground\stm32l4xx_it.crf --depend underground\stm32l4xx_it.d)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -145,7 +146,12 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_it.h)(0x6AB49024)
-F (../Core/Src/stm32l4xx_hal_msp.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_msp.o --omf_browse underground\stm32l4xx_hal_msp.crf --depend underground\stm32l4xx_hal_msp.d)
+I (../../MCAL/mcal_dma/mcal_dma.h)(0x6AB61130)
+I (../../MCAL/mcal_adc/mcal_adc.h)(0x6AB61151)
+I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB61195)
+I (../../MCAL/mcal_uart/mcal_uart.h)(0x6AB611DD)
+I (D:\Keil5\ARM\ARMCC\include\stdarg.h)(0x588B8344)
+F (../Core/Src/stm32l4xx_hal_msp.c)(0x6AB61642)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_msp.o --omf_browse underground\stm32l4xx_hal_msp.crf --depend underground\stm32l4xx_hal_msp.d)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -185,7 +191,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Core/Src/stm32l4xx_hal_timebase_tim.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_timebase_tim.o --omf_browse underground\stm32l4xx_hal_timebase_tim.crf --depend underground\stm32l4xx_hal_timebase_tim.d)
+F (../Core/Src/stm32l4xx_hal_timebase_tim.c)(0x6AB49024)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_timebase_tim.o --omf_browse underground\stm32l4xx_hal_timebase_tim.crf --depend underground\stm32l4xx_hal_timebase_tim.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -224,7 +230,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_tim.o --omf_browse underground\stm32l4xx_hal_tim.crf --depend underground\stm32l4xx_hal_tim.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_tim.o --omf_browse underground\stm32l4xx_hal_tim.crf --depend underground\stm32l4xx_hal_tim.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -263,7 +269,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_tim_ex.o --omf_browse underground\stm32l4xx_hal_tim_ex.crf --depend underground\stm32l4xx_hal_tim_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_tim_ex.o --omf_browse underground\stm32l4xx_hal_tim_ex.crf --depend underground\stm32l4xx_hal_tim_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -302,7 +308,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_adc.o --omf_browse underground\stm32l4xx_hal_adc.crf --depend underground\stm32l4xx_hal_adc.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_adc.o --omf_browse underground\stm32l4xx_hal_adc.crf --depend underground\stm32l4xx_hal_adc.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -341,7 +347,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_adc_ex.o --omf_browse underground\stm32l4xx_hal_adc_ex.crf --depend underground\stm32l4xx_hal_adc_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_adc_ex.o --omf_browse underground\stm32l4xx_hal_adc_ex.crf --depend underground\stm32l4xx_hal_adc_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -380,7 +386,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal.o --omf_browse underground\stm32l4xx_hal.crf --depend underground\stm32l4xx_hal.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal.o --omf_browse underground\stm32l4xx_hal.crf --depend underground\stm32l4xx_hal.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -419,7 +425,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_rcc.o --omf_browse underground\stm32l4xx_hal_rcc.crf --depend underground\stm32l4xx_hal_rcc.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_rcc.o --omf_browse underground\stm32l4xx_hal_rcc.crf --depend underground\stm32l4xx_hal_rcc.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -458,7 +464,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_rcc_ex.o --omf_browse underground\stm32l4xx_hal_rcc_ex.crf --depend underground\stm32l4xx_hal_rcc_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_rcc_ex.o --omf_browse underground\stm32l4xx_hal_rcc_ex.crf --depend underground\stm32l4xx_hal_rcc_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -497,7 +503,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash.o --omf_browse underground\stm32l4xx_hal_flash.crf --depend underground\stm32l4xx_hal_flash.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash.o --omf_browse underground\stm32l4xx_hal_flash.crf --depend underground\stm32l4xx_hal_flash.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -536,7 +542,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash_ex.o --omf_browse underground\stm32l4xx_hal_flash_ex.crf --depend underground\stm32l4xx_hal_flash_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash_ex.o --omf_browse underground\stm32l4xx_hal_flash_ex.crf --depend underground\stm32l4xx_hal_flash_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -575,7 +581,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash_ramfunc.o --omf_browse underground\stm32l4xx_hal_flash_ramfunc.crf --depend underground\stm32l4xx_hal_flash_ramfunc.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_flash_ramfunc.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_flash_ramfunc.o --omf_browse underground\stm32l4xx_hal_flash_ramfunc.crf --depend underground\stm32l4xx_hal_flash_ramfunc.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -614,7 +620,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_gpio.o --omf_browse underground\stm32l4xx_hal_gpio.crf --depend underground\stm32l4xx_hal_gpio.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_gpio.o --omf_browse underground\stm32l4xx_hal_gpio.crf --depend underground\stm32l4xx_hal_gpio.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -653,7 +659,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_i2c.o --omf_browse underground\stm32l4xx_hal_i2c.crf --depend underground\stm32l4xx_hal_i2c.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_i2c.o --omf_browse underground\stm32l4xx_hal_i2c.crf --depend underground\stm32l4xx_hal_i2c.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -692,7 +698,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_i2c_ex.o --omf_browse underground\stm32l4xx_hal_i2c_ex.crf --depend underground\stm32l4xx_hal_i2c_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_i2c_ex.o --omf_browse underground\stm32l4xx_hal_i2c_ex.crf --depend underground\stm32l4xx_hal_i2c_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -731,7 +737,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_dma.o --omf_browse underground\stm32l4xx_hal_dma.crf --depend underground\stm32l4xx_hal_dma.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_dma.o --omf_browse underground\stm32l4xx_hal_dma.crf --depend underground\stm32l4xx_hal_dma.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -770,7 +776,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_dma_ex.o --omf_browse underground\stm32l4xx_hal_dma_ex.crf --depend underground\stm32l4xx_hal_dma_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_dma_ex.o --omf_browse underground\stm32l4xx_hal_dma_ex.crf --depend underground\stm32l4xx_hal_dma_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -809,7 +815,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_pwr.o --omf_browse underground\stm32l4xx_hal_pwr.crf --depend underground\stm32l4xx_hal_pwr.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_pwr.o --omf_browse underground\stm32l4xx_hal_pwr.crf --depend underground\stm32l4xx_hal_pwr.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -848,7 +854,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_pwr_ex.o --omf_browse underground\stm32l4xx_hal_pwr_ex.crf --depend underground\stm32l4xx_hal_pwr_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_pwr_ex.o --omf_browse underground\stm32l4xx_hal_pwr_ex.crf --depend underground\stm32l4xx_hal_pwr_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -887,7 +893,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_cortex.o --omf_browse underground\stm32l4xx_hal_cortex.crf --depend underground\stm32l4xx_hal_cortex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_cortex.o --omf_browse underground\stm32l4xx_hal_cortex.crf --depend underground\stm32l4xx_hal_cortex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -926,7 +932,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_exti.o --omf_browse underground\stm32l4xx_hal_exti.crf --depend underground\stm32l4xx_hal_exti.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_exti.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_exti.o --omf_browse underground\stm32l4xx_hal_exti.crf --depend underground\stm32l4xx_hal_exti.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -965,7 +971,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_spi.o --omf_browse underground\stm32l4xx_hal_spi.crf --depend underground\stm32l4xx_hal_spi.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_spi.o --omf_browse underground\stm32l4xx_hal_spi.crf --depend underground\stm32l4xx_hal_spi.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -1004,7 +1010,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_spi_ex.o --omf_browse underground\stm32l4xx_hal_spi_ex.crf --depend underground\stm32l4xx_hal_spi_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_spi_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_spi_ex.o --omf_browse underground\stm32l4xx_hal_spi_ex.crf --depend underground\stm32l4xx_hal_spi_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -1043,7 +1049,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_uart.o --omf_browse underground\stm32l4xx_hal_uart.crf --depend underground\stm32l4xx_hal_uart.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_uart.o --omf_browse underground\stm32l4xx_hal_uart.crf --depend underground\stm32l4xx_hal_uart.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -1082,7 +1088,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_uart_ex.o --omf_browse underground\stm32l4xx_hal_uart_ex.crf --depend underground\stm32l4xx_hal_uart_ex.d)
+F (../Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stm32l4xx_hal_uart_ex.o --omf_browse underground\stm32l4xx_hal_uart_ex.crf --depend underground\stm32l4xx_hal_uart_ex.d)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
@@ -1121,7 +1127,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Core/Src/system_stm32l4xx.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\system_stm32l4xx.o --omf_browse underground\system_stm32l4xx.crf --depend underground\system_stm32l4xx.d)
+F (../Core/Src/system_stm32l4xx.c)(0x6A44CD76)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\system_stm32l4xx.o --omf_browse underground\system_stm32l4xx.crf --depend underground\system_stm32l4xx.d)
 I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
 I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
 I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
@@ -1160,7 +1166,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../Middlewares/Third_Party/FreeRTOS/Source/croutine.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\croutine.o --omf_browse underground\croutine.crf --depend underground\croutine.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/croutine.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\croutine.o --omf_browse underground\croutine.crf --depend underground\croutine.d)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -1173,7 +1179,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/croutine.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\event_groups.o --omf_browse underground\event_groups.crf --depend underground\event_groups.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\event_groups.o --omf_browse underground\event_groups.crf --depend underground\event_groups.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
@@ -1188,7 +1194,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/list.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\list.o --omf_browse underground\list.crf --depend underground\list.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/list.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\list.o --omf_browse underground\list.crf --depend underground\list.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
@@ -1200,7 +1206,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h)(
 I (../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/queue.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\queue.o --omf_browse underground\queue.crf --depend underground\queue.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/queue.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\queue.o --omf_browse underground\queue.crf --depend underground\queue.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
@@ -1215,7 +1221,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stream_buffer.o --omf_browse underground\stream_buffer.crf --depend underground\stream_buffer.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\stream_buffer.o --omf_browse underground\stream_buffer.crf --depend underground\stream_buffer.d)
 I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
@@ -1229,7 +1235,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/stream_buffer.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/tasks.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\tasks.o --omf_browse underground\tasks.crf --depend underground\tasks.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/tasks.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\tasks.o --omf_browse underground\tasks.crf --depend underground\tasks.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
@@ -1245,7 +1251,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/stack_macros.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/timers.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\timers.o --omf_browse underground\timers.crf --depend underground\timers.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/timers.c)(0x6A44CBFD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\timers.o --omf_browse underground\timers.crf --depend underground\timers.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
@@ -1260,7 +1266,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\cmsis_os.o --omf_browse underground\cmsis_os.crf --depend underground\cmsis_os.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\cmsis_os.o --omf_browse underground\cmsis_os.crf --depend underground\cmsis_os.d)
 I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
@@ -1279,7 +1285,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h)(0x6A44CBFC)
 I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
-F (../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\heap_4.o --omf_browse underground\heap_4.crf --depend underground\heap_4.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\heap_4.o --omf_browse underground\heap_4.crf --depend underground\heap_4.d)
 I (D:\Keil5\ARM\ARMCC\include\stdlib.h)(0x588B8344)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
@@ -1292,7 +1298,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
-F (../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\port.o --omf_browse underground\port.crf --depend underground\port.d)
+F (../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c)(0x6A44CBFC)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\port.o --omf_browse underground\port.crf --depend underground\port.d)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h)(0x6A44CBFC)
 I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
 I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
@@ -1304,7 +1310,7 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/portmacro.h
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
-F (../../MCAL/mcal_gpio/mcal_gpio.c)(0x6AB4EAB1)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_gpio.o --omf_browse underground\mcal_gpio.crf --depend underground\mcal_gpio.d)
+F (../../MCAL/mcal_gpio/mcal_gpio.c)(0x6AB4EAB1)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_gpio.o --omf_browse underground\mcal_gpio.crf --depend underground\mcal_gpio.d)
 I (../../MCAL/mcal_gpio/mcal_gpio.h)(0x6AB4EAA4)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1345,8 +1351,8 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../MCAL/mcal_timer/mcal_timer.c)(0x6AB4C935)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_timer.o --omf_browse underground\mcal_timer.crf --depend underground\mcal_timer.d)
-I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB0F885)
+F (../../MCAL/mcal_timer/mcal_timer.c)(0x6AB61587)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_timer.o --omf_browse underground\mcal_timer.crf --depend underground\mcal_timer.d)
+I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB61195)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -1386,8 +1392,8 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../MCAL/mcal_uart/mcal_uart.c)(0x6AB4C3C3)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_uart.o --omf_browse underground\mcal_uart.crf --depend underground\mcal_uart.d)
-I (../../MCAL/mcal_uart/mcal_uart.h)(0x6AB0F8A3)
+F (../../MCAL/mcal_uart/mcal_uart.c)(0x6AB611DD)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_uart.o --omf_browse underground\mcal_uart.crf --depend underground\mcal_uart.d)
+I (../../MCAL/mcal_uart/mcal_uart.h)(0x6AB611DD)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -1428,8 +1434,10 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
 I (D:\Keil5\ARM\ARMCC\include\stdarg.h)(0x588B8344)
-F (../../MCAL/mcal_adc/mcal_adc.c)(0x6AB4ECFA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_adc.o --omf_browse underground\mcal_adc.crf --depend underground\mcal_adc.d)
-I (../../MCAL/mcal_adc/mcal_adc.h)(0x6AB4ECDB)
+I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)
+I (D:\Keil5\ARM\ARMCC\include\stdio.h)(0x588B8344)
+F (../../MCAL/mcal_adc/mcal_adc.c)(0x6AB61482)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_adc.o --omf_browse underground\mcal_adc.crf --depend underground\mcal_adc.d)
+I (../../MCAL/mcal_adc/mcal_adc.h)(0x6AB61151)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
 I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
@@ -1469,7 +1477,8 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../MCAL/mcal_ds18b20/mcal_ds18b20.c)(0x6AB4EAF3)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_ds18b20.o --omf_browse underground\mcal_ds18b20.crf --depend underground\mcal_ds18b20.d)
+I (../../MCAL/mcal_dma/mcal_dma.h)(0x6AB61130)
+F (../../MCAL/mcal_ds18b20/mcal_ds18b20.c)(0x6AB4EAF3)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_ds18b20.o --omf_browse underground\mcal_ds18b20.crf --depend underground\mcal_ds18b20.d)
 I (../../MCAL/mcal_ds18b20/mcal_ds18b20.h)(0x6AB4EAC8)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1510,7 +1519,173 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_crc/bsw_crc.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_crc.o --omf_browse underground\bsw_crc.crf --depend underground\bsw_crc.d)
+I (../../MCAL/mcal_gpio/mcal_gpio.h)(0x6AB4EAA4)
+I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB61195)
+F (../../MCAL/mcal_clock/mcal_clock.c)(0x6AB61121)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_clock.o --omf_browse underground\mcal_clock.crf --depend underground\mcal_clock.d)
+I (../../MCAL/mcal_clock/mcal_clock.h)(0x6AB61121)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+F (../../MCAL/mcal_dma/mcal_dma.c)(0x6AB61130)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_dma.o --omf_browse underground\mcal_dma.crf --depend underground\mcal_dma.d)
+I (../../MCAL/mcal_dma/mcal_dma.h)(0x6AB61130)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+F (../../MCAL/mcal_spi/mcal_spi.c)(0x6AB611A5)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_spi.o --omf_browse underground\mcal_spi.crf --depend underground\mcal_spi.d)
+I (../../MCAL/mcal_spi/mcal_spi.h)(0x6AB611B8)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+F (../../MCAL/mcal_i2c/mcal_i2c.c)(0x6AB611FE)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\mcal_i2c.o --omf_browse underground\mcal_i2c.crf --depend underground\mcal_i2c.d)
+I (../../MCAL/mcal_i2c/mcal_i2c.h)(0x6AB611EC)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+F (../../BSW/bsw_crc/bsw_crc.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_crc.o --omf_browse underground\bsw_crc.crf --depend underground\bsw_crc.d)
 I (../../BSW/bsw_crc/bsw_crc.h)(0x6AB0F902)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1551,7 +1726,7 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_frame/bsw_frame.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_frame.o --omf_browse underground\bsw_frame.crf --depend underground\bsw_frame.d)
+F (../../BSW/bsw_frame/bsw_frame.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_frame.o --omf_browse underground\bsw_frame.crf --depend underground\bsw_frame.d)
 I (../../BSW/bsw_frame/bsw_frame.h)(0x6AB0F902)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1592,7 +1767,8 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_bfsk/bsw_bfsk.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_bfsk.o --omf_browse underground\bsw_bfsk.crf --depend underground\bsw_bfsk.d)
+I (../../BSW/bsw_crc/bsw_crc.h)(0x6AB0F902)
+F (../../BSW/bsw_bfsk/bsw_bfsk.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_bfsk.o --omf_browse underground\bsw_bfsk.crf --depend underground\bsw_bfsk.d)
 I (../../BSW/bsw_bfsk/bsw_bfsk.h)(0x6AB0F902)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1633,93 +1809,109 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_scanner/bsw_scanner.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_scanner.o --omf_browse underground\bsw_scanner.crf --depend underground\bsw_scanner.d)
-I (../../BSW/bsw_scanner/bsw_scanner.h)(0x6AB0F902)
-I (../Core/Inc/main.h)(0x6AB49025)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
-I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
-I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
-I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
-I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_scheduler/bsw_scheduler.c)(0x6AB0F927)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_scheduler.o --omf_browse underground\bsw_scheduler.crf --depend underground\bsw_scheduler.d)
-I (../../BSW/bsw_scheduler/bsw_scheduler.h)(0x6AB0F902)
-I (../Core/Inc/main.h)(0x6AB49025)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
-I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
-I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
-I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
-I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
-I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
-I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
-I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../BSW/bsw_ds18b20/bsw_ds18b20.c)(0x6AB4EB1A)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_ds18b20.o --omf_browse underground\bsw_ds18b20.crf --depend underground\bsw_ds18b20.d)
+I (../../MCAL/mcal_spi/mcal_spi.h)(0x6AB611B8)
+I (../../MCAL/mcal_gpio/mcal_gpio.h)(0x6AB4EAA4)
+F (../../BSW/bsw_ds18b20/bsw_ds18b20.c)(0x6AB4EB1A)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\bsw_ds18b20.o --omf_browse underground\bsw_ds18b20.crf --depend underground\bsw_ds18b20.d)
 I (../../BSW/bsw_ds18b20/bsw_ds18b20.h)(0x6AB4C9B8)
-F (../../APP/app_main/app_main.c)(0x6AB4CE78)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_main.o --omf_browse underground\app_main.crf --depend underground\app_main.d)
-I (../../APP/app_main/app_main.h)(0x6AB338CA)
-F (../../APP/app_task/app_task.c)(0x6AB4CED3)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_task.o --omf_browse underground\app_task.crf --depend underground\app_task.d)
+I (../../MCAL/mcal_ds18b20/mcal_ds18b20.h)(0x6AB4EAC8)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB61195)
+F (../../APP/app_main/app_main.c)(0x6AB61234)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_main.o --omf_browse underground\app_main.crf --depend underground\app_main.d)
+I (../../APP/app_main/app_main.h)(0x6AB61587)
+I (../../MCAL/mcal_clock/mcal_clock.h)(0x6AB61121)
+I (../../MCAL/mcal_gpio/mcal_gpio.h)(0x6AB4EAA4)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+I (../../MCAL/mcal_dma/mcal_dma.h)(0x6AB61130)
+I (../../MCAL/mcal_adc/mcal_adc.h)(0x6AB61151)
+I (../../MCAL/mcal_timer/mcal_timer.h)(0x6AB61195)
+I (../../MCAL/mcal_spi/mcal_spi.h)(0x6AB611B8)
+I (../../MCAL/mcal_uart/mcal_uart.h)(0x6AB611DD)
+I (D:\Keil5\ARM\ARMCC\include\stdarg.h)(0x588B8344)
+I (../../MCAL/mcal_i2c/mcal_i2c.h)(0x6AB611EC)
+I (../../BSW/bsw_bfsk/bsw_bfsk.h)(0x6AB0F902)
+I (../../BSW/bsw_frame/bsw_frame.h)(0x6AB0F902)
+I (../../BSW/bsw_crc/bsw_crc.h)(0x6AB0F902)
+I (../../APP/app_sensor/app_sensor.h)(0x6AB4C9F5)
+I (../../BSW/bsw_ds18b20/bsw_ds18b20.h)(0x6AB4C9B8)
+I (../../MCAL/mcal_ds18b20/mcal_ds18b20.h)(0x6AB4EAC8)
+I (../../APP/app_task/app_task.h)(0x6AB338CA)
+F (../../APP/app_task/app_task.c)(0x6AB612BF)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_task.o --omf_browse underground\app_task.crf --depend underground\app_task.d)
 I (../../APP/app_task/app_task.h)(0x6AB338CA)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1771,9 +1963,20 @@ I (../Middlewares/Third_Party/FreeRTOS/Source/include/task.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/list.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h)(0x6A44CBFC)
 I (../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h)(0x6A44CBFC)
-F (../../APP/app_fsm/app_fsm.c)(0x6AB338CA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_fsm.o --omf_browse underground\app_fsm.crf --depend underground\app_fsm.d)
+I (../../BSW/bsw_bfsk/bsw_bfsk.h)(0x6AB0F902)
+I (../../BSW/bsw_frame/bsw_frame.h)(0x6AB0F902)
+I (../../BSW/bsw_crc/bsw_crc.h)(0x6AB0F902)
 I (../../APP/app_fsm/app_fsm.h)(0x6AB338CA)
-F (../../APP/app_frame_handler/app_frame_handler.c)(0x6AB338CA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_frame_handler.o --omf_browse underground\app_frame_handler.crf --depend underground\app_frame_handler.d)
+I (../../APP/app_main/app_main.h)(0x6AB61587)
+I (../../APP/app_sensor/app_sensor.h)(0x6AB4C9F5)
+I (../../BSW/bsw_ds18b20/bsw_ds18b20.h)(0x6AB4C9B8)
+I (../../MCAL/mcal_ds18b20/mcal_ds18b20.h)(0x6AB4EAC8)
+I (../../MCAL/mcal_uart/mcal_uart.h)(0x6AB611DD)
+I (D:\Keil5\ARM\ARMCC\include\stdarg.h)(0x588B8344)
+F (../../APP/app_fsm/app_fsm.c)(0x6AB338CA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_fsm.o --omf_browse underground\app_fsm.crf --depend underground\app_fsm.d)
+I (../../APP/app_fsm/app_fsm.h)(0x6AB338CA)
+I (../../APP/app_main/app_main.h)(0x6AB61587)
+F (../../APP/app_frame_handler/app_frame_handler.c)(0x6AB338CA)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_frame_handler.o --omf_browse underground\app_frame_handler.crf --depend underground\app_frame_handler.d)
 I (../../APP/app_frame_handler/app_frame_handler.h)(0x6AB338CA)
 I (../Core/Inc/main.h)(0x6AB49025)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
@@ -1814,5 +2017,52 @@ I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
 I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
-F (../../APP/app_sensor/app_sensor.c)(0x6AB4C9F5)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP -I ../../BSW -I ../../MCAL-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_sensor.o --omf_browse underground\app_sensor.crf --depend underground\app_sensor.d)
+I (../../BSW/bsw_frame/bsw_frame.h)(0x6AB0F902)
+I (../../BSW/bsw_crc/bsw_crc.h)(0x6AB0F902)
+I (../../APP/app_fsm/app_fsm.h)(0x6AB338CA)
+I (../../APP/app_main/app_main.h)(0x6AB61587)
+F (../../APP/app_sensor/app_sensor.c)(0x6AB4C9F5)(--c99 -c --cpu Cortex-M4.fp.sp -g -O3 --apcs=interwork --split_sections -I ../Core/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc -I ../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32L4xx/Include -I ../Drivers/CMSIS/Include -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F -I ../../APP/app_main -I ../../APP/app_fsm -I ../../APP/app_task -I ../../APP/app_sensor -I ../../APP/app_frame_handler -I ../../BSW/bsw_crc -I ../../BSW/bsw_frame -I ../../BSW/bsw_bfsk -I ../../BSW/bsw_ds18b20 -I ../../MCAL/mcal_clock -I ../../MCAL/mcal_gpio -I ../../MCAL/mcal_dma -I ../../MCAL/mcal_adc -I ../../MCAL/mcal_timer -I ../../MCAL/mcal_spi -I ../../MCAL/mcal_uart -I ../../MCAL/mcal_i2c -I ../../MCAL/mcal_ds18b20-I.\RTE\_UnderGround-ID:\Keil5\ARM\PACK\ARM\CMSIS\6.3.0\CMSIS\Core\Include-ID:\Keil5\ARM\PACK\Keil\STM32L4xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="543" -DSTM32L476xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32L476xx-o underground\app_sensor.o --omf_browse underground\app_sensor.crf --depend underground\app_sensor.d)
 I (../../APP/app_sensor/app_sensor.h)(0x6AB4C9F5)
+I (../../BSW/bsw_ds18b20/bsw_ds18b20.h)(0x6AB4C9B8)
+I (../../MCAL/mcal_ds18b20/mcal_ds18b20.h)(0x6AB4EAC8)
+I (../Core/Inc/main.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h)(0x6A44CD76)
+I (../Core/Inc/stm32l4xx_hal_conf.h)(0x6AB49025)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h)(0x6A44CD76)
+I (../Drivers/CMSIS/Include/core_cm4.h)(0x6A44CBFB)
+I (D:\Keil5\ARM\ARMCC\include\stdint.h)(0x588B8344)
+I (../Drivers/CMSIS/Include/cmsis_version.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_compiler.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/cmsis_armcc.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Include/mpu_armv7.h)(0x6A44CBFB)
+I (../Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stddef.h)(0x588B8344)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_dma.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_ll_adc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_exti.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash_ramfunc.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_i2c_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_pwr_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h)(0x6A44CD76)
+I (../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h)(0x6A44CD76)
+I (D:\Keil5\ARM\ARMCC\include\stdio.h)(0x588B8344)
+I (D:\Keil5\ARM\ARMCC\include\string.h)(0x588B8344)

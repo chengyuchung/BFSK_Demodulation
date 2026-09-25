@@ -40,3 +40,5 @@ underground\bsw_bfsk.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h
 underground\bsw_bfsk.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
 underground\bsw_bfsk.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h
 underground\bsw_bfsk.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+underground\bsw_bfsk.o: ../../MCAL/mcal_spi/mcal_spi.h
+underground\bsw_bfsk.o: ../../MCAL/mcal_gpio/mcal_gpio.h

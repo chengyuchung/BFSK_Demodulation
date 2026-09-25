@@ -51,3 +51,13 @@ underground\app_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/task.
 underground\app_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 underground\app_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 underground\app_task.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
+underground\app_task.o: ../../BSW/bsw_bfsk/bsw_bfsk.h
+underground\app_task.o: ../../BSW/bsw_frame/bsw_frame.h
+underground\app_task.o: ../../BSW/bsw_crc/bsw_crc.h
+underground\app_task.o: ../../APP/app_fsm/app_fsm.h
+underground\app_task.o: ../../APP/app_main/app_main.h
+underground\app_task.o: ../../APP/app_sensor/app_sensor.h
+underground\app_task.o: ../../BSW/bsw_ds18b20/bsw_ds18b20.h
+underground\app_task.o: ../../MCAL/mcal_ds18b20/mcal_ds18b20.h
+underground\app_task.o: ../../MCAL/mcal_uart/mcal_uart.h
+underground\app_task.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h

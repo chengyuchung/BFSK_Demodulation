@@ -52,6 +52,9 @@ uint8_t mcal_i2c_read_reg(uint8_t id, uint8_t dev_addr, uint8_t reg);
  */
 void mcal_i2c_read_buf(uint8_t id, uint8_t dev_addr, uint8_t reg, uint8_t *buf, uint16_t len);
 
+/* ========== Getter（给 stm32l4xx_it.c 用） ========== */
+I2C_HandleTypeDef *mcal_i2c_get_handle1(void);
+
 #ifdef __cplusplus
 }
 #endif

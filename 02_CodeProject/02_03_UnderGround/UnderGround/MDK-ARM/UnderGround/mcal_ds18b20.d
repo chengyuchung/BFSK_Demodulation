@@ -40,3 +40,5 @@ underground\mcal_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_ti
 underground\mcal_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
 underground\mcal_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h
 underground\mcal_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+underground\mcal_ds18b20.o: ../../MCAL/mcal_gpio/mcal_gpio.h
+underground\mcal_ds18b20.o: ../../MCAL/mcal_timer/mcal_timer.h

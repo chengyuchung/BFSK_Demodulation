@@ -40,3 +40,4 @@ underground\bsw_frame.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h
 underground\bsw_frame.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
 underground\bsw_frame.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h
 underground\bsw_frame.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+underground\bsw_frame.o: ../../BSW/bsw_crc/bsw_crc.h

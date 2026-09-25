@@ -48,6 +48,9 @@ void mcal_uart_puts(uint8_t id, const char *str);
  */
 void mcal_uart_printf(uint8_t id, const char *fmt, ...);
 
+/* ========== Getter（给 stm32l4xx_it.c 用） ========== */
+UART_HandleTypeDef *mcal_uart_get_handle1(void);
+
 #ifdef __cplusplus
 }
 #endif

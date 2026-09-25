@@ -6,7 +6,6 @@
 #include "semphr.h"
 #include "bsw_bfsk.h"
 #include "bsw_frame.h"
-#include "bsw_scanner.h"
 #include "app_fsm.h"
 #include "app_sensor.h"
 #include "mcal_uart.h"

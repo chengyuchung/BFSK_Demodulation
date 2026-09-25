@@ -1,90 +1,184 @@
 /**
  * @file    mcal_timer.c
  * @brief   定时器驱动 - MCAL 层实现
- * @note    仅实现 DS18B20 所需的微秒延时，基于 ARM CoreDebug DWT CYCCNT
- *          其他定时器（TIM2/TIM6）由 CubeMX 管理，APP 层直接调用 HAL API
+ * @note    原 main.c 的 MX_TIM1_Init / MX_TIM2_Init / MX_TIM6_Init 已移植到本文件
+ *          - TIM1: 输入捕获（IC1上升沿 + IC2下降沿）
+ *          - TIM2: 基础定时器，1ms 周期（80MHz / (79+1) / (999+1) = 1kHz）
+ *          - TIM6: 基础定时器，10μs 周期，TRGO 触发 ADC1
+ *          - DWT 寄存器仍用于微秒级精确延时
  */
 
 #include "mcal_timer.h"
-#include "main.h"
-#include "core_cm4.h"  /* CoreDebug + DWT 寄存器定义 */
+#include "core_cm4.h"
 
-/* ========== DWT (Debug Watchpoint and Trace) 宏 ========== */
-/* DWT CYCCNT 是 ARM Cortex-M4 内核计数器，每 CPU 时钟周期 +1 */
-/* STM32L476 主频 80MHz */
+extern void Error_Handler(void);
 
-/* ========== 内部辅助 ========== */
+/* ========== 内部句柄 ========== */
+static TIM_HandleTypeDef s_htim1;
+static TIM_HandleTypeDef s_htim2;
+static TIM_HandleTypeDef s_htim6;
 
-/* DWT CYCCNT 使能（需先解锁） */
+/* ========== Getter ========== */
+TIM_HandleTypeDef *mcal_timer_get_handle1(void) { return &s_htim1; }
+TIM_HandleTypeDef *mcal_timer_get_handle2(void) { return &s_htim2; }
+TIM_HandleTypeDef *mcal_timer_get_handle6(void) { return &s_htim6; }
+
+/* ========== DWT 微秒延时（保留） ========== */
 static void _dwt_enable(void)
 {
-    /* STM32L4 需要先写 DWT_LAR 解锁，否则读写出错 */
-    DWT_LAR = 0xC5ACCE55;
-
-    /* 使能 TRCENA */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-
-    /* 使能 CYCCNT */
-    DWT_CTRL |= 0x01;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-/* DWT 初始化（仅调用一次） */
 static int s_dwt_inited = 0;
-
 static void _dwt_init(void)
 {
     if (s_dwt_inited) return;
-
-    /* 检查 CYCCNT 是否已使能 */
-    if ((DWT_CTRL & 0x01) == 0) {
+    if ((DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk) == 0) {
         _dwt_enable();
     }
-    DWT_CYCCNT = 0;
+    DWT->CYCCNT = 0;
     s_dwt_inited = 1;
 }
 
-/**
- * @brief   微秒延时（阻塞）
- * @param   us   延时微秒数
- * @note    基于 DWT CPU 周期计数，精度最高
- */
 void mcal_timer_delay_us(uint32_t us)
 {
     _dwt_init();
-
-    uint32_t start = DWT_CYCCNT;
-    /* 每次循环 +1，时钟周期数 = us * SystemCoreClock / 1,000,000 */
+    uint32_t start  = DWT->CYCCNT;
     uint32_t cycles = us * (SystemCoreClock / 1000000U);
-
-    /* 处理溢出情况 */
-    while ((DWT_CYCCNT - start) < cycles) {
+    while ((DWT->CYCCNT - start) < cycles) {
         __NOP();
     }
 }
 
 /* ================================================================ */
-/*              以下接口暂不实现（CubeMX 已管理）                      */
+/*                 原 MX_TIM1_Init 内容（输入捕获）                   */
 /* ================================================================ */
+static void _tim1_init(void)
+{
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_IC_InitTypeDef     sConfigIC     = {0};
 
-void mcal_timer_init(void) {}
+    s_htim1.Instance               = TIM1;
+    s_htim1.Init.Prescaler         = 0;
+    s_htim1.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    s_htim1.Init.Period            = 65535;
+    s_htim1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    s_htim1.Init.RepetitionCounter = 0;
+    s_htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+
+    if (HAL_TIM_IC_Init(&s_htim1) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sMasterConfig.MasterOutputTrigger   = TIM_TRGO_RESET;
+    sMasterConfig.MasterOutputTrigger2  = TIM_TRGO2_RESET;
+    sMasterConfig.MasterSlaveMode       = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&s_htim1, &sMasterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sConfigIC.ICPolarity  = TIM_INPUTCHANNELPOLARITY_RISING;
+    sConfigIC.ICSelection = TIM_ICSELECTION_DIRECTTI;
+    sConfigIC.ICPrescaler = TIM_ICPSC_DIV1;
+    sConfigIC.ICFilter    = 0;
+    if (HAL_TIM_IC_ConfigChannel(&s_htim1, &sConfigIC, TIM_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sConfigIC.ICPolarity = TIM_INPUTCHANNELPOLARITY_FALLING;
+    if (HAL_TIM_IC_ConfigChannel(&s_htim1, &sConfigIC, TIM_CHANNEL_2) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/* ================================================================ */
+/*              原 MX_TIM2_Init 内容（1ms 基础定时器）                */
+/* ================================================================ */
+static void _tim2_init(void)
+{
+    TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+    s_htim2.Instance               = TIM2;
+    s_htim2.Init.Prescaler         = 79;
+    s_htim2.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    s_htim2.Init.Period            = 999;
+    s_htim2.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    s_htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+    if (HAL_TIM_Base_Init(&s_htim2) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    if (HAL_TIM_ConfigClockSource(&s_htim2, &sClockSourceConfig) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&s_htim2, &sMasterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/* ================================================================ */
+/*           原 MX_TIM6_Init 内容（10μs TRGO 触发 ADC）              */
+/* ================================================================ */
+static void _tim6_init(void)
+{
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+    s_htim6.Instance               = TIM6;
+    s_htim6.Init.Prescaler         = 79;
+    s_htim6.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    s_htim6.Init.Period            = 99;
+    s_htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+    if (HAL_TIM_Base_Init(&s_htim6) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+    sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&s_htim6, &sMasterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+/* ================================================================ */
+/*                           公共接口实现                              */
+/* ================================================================ */
+void mcal_timer_init(void)
+{
+    _tim1_init();
+    _tim2_init();
+    _tim6_init();
+}
 
 void mcal_timer_delay_ms(uint32_t ms)
 {
-    /* CubeMX 的 HAL_Delay() 已实现，直接调用 */
     HAL_Delay(ms);
 }
 
 void mcal_timer_start_once(uint8_t id, uint32_t period_us)
 {
-    (void)id;
+    TIM_HandleTypeDef *htim = NULL;
+    switch (id) {
+        case TIMER_ID_1: htim = &s_htim1; break;
+        case TIMER_ID_2: htim = &s_htim2; break;
+        case TIMER_ID_3: htim = &s_htim6; break;
+        default: return;
+    }
+    /* 简化处理：保持原配置不变，由用户/上层按需启动 */
     (void)period_us;
-    /* TIM2/TIM6 由 CubeMX 配置，APP 层直接使用 HAL_TIM */
+    (void)htim;
 }
 
 void mcal_timer_start_periodic(uint8_t id, uint32_t period_us)
 {
-    (void)id;
-    (void)period_us;
+    (void)id; (void)period_us;
 }
 
 void mcal_timer_stop(uint8_t id)

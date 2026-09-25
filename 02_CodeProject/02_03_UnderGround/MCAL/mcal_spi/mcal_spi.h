@@ -40,6 +40,9 @@ uint8_t mcal_spi_transfer(uint8_t id, uint8_t tx_data);
  */
 void mcal_spi_transfer_buf(uint8_t id, uint8_t *tx_buf, uint8_t *rx_buf, uint16_t len);
 
+/* ========== Getter（给 stm32l4xx_it.c 用） ========== */
+SPI_HandleTypeDef *mcal_spi_get_handle1(void);
+
 #ifdef __cplusplus
 }
 #endif

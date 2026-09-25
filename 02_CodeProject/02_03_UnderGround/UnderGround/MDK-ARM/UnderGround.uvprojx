@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L476xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP;../../BSW;../../MCAL</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_fsm;../../APP/app_task;../../APP/app_sensor;../../APP/app_frame_handler;../../BSW/bsw_crc;../../BSW/bsw_frame;../../BSW/bsw_bfsk;../../BSW/bsw_ds18b20;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ds18b20</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1315,6 +1315,26 @@
               <FileType>1</FileType>
               <FilePath>../../MCAL/mcal_ds18b20/mcal_ds18b20.c</FilePath>
             </File>
+            <File>
+              <FileName>mcal_clock</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../MCAL/mcal_clock/mcal_clock.c</FilePath>
+            </File>
+            <File>
+              <FileName>mcal_dma</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../MCAL/mcal_dma/mcal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>mcal_spi</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../MCAL/mcal_spi/mcal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>mcal_i2c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../MCAL/mcal_i2c/mcal_i2c.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1334,16 +1354,6 @@
               <FileName>bsw_bfsk</FileName>
               <FileType>1</FileType>
               <FilePath>../../BSW/bsw_bfsk/bsw_bfsk.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsw_scanner</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_scanner/bsw_scanner.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsw_scheduler</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_scheduler/bsw_scheduler.c</FilePath>
             </File>
             <File>
               <FileName>bsw_ds18b20</FileName>
