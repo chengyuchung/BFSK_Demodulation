@@ -18,6 +18,7 @@ extern "C" {
 #define GPIO_PIN_AMP_EN       1    /* 功放使能 */
 #define GPIO_PIN_DS18B20      2    /* DS18B20 单总线数据脚 */
 #define GPIO_PIN_LED_STATUS   3    /* 状态指示灯 */
+#define GPIO_PIN_AD9833_FSYNC 4    /* AD9833 软件片选（PC4） */
 
 /* ========== 宏定义：电平 ========== */
 #define GPIO_LOW   0U

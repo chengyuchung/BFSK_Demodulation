@@ -67,7 +67,8 @@ void Error_Handler(void);
 #define LED_Control_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define AD9833_FSYNC_Pin        GPIO_PIN_4   /* AD9833 FSYNC 片选（软件控制） */
+#define AD9833_FSYNC_GPIO_Port  GPIOC
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

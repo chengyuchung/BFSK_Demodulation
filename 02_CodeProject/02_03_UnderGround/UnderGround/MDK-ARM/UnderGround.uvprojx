@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L476xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_sensor;../../APP/app_task;../../BSW/bsw_ds18b20;../../BSW/bsw_log;../../BSW/bsw_bmp280;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ow</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_sensor;../../APP/app_task;../../BSW/bsw_ds18b20;../../BSW/bsw_log;../../BSW/bsw_bmp280;../../BSW/bsw_ad9833;../../BSW/bsw_adc_ringbuf;../../BSW/bsw_relay;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ow</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1354,6 +1354,21 @@
               <FileName>bsw_bmp280</FileName>
               <FileType>1</FileType>
               <FilePath>../../BSW/bsw_bmp280/bsw_bmp280.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_ad9833</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../BSW/bsw_ad9833/bsw_ad9833.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_relay</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../BSW/bsw_relay/bsw_relay.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_adc_ringbuf</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../BSW/bsw_adc_ringbuf/bsw_adc_ringbuf.c</FilePath>
             </File>
           </Files>
         </Group>

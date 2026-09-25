@@ -14,10 +14,11 @@ typedef struct {
 } gpio_pin_map_t;
 
 static const gpio_pin_map_t s_gpio_map[] = {
-    [GPIO_PIN_RELAY]       = {Relay_Control_GPIO_Port,      Relay_Control_Pin},      /* PA12 */
-    [GPIO_PIN_AMP_EN]      = {0,                            0},                      /* 预留，BFSK 模块定义 */
-    [GPIO_PIN_DS18B20]    = {DS18B20_GPIO_Port,            DS18B20_Pin},            /* PA2  */
-    [GPIO_PIN_LED_STATUS]  = {LED_Control_GPIO_Port,        LED_Control_Pin},        /* PB5  */
+    [GPIO_PIN_RELAY]         = {Relay_Control_GPIO_Port,      Relay_Control_Pin},      /* PA12 */
+    [GPIO_PIN_AMP_EN]        = {0,                            0},                      /* 预留，BFSK 模块定义 */
+    [GPIO_PIN_DS18B20]       = {DS18B20_GPIO_Port,            DS18B20_Pin},            /* PA2  */
+    [GPIO_PIN_LED_STATUS]    = {LED_Control_GPIO_Port,        LED_Control_Pin},        /* PB5  */
+    [GPIO_PIN_AD9833_FSYNC]  = {AD9833_FSYNC_GPIO_Port,       AD9833_FSYNC_Pin},       /* PC4  */
 };
 
 /* ========== 引脚数量 ========== */

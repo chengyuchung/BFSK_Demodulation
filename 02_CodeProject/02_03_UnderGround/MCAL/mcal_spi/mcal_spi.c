@@ -40,8 +40,8 @@ static void _spi1_init(void)
     s_hspi1.Init.Mode              = SPI_MODE_MASTER;
     s_hspi1.Init.Direction         = SPI_DIRECTION_2LINES;
     s_hspi1.Init.DataSize          = SPI_DATASIZE_8BIT;
-    s_hspi1.Init.CLKPolarity       = SPI_POLARITY_LOW;
-    s_hspi1.Init.CLKPhase          = SPI_PHASE_1EDGE;
+    s_hspi1.Init.CLKPolarity       = SPI_POLARITY_HIGH;  /* AD9833: SCLK 空闲高 */
+    s_hspi1.Init.CLKPhase          = SPI_PHASE_1EDGE;    /* AD9833: 在第一边沿（下降沿）采样 = Mode 2 */
     s_hspi1.Init.NSS               = SPI_NSS_SOFT;
     s_hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
     s_hspi1.Init.FirstBit          = SPI_FIRSTBIT_MSB;

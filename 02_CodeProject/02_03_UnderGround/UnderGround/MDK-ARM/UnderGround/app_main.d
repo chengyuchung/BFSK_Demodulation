@@ -49,7 +49,10 @@ underground\app_main.o: ../../MCAL/mcal_spi/mcal_spi.h
 underground\app_main.o: ../../MCAL/mcal_uart/mcal_uart.h
 underground\app_main.o: ../../MCAL/mcal_i2c/mcal_i2c.h
 underground\app_main.o: ../../BSW/bsw_log/bsw_log.h
+underground\app_main.o: ../../BSW/bsw_relay/bsw_relay.h
 underground\app_main.o: ../../BSW/bsw_ds18b20/bsw_ds18b20.h
 underground\app_main.o: ../../BSW/bsw_bmp280/bsw_bmp280.h
+underground\app_main.o: ../../BSW/bsw_ad9833/bsw_ad9833.h
+underground\app_main.o: ../../BSW/bsw_adc_ringbuf/bsw_adc_ringbuf.h
 underground\app_main.o: ../../APP/app_sensor/app_sensor.h
 underground\app_main.o: ../../APP/app_task/app_task.h
