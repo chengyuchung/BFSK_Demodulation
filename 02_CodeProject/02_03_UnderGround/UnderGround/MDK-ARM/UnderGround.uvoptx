@@ -755,8 +755,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../MCAL/mcal_ds18b20/mcal_ds18b20.c</PathWithFileName>
-      <FilenameWithoutPath>mcal_ds18b20</FilenameWithoutPath>
+      <PathWithFileName>../../MCAL/mcal_ow/mcal_ow.c</PathWithFileName>
+      <FilenameWithoutPath>mcal_ow</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -823,8 +823,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../BSW/bsw_crc/bsw_crc.c</PathWithFileName>
-      <FilenameWithoutPath>bsw_crc</FilenameWithoutPath>
+      <PathWithFileName>../../BSW/bsw_ds18b20/bsw_ds18b20.c</PathWithFileName>
+      <FilenameWithoutPath>bsw_ds18b20</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -835,8 +835,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../BSW/bsw_frame/bsw_frame.c</PathWithFileName>
-      <FilenameWithoutPath>bsw_frame</FilenameWithoutPath>
+      <PathWithFileName>../../BSW/bsw_log/bsw_log.c</PathWithFileName>
+      <FilenameWithoutPath>bsw_log</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -847,20 +847,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>../../BSW/bsw_bfsk/bsw_bfsk.c</PathWithFileName>
-      <FilenameWithoutPath>bsw_bfsk</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>53</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../BSW/bsw_ds18b20/bsw_ds18b20.c</PathWithFileName>
-      <FilenameWithoutPath>bsw_ds18b20</FilenameWithoutPath>
+      <PathWithFileName>../../BSW/bsw_bmp280/bsw_bmp280.c</PathWithFileName>
+      <FilenameWithoutPath>bsw_bmp280</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -868,13 +856,13 @@
 
   <Group>
     <GroupName>APP</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>8</GroupNumber>
-      <FileNumber>54</FileNumber>
+      <FileNumber>53</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -886,49 +874,25 @@
     </File>
     <File>
       <GroupNumber>8</GroupNumber>
-      <FileNumber>55</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../APP/app_task/app_task.c</PathWithFileName>
-      <FilenameWithoutPath>app_task</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>56</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../APP/app_fsm/app_fsm.c</PathWithFileName>
-      <FilenameWithoutPath>app_fsm</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>57</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>../../APP/app_frame_handler/app_frame_handler.c</PathWithFileName>
-      <FilenameWithoutPath>app_frame_handler</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>58</FileNumber>
+      <FileNumber>54</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>../../APP/app_sensor/app_sensor.c</PathWithFileName>
       <FilenameWithoutPath>app_sensor</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>55</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>1</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>../../APP/app_task/app_task.c</PathWithFileName>
+      <FilenameWithoutPath>app_task.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

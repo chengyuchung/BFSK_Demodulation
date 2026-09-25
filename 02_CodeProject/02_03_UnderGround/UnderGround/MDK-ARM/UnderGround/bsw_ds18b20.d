@@ -1,6 +1,7 @@
 underground\bsw_ds18b20.o: ../../BSW/bsw_ds18b20/bsw_ds18b20.c
 underground\bsw_ds18b20.o: ../../BSW/bsw_ds18b20/bsw_ds18b20.h
-underground\bsw_ds18b20.o: ../../MCAL/mcal_ds18b20/mcal_ds18b20.h
+underground\bsw_ds18b20.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
+underground\bsw_ds18b20.o: ../../MCAL/mcal_ow/mcal_ow.h
 underground\bsw_ds18b20.o: ../Core/Inc/main.h
 underground\bsw_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h
 underground\bsw_ds18b20.o: ../Core/Inc/stm32l4xx_hal_conf.h
@@ -9,7 +10,6 @@ underground\bsw_ds18b20.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l476xx.h
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Include/core_cm4.h
-underground\bsw_ds18b20.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Include/cmsis_version.h
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 underground\bsw_ds18b20.o: ../Drivers/CMSIS/Include/cmsis_armcc.h

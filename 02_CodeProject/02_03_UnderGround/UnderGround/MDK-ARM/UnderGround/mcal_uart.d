@@ -40,6 +40,4 @@ underground\mcal_uart.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h
 underground\mcal_uart.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
 underground\mcal_uart.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h
 underground\mcal_uart.o: ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
-underground\mcal_uart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdarg.h
 underground\mcal_uart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
-underground\mcal_uart.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h

@@ -340,7 +340,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32L476xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_fsm;../../APP/app_task;../../APP/app_sensor;../../APP/app_frame_handler;../../BSW/bsw_crc;../../BSW/bsw_frame;../../BSW/bsw_bfsk;../../BSW/bsw_ds18b20;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ds18b20</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_sensor;../../APP/app_task;../../BSW/bsw_ds18b20;../../BSW/bsw_log;../../BSW/bsw_bmp280;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ow</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1311,9 +1311,9 @@
               <FilePath>../../MCAL/mcal_adc/mcal_adc.c</FilePath>
             </File>
             <File>
-              <FileName>mcal_ds18b20</FileName>
+              <FileName>mcal_ow</FileName>
               <FileType>1</FileType>
-              <FilePath>../../MCAL/mcal_ds18b20/mcal_ds18b20.c</FilePath>
+              <FilePath>../../MCAL/mcal_ow/mcal_ow.c</FilePath>
             </File>
             <File>
               <FileName>mcal_clock</FileName>
@@ -1341,24 +1341,19 @@
           <GroupName>BSW</GroupName>
           <Files>
             <File>
-              <FileName>bsw_crc</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_crc/bsw_crc.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsw_frame</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_frame/bsw_frame.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsw_bfsk</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_bfsk/bsw_bfsk.c</FilePath>
-            </File>
-            <File>
               <FileName>bsw_ds18b20</FileName>
               <FileType>1</FileType>
               <FilePath>../../BSW/bsw_ds18b20/bsw_ds18b20.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_log</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../BSW/bsw_log/bsw_log.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_bmp280</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../BSW/bsw_bmp280/bsw_bmp280.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1371,24 +1366,14 @@
               <FilePath>../../APP/app_main/app_main.c</FilePath>
             </File>
             <File>
-              <FileName>app_task</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../APP/app_task/app_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_fsm</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../APP/app_fsm/app_fsm.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_frame_handler</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../APP/app_frame_handler/app_frame_handler.c</FilePath>
-            </File>
-            <File>
               <FileName>app_sensor</FileName>
               <FileType>1</FileType>
               <FilePath>../../APP/app_sensor/app_sensor.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../../APP/app_task/app_task.c</FilePath>
             </File>
           </Files>
         </Group>

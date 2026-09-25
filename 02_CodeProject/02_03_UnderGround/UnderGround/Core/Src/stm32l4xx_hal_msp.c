@@ -25,7 +25,7 @@
 extern DMA_HandleTypeDef hdma_adc1;
 
 /* Private variables ---------------------------------------------------------*/
-static uint32_t HAL_RCC_ADC_CLK_ENABLED = 0; /* 兼容旧 msp 引用 */
+/*  ADC/I2C/SPI/UART 的时钟使能状态已下沉到对应 MCAL 模块内部 */
 
 /* USER CODE BEGIN PV */
 

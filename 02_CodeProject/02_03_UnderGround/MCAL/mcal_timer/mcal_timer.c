@@ -21,7 +21,7 @@ static TIM_HandleTypeDef s_htim6;
 /* ========== Getter ========== */
 TIM_HandleTypeDef *mcal_timer_get_handle1(void) { return &s_htim1; }
 TIM_HandleTypeDef *mcal_timer_get_handle2(void) { return &s_htim2; }
-TIM_HandleTypeDef *mcal_timer_get_handle6(void) { return &s_htim6; }
+/* TIM6 通过 TRGO 硬件触发 ADC，不需要 IRQ 句柄访问器 */
 
 /* ========== DWT 微秒延时（保留） ========== */
 static void _dwt_enable(void)
@@ -160,33 +160,4 @@ void mcal_timer_init(void)
 void mcal_timer_delay_ms(uint32_t ms)
 {
     HAL_Delay(ms);
-}
-
-void mcal_timer_start_once(uint8_t id, uint32_t period_us)
-{
-    TIM_HandleTypeDef *htim = NULL;
-    switch (id) {
-        case TIMER_ID_1: htim = &s_htim1; break;
-        case TIMER_ID_2: htim = &s_htim2; break;
-        case TIMER_ID_3: htim = &s_htim6; break;
-        default: return;
-    }
-    /* 简化处理：保持原配置不变，由用户/上层按需启动 */
-    (void)period_us;
-    (void)htim;
-}
-
-void mcal_timer_start_periodic(uint8_t id, uint32_t period_us)
-{
-    (void)id; (void)period_us;
-}
-
-void mcal_timer_stop(uint8_t id)
-{
-    (void)id;
-}
-
-__weak void mcal_timer_callback(uint8_t id)
-{
-    (void)id;
 }

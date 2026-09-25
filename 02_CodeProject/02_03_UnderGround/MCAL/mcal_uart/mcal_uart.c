@@ -3,12 +3,13 @@
  * @brief   UART 驱动 - MCAL 层实现
  * @note    原 main.c 的 MX_USART1_UART_Init() 已移植到本文件
  *          - USART1: 调试串口，默认 115200bps，TX:PA9 / RX:PA10
+ *
+ *          本层只提供字节流原语（putc/puts/write）；
+ *          格式化输出由 BSW 层（bsw_log）负责。
  */
 
 #include "mcal_uart.h"
 #include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
 
 extern void Error_Handler(void);
 
@@ -99,23 +100,13 @@ void mcal_uart_puts(uint8_t id, const char *str)
     if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited || str == NULL) {
         return;
     }
-    HAL_UART_Transmit(s_uart_ch[id].huart, (uint8_t *)str,
-                      (uint16_t)strlen(str), HAL_MAX_DELAY);
+    mcal_uart_write(id, (const uint8_t *)str, (uint16_t)strlen(str));
 }
 
-void mcal_uart_printf(uint8_t id, const char *fmt, ...)
+void mcal_uart_write(uint8_t id, const uint8_t *buf, uint16_t len)
 {
-    char     buf[128];
-    va_list  args;
-
-    if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited || fmt == NULL) {
+    if (id >= MCAL_UART_MAX_CH || !s_uart_ch[id].inited || buf == NULL || len == 0) {
         return;
     }
-
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-
-    HAL_UART_Transmit(s_uart_ch[id].huart, (uint8_t *)buf,
-                      (uint16_t)strlen(buf), HAL_MAX_DELAY);
+    HAL_UART_Transmit(s_uart_ch[id].huart, buf, len, HAL_MAX_DELAY);
 }
