@@ -27,9 +27,11 @@
 #include "bsw_bmp280.h"
 #include "bsw_ad9833.h"
 #include "bsw_adc_ringbuf.h"
+#include "bsw_node_id.h"            /* LOCAL_ADDRESS 宏 */
 
 #include "app_sensor.h"
 #include "app_task.h"
+#include "../app_node_fsm/app_node_fsm.h"   
 
 /* ========== APP 层初始化入口 ========== */
 
@@ -75,6 +77,12 @@ void app_main_init(void)
 
     /* ============ APP 层初始化 ============ */
     app_sensor_init();
+
+    /* 节点状态机初始化（必须在所有外设就绪之后）
+     * 本机地址由 LOCAL_ADDRESS 单点配置（见 bsw_node_id.h），
+     * init() 会立即触发 NODE_SCAN_LISTEN 转移，
+     * 同步启动 TIM6 + DMA，ADC 链路正式通电。 */
+    app_node_fsm_init(LOCAL_ADDRESS);
 
     /* ============ BSW 日志首发（验证 MCAL UART → BSW log 链路） ============ */
     bsw_log("UnderGround node boot OK (RTOS online)\r\n");

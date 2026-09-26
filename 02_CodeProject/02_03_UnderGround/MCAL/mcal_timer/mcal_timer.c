@@ -155,9 +155,70 @@ void mcal_timer_init(void)
     _tim1_init();
     _tim2_init();
     _tim6_init();
+    /* 注意：TIM6 此处不启动，由 bsw_adc_ringbuf_enable() 按状态控制 */
 }
 
 void mcal_timer_delay_ms(uint32_t ms)
 {
     HAL_Delay(ms);
+}
+
+/* ========== TIM6 base start/stop（由 bsw_adc_ringbuf 按状态机启停） ========== */
+
+void mcal_timer_base_start(mcal_timer_id_t id)
+{
+    TIM_HandleTypeDef *htim = NULL;
+    switch (id) {
+        case MCAL_TIMER_TIM1: htim = &s_htim1; break;
+        case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM6: htim = &s_htim6; break;
+        default: return;
+    }
+    (void)HAL_TIM_Base_Start(htim);
+}
+
+void mcal_timer_base_stop(mcal_timer_id_t id)
+{
+    TIM_HandleTypeDef *htim = NULL;
+    switch (id) {
+        case MCAL_TIMER_TIM1: htim = &s_htim1; break;
+        case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM6: htim = &s_htim6; break;
+        default: return;
+    }
+    (void)HAL_TIM_Base_Stop(htim);
+}
+
+/* ========== TIM1 输入捕获启停（仅供 BFSK 解调用，FSM 控制） ==========
+ * 注意：仅 LINKED 态调用 ic_start，其余 5 个状态必须 ic_stop。
+ *   - LINKED:    TIM1 IC 启（BFSK 帧解调：CH1 上升沿 + CH2 下降沿 → 测频）
+ *   - SCAN:      TIM1 IC 停（频点由 ADC ringbuf 的 FFT 解出）
+ *   - SCAN_LISTEN: TIM1 IC 停（杂散边沿会污染 BSW 解调状态机）
+ *   - BOOT/SLEEP/FAULT: TIM1 IC 停 */
+
+void mcal_timer_ic_start(mcal_timer_id_t id)
+{
+    if (id != MCAL_TIMER_TIM1) {
+        return;   /* 仅 TIM1 支持 IC */
+    }
+    /* CH1 上升沿：每周期一记，bsw_bfsk_demod 读 CCR1 求瞬时频率 */
+    if (HAL_TIM_IC_Start_IT(&s_htim1, TIM_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+    /* CH2 下降沿：bit 边界检测（0/1 码元宽度） */
+    if (HAL_TIM_IC_Start_IT(&s_htim1, TIM_CHANNEL_2) != HAL_OK) {
+        Error_Handler();
+    }
+    /* TIM1 计数器本身已经在 _tim1_init() 配好 16-bit ARR=65535，
+     * 进入 IC 模式后计数器自由跑，到 0xFFFF 自动回零，
+     * 不需要额外 HAL_TIM_Base_Start。 */
+}
+
+void mcal_timer_ic_stop(mcal_timer_id_t id)
+{
+    if (id != MCAL_TIMER_TIM1) {
+        return;   /* 仅 TIM1 支持 IC */
+    }
+    (void)HAL_TIM_IC_Stop_IT(&s_htim1, TIM_CHANNEL_1);
+    (void)HAL_TIM_IC_Stop_IT(&s_htim1, TIM_CHANNEL_2);
 }

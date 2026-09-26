@@ -1,9 +1,0 @@
-underground\app_sensor.o: ../../APP/app_sensor/app_sensor.c
-underground\app_sensor.o: ../../APP/app_sensor/app_sensor.h
-underground\app_sensor.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdint.h
-underground\app_sensor.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stddef.h
-underground\app_sensor.o: ../../BSW/bsw_ds18b20/bsw_ds18b20.h
-underground\app_sensor.o: ../../BSW/bsw_bmp280/bsw_bmp280.h
-underground\app_sensor.o: ../../BSW/bsw_log/bsw_log.h
-underground\app_sensor.o: D:\Keil5\ARM\ARMCC\Bin\..\include\string.h
-underground\app_sensor.o: D:\Keil5\ARM\ARMCC\Bin\..\include\stdio.h

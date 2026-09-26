@@ -24,6 +24,7 @@
 
 #include "bsw_adc_ringbuf.h"
 #include "mcal_adc.h"
+#include "mcal_timer.h"
 #include "bsw_log.h"
 
 #include <string.h>
@@ -63,6 +64,9 @@ static volatile uint8_t  s_data_ready = 0;
 /** 模块初始化标志。 */
 static volatile uint8_t  s_inited = 0;
 
+/** 采样运行标志（enable/disable 幂等控制）。 */
+static volatile uint8_t  s_running = 0;
+
 /* ========== DMA 回调（中断上下文） ========== */
 
 static void _dma_half_cb(uint16_t *buf, uint32_t len)
@@ -92,7 +96,7 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_init(void)
         return BSW_ADC_RINGBUF_OK;
     }
 
-    /* 先注册回调，再启动 DMA（DMA 一旦开，硬件随时可能触发中断） */
+    /* 先注册回调（DMA 启动由 enable() 统一控制，实现状态机按需启停） */
     if (mcal_adc_register_dma_half(MCAL_ADC_DEV1, _dma_half_cb) != MCAL_ADC_OK) {
         return BSW_ADC_RINGBUF_ERR_STATE;
     }
@@ -100,21 +104,12 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_init(void)
         return BSW_ADC_RINGBUF_ERR_STATE;
     }
 
-    /* 启动 DMA 循环写到自己内部 buffer */
-    if (mcal_adc_start_dma(MCAL_ADC_DEV1, s_buf, BSW_ADC_RINGBUF_CAPACITY)
-        != MCAL_ADC_OK) {
-        return BSW_ADC_RINGBUF_ERR_STATE;
-    }
-
     s_write_idx  = 0;
     s_data_ready = 0;
+    s_running    = 0;
     s_inited     = 1;
 
-    bsw_log("[ADC_RINGBUF] init OK, cap=%u pt (%.1f ms), win=%u pt (%.1f ms), fs=10 kHz\r\n",
-            (unsigned)BSW_ADC_RINGBUF_CAPACITY,
-            (double)BSW_ADC_RINGBUF_CAPACITY / 10.0,
-            (unsigned)BSW_ADC_RINGBUF_WINDOW_LEN,
-            (double)BSW_ADC_RINGBUF_WINDOW_LEN / 10.0);
+    bsw_log("[ADC_RINGBUF] init OK (hw not started, use enable() to start sampling)\r\n");
 
     return BSW_ADC_RINGBUF_OK;
 }
@@ -125,15 +120,64 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_deinit(void)
         return BSW_ADC_RINGBUF_OK;
     }
 
+    /* 先停硬件（disable），再注销回调 */
+    (void)mcal_timer_base_stop(MCAL_TIMER_TIM6);
     (void)mcal_adc_stop_dma(MCAL_ADC_DEV1);
     (void)mcal_adc_register_dma_half(MCAL_ADC_DEV1, (mcal_adc_dma_half_cb_t)NULL);
     (void)mcal_adc_register_dma_cplt(MCAL_ADC_DEV1, (mcal_adc_dma_cplt_cb_t)NULL);
 
     s_write_idx  = 0;
     s_data_ready = 0;
+    s_running    = 0;
     s_inited     = 0;
 
     bsw_log("[ADC_RINGBUF] deinit OK\r\n");
+    return BSW_ADC_RINGBUF_OK;
+}
+
+bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_enable(void)
+{
+    if (!s_inited) {
+        return BSW_ADC_RINGBUF_ERR_STATE;
+    }
+    if (s_running) {
+        return BSW_ADC_RINGBUF_OK;   /* 幂等 */
+    }
+
+    /* 清空 buffer，避免上电尖峰残留值污染首窗口（协议 §一） */
+    memset(s_buf, 0, sizeof(s_buf));
+    s_write_idx  = 0;
+    s_data_ready = 0;
+
+    /* 重启 DMA（复位 DMA 内部状态，确保从头写入 s_buf） */
+    if (mcal_adc_start_dma(MCAL_ADC_DEV1, s_buf, BSW_ADC_RINGBUF_CAPACITY)
+        != MCAL_ADC_OK) {
+        return BSW_ADC_RINGBUF_ERR_STATE;
+    }
+
+    /* 启动 TIM6 触发源（10 kHz TRGO → ADC1） */
+    mcal_timer_base_start(MCAL_TIMER_TIM6);
+
+    s_running = 1;
+    bsw_log("[ADC_RINGBUF] enabled (DMA + TIM6 started, fs=10 kHz)\r\n");
+    return BSW_ADC_RINGBUF_OK;
+}
+
+bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_disable(void)
+{
+    if (!s_inited) {
+        return BSW_ADC_RINGBUF_OK;
+    }
+    if (!s_running) {
+        return BSW_ADC_RINGBUF_OK;   /* 幂等 */
+    }
+
+    /* 顺序：先停触发源（TIM6），再停搬运（DMA） */
+    mcal_timer_base_stop(MCAL_TIMER_TIM6);
+    (void)mcal_adc_stop_dma(MCAL_ADC_DEV1);
+
+    s_running = 0;
+    bsw_log("[ADC_RINGBUF] disabled (TIM6 + DMA stopped)\r\n");
     return BSW_ADC_RINGBUF_OK;
 }
 
@@ -212,4 +256,32 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_read(uint32_t index_back, uint16_t *out)
     __set_PRIMASK(primask);
 
     return BSW_ADC_RINGBUF_OK;
+}
+
+uint32_t bsw_adc_ringbuf_calc_rms_sq(void)
+{
+    if (!s_inited) {
+        return 0;
+    }
+
+    /* 栈上 800 字节：FSM run() 上下文，调频约 25 Hz，安全 */
+    uint16_t snapshot[BSW_ADC_RINGBUF_WINDOW_LEN];
+    if (bsw_adc_ringbuf_snapshot(snapshot) != BSW_ADC_RINGBUF_OK) {
+        return 0;
+    }
+
+    /* 1) 估 DC（窗口均值） */
+    uint64_t sum = 0;
+    for (uint32_t i = 0; i < BSW_ADC_RINGBUF_WINDOW_LEN; ++i) {
+        sum += snapshot[i];
+    }
+    uint32_t mean = (uint32_t)(sum / BSW_ADC_RINGBUF_WINDOW_LEN);
+
+    /* 2) 去 DC 后均方值（不开方） */
+    uint64_t sum_sq = 0;
+    for (uint32_t i = 0; i < BSW_ADC_RINGBUF_WINDOW_LEN; ++i) {
+        int32_t dev = (int32_t)snapshot[i] - (int32_t)mean;
+        sum_sq += (uint64_t)((int64_t)dev * dev);
+    }
+    return (uint32_t)(sum_sq / BSW_ADC_RINGBUF_WINDOW_LEN);
 }

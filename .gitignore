@@ -32,6 +32,8 @@ $RECYCLE.BIN/
 
 # Keil 编译产物
 *.o
+*.ioc
+*.mxproject
 *.d
 *.crf
 *.htm
@@ -50,6 +52,10 @@ $RECYCLE.BIN/
 DebugConfig/
 Objects/
 Listings/
+
+# Keil 编译输出子目录（与 .uvprojx 同名，里面全是 .o/.d/.crf/.hex/.axf 等）
+# 命中：UnderGround/MDK-ARM/UnderGround/**  这一整棵子树
+**/MDK-ARM/UnderGround/
 
 # Keil RTE 缓存（RTE/_<ProjectName> 下的本地索引）
 RTE/_*/

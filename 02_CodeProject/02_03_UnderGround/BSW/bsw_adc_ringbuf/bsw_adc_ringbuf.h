@@ -45,6 +45,11 @@ extern "C" {
 #define BSW_ADC_RINGBUF_CAPACITY_MASK  ((uint16_t)(BSW_ADC_RINGBUF_CAPACITY - 1u))   /**< 位掩码 wrap-around */
 #define BSW_ADC_RINGBUF_WINDOW_LEN     (400u)   /**< 分析窗口长度（点），40 ms × 10 kHz */
 
+/** PRE_LINKED 监测门槛：最近 40 ms 窗口去 DC 后均方值超过此值视为"有人应答"
+ *  RMS^2(50000) ~ 224 -> 等效正弦波峰峰约 316 ADC 单位
+ *  噪声方差典型 < 10000，远低于门槛；调试时按现场信噪比调高/调低 */
+#define BSW_ADC_RINGBUF_SIGNAL_THRESHOLD   (50000u)
+
 /* ========== 返回码 ========== */
 typedef enum {
     BSW_ADC_RINGBUF_OK         =  0,
@@ -59,8 +64,9 @@ typedef enum {
  *
  * @note    前置依赖（按顺序）：mcal_clock_init → mcal_gpio_init →
  *          mcal_dma_init → mcal_timer_init → mcal_adc_init。
- *          内部会注册 ADC1 DMA 半传输 / 全传输回调，并启动 DMA 循环到模块
- *          内置的 512 点 buffer。Idempotent：重复调用幂等。
+ *          内部会注册 ADC1 DMA 半传输 / 全传输回调。
+ *          Idempotent：重复调用幂等。
+ *          **本函数不启动 TIM6 / DMA**，硬件通电由 enable() 按状态机控制。
  *
  * @retval  BSW_ADC_RINGBUF_OK
  *          BSW_ADC_RINGBUF_ERR_STATE
@@ -72,6 +78,22 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_init(void);
  * @note    上层需要切到 AD9833 发射等场景时可调，调完后 buffer 不可再读。
  */
 bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_deinit(void);
+
+/**
+ * @brief   启动 ADC 采样：清空 buffer → 启动 DMA → 启动 TIM6。
+ * @note    由节点状态机在进入 SCAN_LISTEN/SCAN/LINKED 态时调用，
+ *          对应协议 §6.2 "开启 10 kHz 连续采样"。
+ *          幂等：已在运行状态返回 OK。
+ */
+bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_enable(void);
+
+/**
+ * @brief   停止 ADC 采样：停 TIM6 → 停 DMA。
+ * @note    由节点状态机在进入 SLEEP/FAULT/TX 态时调用，
+ *          对应协议 §6.2 "关闭 10 kHz 连续采样，切入间歇巡检"。
+ *          幂等：已停止状态返回 OK。
+ */
+bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_disable(void);
 
 /**
  * @brief   抓取当前最新 400 个采样点快照，按时间正序填到 out。
@@ -96,6 +118,21 @@ bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_snapshot(uint16_t *out);
  * @retval  同上
  */
 bsw_adc_ringbuf_ret_t bsw_adc_ringbuf_read(uint32_t index_back, uint16_t *out);
+
+/**
+ * @brief   计算最近 400 个样本去 DC 后的均方值（RMS²）
+ *
+ * @details 用于 PRE_LINKED 状态判断"总线是否已有应答"：
+ *          - 有人回发 1010 突发 → 总线能量上升 → RMS² 超门槛 → 不是给我
+ *          - 静默 → RMS² 低于门槛 → 等我自己的槽点
+ *
+ * @note    算法：先估 DC（窗口均值），再算 sum((x-mean)²) / N
+ *          不开平方，调用方直接与 BSW_ADC_RINGBUF_SIGNAL_THRESHOLD 比较
+ *          栈使用 ~800 字节（400 × uint16_t snapshot 缓冲）
+ *
+ * @retval  去 DC 后均方值（uint32）；未 init 返回 0
+ */
+uint32_t bsw_adc_ringbuf_calc_rms_sq(void);
 
 #ifdef __cplusplus
 }
