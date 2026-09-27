@@ -75,6 +75,40 @@ typedef struct {
 #define SWEEP_FREQ_STEP   50
 #define SWEEP_FREQ_TOLERANCE_HZ  15   /**< 标称频点就近映射容差 ±15 Hz */
 
+/* ========== 频对决选参数（协议 §三） ========== */
+#define SWEEP_MIN_FREQ_GAP_HZ    150u   /**< 协议 §三：f1 - f0 最小间距 (Hz) */
+#define SWEEP_VALID_AMP_DELTA    50u    /**< 协议 §三：amp > noise_floor + 该值 才算有效信号
+                                        //   *   用于把 amp_table 里的"信号"和"噪声"区分开：
+                                        //   *   没有这个门限，19 格噪声密集抖动时会被误认为 19 个有效信号，
+                                        //   *   max+second_max 可能选出"噪声最强两格"导致 1010 回发失败 */
+#define SWEEP_DEFAULT_NOISE_FLOOR 100u  /**< 默认底噪估值（amp 单位），noise_floor 未在线测量时使用 */
+
+/* ========== PRE_LINKED 子状态机参数（协议 §4.2） ==========
+ *
+ * PRE_LINKED 三阶段：
+ *   PHASE1 QUIET_OBSERVE  等待本节点响应槽点 = my_id × BSW_NODE_REPLY_STEP_MS（200 ms）
+ *                         ├─ 每 40 ms 用 BSW ADC ringbuf 算 RMS²
+ *                         │   超 BSW_ADC_RINGBUF_SIGNAL_THRESHOLD → 别人抢在我前面回发
+ *                         │      → 退让回 SCAN_LISTEN（等下一轮扫频重新排槽）
+ *                         └─ 走到自己槽点（hard_id × 200 ms）还没人抢 → 进 PHASE2
+ *   PHASE2 SELF_REPLY     在 (f0, f1) 上交替 101010... 持续 PRE_REPLY_DURATION_MS（2 s）
+ *   PHASE3 WAIT_ACK       等井上 ACK（暂留空，等自载波解调 API 接入）
+ *
+ * 槽点时序常量由 BSW/bsw_node_id/bsw_node_id.h 提供：
+ *   BSW_NODE_REPLY_STEP_MS = 200 ms
+ *   bsw_node_id_get_reply_delay_ms() = my_id × 200 ms（本节点槽偏移）
+ */
+#define PRE_QUIET_OBSERVE_MAX_MS  4000U
+#define PRE_REPLY_DURATION_MS    2000U
+#define PRE_ACK_TIMEOUT_MS       2000U
+#define PRE_BFSK_BIT_PERIOD_MS   40U
+
+typedef enum {
+    PRE_QUIET_OBSERVE = 0,
+    PRE_SELF_REPLY    = 1,
+    PRE_WAIT_ACK      = 2,
+} pre_linked_phase_t;
+
 /* ========== 节点全局上下文 ========== */
 
 /**
@@ -104,8 +138,12 @@ typedef struct {
     /* ---- 休眠鉴别（协议 §6）---- */
     uint32_t           quiet_start_tick;    /**< 总线进入静默的时刻（清洁态鉴别） */
 
-    /* ---- PRE_LINKED 监测（协议 §4.2）---- */
-    uint32_t           pre_linked_last_check_tick;   /**< 上次 40ms 能量检查的时刻 */
+    /* ---- PRE_LINKED 子状态 ---- */
+    uint32_t           pre_linked_last_check_tick;
+    pre_linked_phase_t pre_linked_phase;
+    uint32_t           pre_phase_enter_tick;
+    uint8_t            self_reply_cur_is_f0;
+    uint32_t           self_reply_next_bit_tick;
 } app_node_ctx_t;
 
 /* ========== 公共 API ========== */
