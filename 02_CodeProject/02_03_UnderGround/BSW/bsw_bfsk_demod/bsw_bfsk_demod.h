@@ -55,13 +55,19 @@ typedef enum {
     BSW_BFSK_DEMOD_ERR_HW    = -3,   /* mcal_timer_ic 启动失败（占位） */
 } bsw_bfsk_demod_ret_t;
 
-/* ========== 解调结果（帧结构待定） ========== */
-/* TODO: 根据 ACK 帧格式最终确定字段 */
+/* ========== 解调结果（完整帧结构） ========== */
 typedef struct {
-    uint16_t f0_hz;            /* 当时的低频点（用于核对） */
-    uint16_t f1_hz;            /* 时的高频点 */
-    uint8_t  bit_count;        /* 实际解出的 bit 数 */
-    uint8_t  bit_buf[16];      /* bit 流（占位，待帧格式确定） */
+    /* 频率信息（用于核对） */
+    uint16_t f0_hz;            /* 当时的低频点 */
+    uint16_t f1_hz;            /* 当时的高频点 */
+    
+    /* 域级解析结果 */
+    uint8_t  frame_addr;       /* ADDR 域（DST(4) + SRC(4)） */
+    uint8_t  frame_type_info;  /* TYPE_INFO 域（TYPE(4) + MSG_NUM(4)） */
+    uint8_t  frame_seq;        /* SEQ 域 */
+    uint8_t  frame_len;        /* LEN 域（PAYLOAD 字节数，最大 10） */
+    uint8_t  frame_payload[10];/* PAYLOAD 域（最大 10 字节） */
+    uint8_t  frame_crc16[2];   /* CRC16 域（低字节在前） */
 } bsw_bfsk_demod_result_t;
 
 /* ========== 函数声明 ========== */
@@ -77,19 +83,25 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_init(void);
 
 /**
  * @brief   启动一次 ACK 帧的解调监听
- * @param   f0_hz       当前锁定低频点（Hz）
- * @param   f1_hz       当前锁定高频点（Hz）
- * @param   timeout_ms  监听超时（ms，协议 §4.2.3 给出上限）
+ * @param   f0_hz         当前锁定低频点（Hz）
+ * @param   f1_hz         当前锁定高频点（Hz）
+ * @param   bit_period_ms 每个 bit 持续时间（ms），协议层统一配置
+ * @param   timeout_ms    监听超时（ms，协议 §4.2.3 给出上限）
+ * @param   local_addr    本机地址（用于 ADDR 域早期过滤）
  * @retval  BSW_BFSK_DEMOD_OK / ERR_PARAM / ERR_STATE
  *
  * @note    1) 启用 TIM1 IC（mcal_timer_ic_start）
  *          2) 清空内部 bit 缓冲
  *          3) 启动超时计时器
  *          4) 状态置 RUNNING
+ *          5) 基于时间窗口解调：每个 bit_period_ms 窗口内对所有周期频率多数表决
+ *          6) 域级状态机：边解调边过滤（帧头检测 + 地址过滤）
  */
 bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
                                          uint16_t f1_hz,
-                                         uint32_t timeout_ms);
+                                         uint32_t bit_period_ms,
+                                         uint32_t timeout_ms,
+                                         uint8_t local_addr);
 
 /**
  * @brief   主动停止解调（状态机切走 / 复位 / 调试时用）

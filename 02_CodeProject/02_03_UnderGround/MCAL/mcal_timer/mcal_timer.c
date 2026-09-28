@@ -60,7 +60,10 @@ static void _tim1_init(void)
     TIM_IC_InitTypeDef     sConfigIC     = {0};
 
     s_htim1.Instance               = TIM1;
-    s_htim1.Init.Prescaler         = 0;
+    s_htim1.Init.Prescaler         = 7;     /* TIM1_CLK = 80MHz / (7+1) = 10MHz
+                                             * ARR=65535 → 最大半周期 = 6.55ms
+                                             * 支持最低频率 = 1/(2×6.55ms) = 76Hz
+                                             * (覆盖协议最低频点 125Hz) */
     s_htim1.Init.CounterMode       = TIM_COUNTERMODE_UP;
     s_htim1.Init.Period            = 65535;
     s_htim1.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;

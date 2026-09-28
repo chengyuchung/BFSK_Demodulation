@@ -63,10 +63,13 @@ extern "C" {
 void bsw_node_id_init(uint8_t hard_id);
 uint8_t bsw_node_id_get(void);
 
+/** 槽点未初始化时的哨兵值（表示"永不轮到"）*/
+#define BSW_NODE_ID_SLOT_INVALID    0xFFFFFFFFUL
+
 /**
  * @brief   取本节点槽起点（相对扫频结束时刻的延迟，单位 ms）
  * @return  LOCAL_ADDRESS × BSW_NODE_REPLY_STEP_MS
- * @note    未 init 时返回 0xFFFFFFFF（哨兵：永不轮到）
+ * @note    未 init 时返回 BSW_NODE_ID_SLOT_INVALID（哨兵：永不轮到）
  */
 uint32_t bsw_node_id_get_reply_delay_ms(void);
 

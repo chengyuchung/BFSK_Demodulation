@@ -74,6 +74,7 @@ typedef struct {
 #define SWEEP_FREQ_START  125
 #define SWEEP_FREQ_STEP   50
 #define SWEEP_FREQ_TOLERANCE_HZ  15   /**< 标称频点就近映射容差 ±15 Hz */
+#define SWEEP_FREQ_INDEX_INVALID 0xFFU /**< 无效频点索引（落在容差外/空白带） */
 
 /* ========== 频对决选参数（协议 §三） ========== */
 #define SWEEP_MIN_FREQ_GAP_HZ    150u   /**< 协议 §三：f1 - f0 最小间距 (Hz) */
@@ -82,6 +83,12 @@ typedef struct {
                                         //   *   没有这个门限，19 格噪声密集抖动时会被误认为 19 个有效信号，
                                         //   *   max+second_max 可能选出"噪声最强两格"导致 1010 回发失败 */
 #define SWEEP_DEFAULT_NOISE_FLOOR 100u  /**< 默认底噪估值（amp 单位），noise_floor 未在线测量时使用 */
+#define SWEEP_MIN_VALID_FREQ_CNT  2u    /**< 频对决选最少需要的有效频点数 */
+#define SWEEP_SESSION_TIMEOUT_MS  850U  /**< 协议 §二：扫频会话硬超时（毫秒） */
+
+/* ========== 时间常量 ========== */
+#define BUS_QUIET_TIMEOUT_MS      3000U /**< 协议 §6.2：总线静默判定超时（降级休眠） */
+#define ADC_CHECK_PERIOD_MS       40U   /**< PRE_LINKED PHASE1 ADC 能量检测周期 */
 
 /* ========== PRE_LINKED 子状态机参数（协议 §4.2） ==========
  *
@@ -101,7 +108,12 @@ typedef struct {
 #define PRE_QUIET_OBSERVE_MAX_MS  4000U
 #define PRE_REPLY_DURATION_MS    2000U
 #define PRE_ACK_TIMEOUT_MS       2000U
-#define PRE_BFSK_BIT_PERIOD_MS   40U
+#define PRE_BFSK_BIT_PERIOD_MS   40U    /* 40 ms/bit：实用平衡点
+                                          * f0=125Hz → 5 周期（多数表决，容错2个 = 40%噪声率）
+                                          * f1=1025Hz → 41 周期（极高稳定性）
+                                          * 速率 = 25 bps（比 50ms 快 25%）
+                                          * 2000ms 应答 → 50 bit（充足）
+                                          * 单帧(200bit) = 8s（优秀）*/
 
 typedef enum {
     PRE_QUIET_OBSERVE = 0,

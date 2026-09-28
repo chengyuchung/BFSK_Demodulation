@@ -24,7 +24,7 @@ uint8_t bsw_node_id_get(void)
 uint32_t bsw_node_id_get_reply_delay_ms(void)
 {
     if (s_node_id == BSW_NODE_ID_INVALID || s_node_id > BSW_NODE_ID_ADDR_MAX) {
-        return 0xFFFFFFFFu;   /* 哨兵：未初始化，永不轮到 */
+        return BSW_NODE_ID_SLOT_INVALID;   /* 哨兵：未初始化，永不轮到 */
     }
     return (uint32_t)s_node_id * BSW_NODE_REPLY_STEP_MS;
 }

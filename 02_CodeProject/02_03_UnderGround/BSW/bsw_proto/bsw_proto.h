@@ -85,8 +85,16 @@ extern "C" {
 
 #define PROTO_PAYLOAD_MAX       32u     /* 单帧 PAYLOAD 最大字节数（原始，未转义）*/
 #define PROTO_ADDR_NIBBLE_MASK  0x0Fu   /* 4 位地址掩码 */
-#define PROTO_ADDR_BROADCAST    0xFFu   /* 广播：本字节 ADDR 字段不出现该值，仅 src/dst 独立广播 */
 #define PROTO_SEQ_MAX           255u
+
+/* ========== 协议字段大小常量 ========== */
+#define PROTO_CRC16_SIZE        2u      /* CRC16 字段字节数 */
+#define PROTO_HEADER_SIZE       5u      /* HEAD + ADDR + TYPE_INFO + SEQ + LEN */
+#define PROTO_FIXED_SIZE        (PROTO_HEADER_SIZE + PROTO_CRC16_SIZE + 1u)  /* +1 为 TAIL */
+#define BITS_PER_BYTE           8u      /* 每字节位数 */
+
+/* ========== 协议字段偏移量（用于早期过滤）========== */
+#define PROTO_OFFSET_ADDR       2u      /* rx_len == 2 时完整接收到 ADDR 字段（索引 1）*/
 
 /** 整帧线缆字节上限（最坏情况：PAYLOAD 和 CRC16 每个字节都被转义成 2 字节）
  *      HEAD(1) + ADDR(1) + TYPE_INFO(1) + SEQ(1) + LEN(1)
@@ -312,6 +320,56 @@ proto_err_t proto_frame_validate(const uint8_t *buf, uint32_t buf_len);
 
 /** 按已知 TYPE 校验 MSG_NUM 是否在该 TYPE 的子表内（不做强类型检查，仅范围） */
 #define PROTO_MSG_NUM_IN_RANGE(m)  ((m) <= 0x0Fu)
+
+/* ========== 接收侧状态机（Bit 流 → 帧对象）========== */
+
+/**
+ * @brief   接收状态
+ */
+typedef enum {
+    PROTO_RX_IDLE,          /**< 空闲，等待数据 */
+    PROTO_RX_SYNCING,       /**< 搜索帧头 0xFF */
+    PROTO_RX_RECEIVING,     /**< 接收帧体（直到 TAIL） */
+    PROTO_RX_DONE,          /**< 接收完成，帧可取 */
+    PROTO_RX_ERROR,         /**< 接收错误（CRC 失败等） */
+} proto_rx_state_t;
+
+/**
+ * @brief   初始化接收状态机
+ * @param   local_addr  本机地址（用于早期地址过滤，0xF 表示接收所有）
+ * @retval  PROTO_ERR_OK
+ */
+proto_err_t proto_rx_init(uint8_t local_addr);
+
+/**
+ * @brief   喂入 bit 流（自动转字节 + 帧同步 + 解析）
+ * @param   bit_buf     bit 流缓冲（LSB first，即 buf[0] 的 bit0 是第一个 bit）
+ * @param   bit_count   bit 数（必须是 8 的倍数）
+ * @retval  PROTO_ERR_OK / PROTO_ERR_BAD_CRC / PROTO_ERR_* （解析错误）
+ * @note    内部状态机：
+ *          - IDLE → 搜索 HEAD 0xFF → RECEIVING
+ *          - RECEIVING → 累积字节直到 TAIL 0x00 → 调用 proto_frame_unpack()
+ *          - 成功 → DONE，失败 → ERROR
+ */
+proto_err_t proto_rx_feed_bits(const uint8_t *bit_buf, uint16_t bit_count);
+
+/**
+ * @brief   获取接收状态
+ */
+proto_rx_state_t proto_rx_get_state(void);
+
+/**
+ * @brief   取出解析好的帧（仅 PROTO_RX_DONE 状态有效）
+ * @param[out] out  输出帧对象
+ * @retval  PROTO_ERR_OK / PROTO_ERR_BUF_TOO_SMALL / PROTO_ERR_* （状态错误）
+ * @note    调用后状态机自动回到 IDLE
+ */
+proto_err_t proto_rx_take_frame(proto_frame_t *out);
+
+/**
+ * @brief   获取最后一次接收错误码（仅 PROTO_RX_ERROR 状态有效）
+ */
+proto_err_t proto_rx_get_last_error(void);
 
 #ifdef __cplusplus
 }
