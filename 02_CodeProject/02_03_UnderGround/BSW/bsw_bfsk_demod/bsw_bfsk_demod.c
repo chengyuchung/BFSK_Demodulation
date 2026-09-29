@@ -26,6 +26,11 @@
 #include <string.h>   /* memset */
 #include "main.h"     /* HAL_GetTick, TIM_HandleTypeDef */
 #include "mcal_timer.h"
+#include "mcal_gpio.h"  /* 比较器电路使能控制 */
+
+/* ========== 比较器电路控制宏 ========== */
+#define COMPARATOR_OPEN()   mcal_gpio_write(GPIO_PIN_COMP_EN, GPIO_HIGH)  /* 使能比较器电路 */
+#define COMPARATOR_CLOSE()  mcal_gpio_write(GPIO_PIN_COMP_EN, GPIO_LOW)   /* 关闭比较器电路（节省功耗） */
 
 /* ========== 解调配置参数 ========== */
 #define DEMOD_TIM1_CLK_HZ         10000000U   /* TIM1 时钟频率 (80MHz / 8 分频) */
@@ -367,6 +372,9 @@ static void _push_bit(uint8_t bit)
                 /* 停止硬件 */
                 mcal_timer_ic_stop(MCAL_TIMER_TIM1);
                 
+                /* 关闭比较器电路（节省功耗） */
+                COMPARATOR_CLOSE();
+                
                 /* 填充结果 */
                 s_ctx.result.f0_hz = s_ctx.f0_hz;
                 s_ctx.result.f1_hz = s_ctx.f1_hz;
@@ -455,7 +463,10 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
     
     /* 设置超时 */
     s_ctx.timeout_tick = HAL_GetTick() + timeout_ms;
-    
+
+    /* 使能比较器电路（正弦波→方波转换） */
+    COMPARATOR_OPEN();
+
     /* 启动 TIM1 IC */
     mcal_timer_ic_start(MCAL_TIMER_TIM1);
     
@@ -466,6 +477,10 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
 bsw_bfsk_demod_ret_t bsw_bfsk_demod_stop(void)
 {
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    
+    /* 关闭比较器电路（节省功耗） */
+    COMPARATOR_CLOSE();
+    
     _reset_bit_buffer();
     s_ctx.state = BSW_BFSK_DEMOD_IDLE;
     return BSW_BFSK_DEMOD_OK;
@@ -480,6 +495,9 @@ void bsw_bfsk_demod_run(uint32_t now_tick)
     /* 超时检查 */
     if (now_tick >= s_ctx.timeout_tick) {
         mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+        
+        /* 超时时先不关闭比较器（超时逻辑待理清） */
+        
         s_ctx.state = BSW_BFSK_DEMOD_DONE_TIMEOUT;
     }
 }

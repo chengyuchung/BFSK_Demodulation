@@ -19,6 +19,7 @@ static const gpio_pin_map_t s_gpio_map[] = {
     [GPIO_PIN_DS18B20]       = {DS18B20_GPIO_Port,            DS18B20_Pin},            /* PA2  */
     [GPIO_PIN_LED_STATUS]    = {LED_Control_GPIO_Port,        LED_Control_Pin},        /* PB5  */
     [GPIO_PIN_AD9833_FSYNC]  = {AD9833_FSYNC_GPIO_Port,       AD9833_FSYNC_Pin},       /* PC4  */
+    [GPIO_PIN_COMP_EN]       = {GPIOC,                        GPIO_PIN_10},            /* PC10 比较器电路使能（直接硬编码） */
 };
 
 /* ========== 引脚数量 ========== */
@@ -37,6 +38,19 @@ static GPIO_PinState _to_hal_level(uint8_t level)
 void mcal_gpio_init(void)
 {
     /* CubeMX MX_GPIO_Init() 已完成所有引脚初始化，MCAL 层无需重复配置 */
+    
+    /* PC10（比较器使能）：CubeMX 未配置，需要手动初始化 */
+    __HAL_RCC_GPIOC_CLK_ENABLE();  /* 确保 GPIOC 时钟已使能 */
+    
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin   = GPIO_PIN_10;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;     /* 推挽输出 */
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;             /* 无上下拉 */
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;     /* 低速即可 */
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    
+    /* 初始状态：关闭比较器电路（节省功耗） */
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
 }
 
 void mcal_gpio_write(uint8_t pin, uint8_t level)

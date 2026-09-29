@@ -9,7 +9,6 @@
  *   - §六  全生命周期休眠逻辑（清洁态鉴别）
  */
 
-/* ========== 魔术数字宏定义 ========== */
 #define BFSK_DEMOD_TIMEOUT_MS       5000U   /* BFSK 解调器接收超时（毫秒）*/
 #define SWEEP_SESSION_TIMEOUT_MS    850U    /* 扫频会话硬超时（毫秒，协议 §二 机制 A）*/
 #define BUS_QUIET_TIMEOUT_MS        3000U   /* 总线静默超时（毫秒，协议 §6.2）*/
@@ -40,6 +39,27 @@
 /* ========== 静态全局上下文 ========== */
 /* C 标准保证 static 存储期对象零初始化，无需 = {0}，避免与枚举混用的告警 */
 static app_node_ctx_t s_ctx;
+
+/* ========== 前向声明 ========== */
+static void _state_entry_boot(uint32_t now_tick);
+static void _state_entry_scan_listen(uint32_t now_tick);
+static void _state_entry_scan(uint32_t now_tick);
+static void _state_entry_pre_linked(uint32_t now_tick);
+static void _state_entry_linked(uint32_t now_tick);
+static void _state_entry_sleep(uint32_t now_tick);
+static void _state_entry_fault(uint32_t now_tick);
+
+static void _state_run_boot(uint32_t now_tick);
+static void _state_run_scan_listen(uint32_t now_tick);
+static void _state_run_scan(uint32_t now_tick);
+static void _state_run_pre_linked(uint32_t now_tick);
+static void _state_run_linked(uint32_t now_tick);
+static void _state_run_sleep(uint32_t now_tick);
+static void _state_run_fault(uint32_t now_tick);
+
+static void _phase_quiet_observe(uint32_t now_tick);
+static void _phase_self_reply(uint32_t now_tick);
+static void _phase_wait_ack(uint32_t now_tick);
 
 /* ========== 私有辅助 ========== */
 
@@ -170,95 +190,23 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick)
     s_ctx.state = next_state;
     s_ctx.state_enter_tick = now_tick;
 
-    /* ---- 状态进入动作（Entry Actions） ----
-     *
-     * ADC / TIM6（采样） vs TIM1 IC（解调）的状态归属：
-     *
-     *   | 状态          | ADC ringbuf | TIM6 | TIM1 IC | 用途                  |
-     *   |---------------|-------------|------|---------|-----------------------|
-     *   | BOOT          | disable     | stop | stop    | 时钟/外设初始化       |
-     *   | SCAN_LISTEN   | enable      | run  | stop    | 扫频全过程：填 19 格 amp_table |
-     *   | SCAN          | disable     | stop | stop    | 我们主动发频对通知     |
-     *   | PRE_LINKED    | enable      | run  | stop    | PHASE1 监测总线避让    |
-     *   | LINKED        | disable     | stop | start   | BFSK 帧收发           |
-     *   | SLEEP         | disable     | stop | stop    | 间歇休眠              |
-     *   | FAULT         | disable     | stop | stop    | 故障态静默            |
-     *
-     *   重要说明：
-     *     - SCAN_LISTEN 才是填 amp_table 的阶段（扫频检测）；
-     *     - PRE_LINKED PHASE1 需要 ADC 实时监测总线（避让逻辑）；
-     *     - LINKED 切到 TIM1 IC 硬件解调，不再需要 ADC；
-     *     - on_sweep_detected() 在 SCAN_LISTEN 内被多次调用，每次写一格；
-     *     - 850 ms 倒计时从首次命中起算，到期后由 run() 自动结算。
-     */
-    switch (next_state) {
-        case NODE_BOOT:
-            bsw_adc_ringbuf_disable();
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            break;
+    /* 调用对应状态的 entry 函数 */
+    typedef void (*state_entry_t)(uint32_t);
+    static const state_entry_t s_entry_table[] = {
+        [NODE_BOOT]        = _state_entry_boot,
+        [NODE_SCAN_LISTEN] = _state_entry_scan_listen,
+        [NODE_SCAN]        = _state_entry_scan,
+        [NODE_PRE_LINKED]  = _state_entry_pre_linked,
+        [NODE_LINKED]      = _state_entry_linked,
+        [NODE_SLEEP]       = _state_entry_sleep,
+        [NODE_FAULT]       = _state_entry_fault,
+    };
 
-        case NODE_SCAN_LISTEN:
-            bsw_adc_ringbuf_enable();
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
-            s_ctx.sweep_start_tick   = 0;
-            s_ctx.sweep_timeout_tick = 0;
-            break;
-
-        case NODE_SCAN:
-            bsw_adc_ringbuf_disable();
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            /* 850 ms 倒计时接力继承自 SCAN_LISTEN 阶段首次命中时刻，
-             * 不重新设 now_tick，避免双重倒计时 */
-            if (s_ctx.sweep_start_tick == SWEEP_NOT_STARTED) {
-                s_ctx.sweep_start_tick   = now_tick;
-                s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
-            }
-            break;
-
-        case NODE_LINKED:
-            bsw_adc_ringbuf_disable();
-            mcal_timer_ic_start(MCAL_TIMER_TIM1);
-            
-            /* 初始化协议层接收状态机（传入本机地址进行早期过滤）*/
-            proto_rx_init(s_ctx.hard_id);
-            
-            /* 启动 BFSK 解调器（使用当前锁定的频对，传入本机地址用于早期过滤）*/
-            if (s_ctx.cur_freq.f0_hz != FREQ_NOT_LOCKED && s_ctx.cur_freq.f1_hz != FREQ_NOT_LOCKED) {
-                bsw_bfsk_demod_start(s_ctx.cur_freq.f0_hz,
-                                    s_ctx.cur_freq.f1_hz,
-                                    PRE_BFSK_BIT_PERIOD_MS,  /* 40 ms/bit */
-                                    BFSK_DEMOD_TIMEOUT_MS,
-                                    s_ctx.hard_id);          /* 本机地址用于域级过滤 */
-            }
-            break;
-
-        case NODE_SLEEP:
-            bsw_adc_ringbuf_disable();
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            break;
-
-        case NODE_PRE_LINKED:
-            /* 启动三段子状态机，初始 phase = QUIET_OBSERVE（协议 §4.2.1）
-             * PHASE1 实际等待时长 = bsw_node_id_get_reply_delay_ms() = hard_id × 200 ms
-             *     中继 1：200 ms    中继 2：400 ms    井下：3000 ms
-             * 注：PHASE1 内部用 40 ms 节拍器调 bsw_adc_ringbuf_calc_rms_sq() 检测应答
-             *     → 必须启动 ADC 采样，清除 SCAN_LISTEN 残留的扫频信号 */
-            bsw_adc_ringbuf_enable();  /* 清零 buffer + 启动实时采样 */
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            s_ctx.pre_linked_last_check_tick = now_tick;
-            s_ctx.pre_linked_phase           = PRE_QUIET_OBSERVE;
-            s_ctx.pre_phase_enter_tick       = now_tick;
-            s_ctx.self_reply_cur_is_f0       = true;
-            break;
-
-        case NODE_FAULT:
-            bsw_adc_ringbuf_disable();
-            mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-            break;
-
-        default:
-            break;
+    if (next_state < sizeof(s_entry_table) / sizeof(s_entry_table[0])) {
+        state_entry_t entry_fn = s_entry_table[next_state];
+        if (entry_fn != NULL) {
+            entry_fn(now_tick);
+        }
     }
 }
 
@@ -272,12 +220,94 @@ static bool _is_bus_quiet(uint32_t now_tick)
            && ((now_tick - s_ctx.quiet_start_tick) >= BUS_QUIET_TIMEOUT_MS);
 }
 
-/* PRE_LINKED 三段子状态机（表驱动）*/
-typedef void (*phase_handler_t)(uint32_t now_tick);
+/* ========== 状态进入函数（Entry Actions） ========== 
+ *
+ * ADC / TIM6（采样） vs TIM1 IC（解调）的状态归属：
+ *
+ *   | 状态          | ADC ringbuf | TIM6 | TIM1 IC | 用途                  |
+ *   |---------------|-------------|------|---------|-----------------------|
+ *   | BOOT          | disable     | stop | stop    | 时钟/外设初始化       |
+ *   | SCAN_LISTEN   | enable      | run  | stop    | 扫频全过程：填 19 格 amp_table |
+ *   | SCAN          | disable     | stop | stop    | 我们主动发频对通知     |
+ *   | PRE_LINKED    | enable      | run  | stop    | PHASE1 监测总线避让    |
+ *   | LINKED        | disable     | stop | start   | BFSK 帧收发           |
+ *   | SLEEP         | disable     | stop | stop    | 间歇休眠              |
+ *   | FAULT         | disable     | stop | stop    | 故障态静默            |
+ */
 
-static void _phase_quiet_observe(uint32_t now_tick);
-static void _phase_self_reply(uint32_t now_tick);
-static void _phase_wait_ack(uint32_t now_tick);
+static void _state_entry_boot(uint32_t now_tick)
+{
+    (void)now_tick;
+    bsw_adc_ringbuf_disable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+}
+
+static void _state_entry_scan_listen(uint32_t now_tick)
+{
+    (void)now_tick;
+    bsw_adc_ringbuf_enable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
+    s_ctx.sweep_start_tick   = 0;
+    s_ctx.sweep_timeout_tick = 0;
+}
+
+static void _state_entry_scan(uint32_t now_tick)
+{
+    bsw_adc_ringbuf_disable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    /* 850 ms 倒计时接力继承自 SCAN_LISTEN 阶段首次命中时刻 */
+    if (s_ctx.sweep_start_tick == SWEEP_NOT_STARTED) {
+        s_ctx.sweep_start_tick   = now_tick;
+        s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
+    }
+}
+
+static void _state_entry_pre_linked(uint32_t now_tick)
+{
+    bsw_adc_ringbuf_enable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    s_ctx.pre_linked_last_check_tick = now_tick;
+    s_ctx.pre_linked_phase           = PRE_QUIET_OBSERVE;
+    s_ctx.pre_phase_enter_tick       = now_tick;
+    s_ctx.self_reply_cur_is_f0       = true;
+    s_ctx.pre_ack_retry_count        = 0;
+}
+
+static void _state_entry_linked(uint32_t now_tick)
+{
+    (void)now_tick;
+    bsw_adc_ringbuf_disable();
+    mcal_timer_ic_start(MCAL_TIMER_TIM1);
+    
+    proto_rx_init(s_ctx.hard_id);
+    
+    if (s_ctx.cur_freq.f0_hz != FREQ_NOT_LOCKED && s_ctx.cur_freq.f1_hz != FREQ_NOT_LOCKED) {
+        bsw_bfsk_demod_start(s_ctx.cur_freq.f0_hz,
+                            s_ctx.cur_freq.f1_hz,
+                            PRE_BFSK_BIT_PERIOD_MS,
+                            BFSK_DEMOD_TIMEOUT_MS,
+                            s_ctx.hard_id);
+    }
+}
+
+static void _state_entry_sleep(uint32_t now_tick)
+{
+    (void)now_tick;
+    bsw_adc_ringbuf_disable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+}
+
+static void _state_entry_fault(uint32_t now_tick)
+{
+    (void)now_tick;
+    bsw_adc_ringbuf_disable();
+    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+}
+
+/* ========== PRE_LINKED 子状态机 ========== */
+
+typedef void (*phase_handler_t)(uint32_t now_tick);
 
 static const phase_handler_t s_phase_handlers[] = {
     [PRE_QUIET_OBSERVE] = _phase_quiet_observe,
@@ -334,9 +364,18 @@ static void _phase_quiet_observe(uint32_t now_tick)
 static void _phase_self_reply(uint32_t now_tick)
 {
     if ((now_tick - s_ctx.pre_phase_enter_tick) >= PRE_REPLY_DURATION_MS) {
-    (void)bsw_ad9833_sleep(true);
-    s_ctx.pre_linked_phase     = PRE_WAIT_ACK;
-    s_ctx.pre_phase_enter_tick = now_tick;
+        /* 2s 发送完毕，进入 PHASE3 等待 ACK */
+        (void)bsw_ad9833_sleep(true);
+        
+        /* 启动 BFSK 解调器监听井上 ACK */
+        bsw_bfsk_demod_start(s_ctx.cur_freq.f0_hz,
+                            s_ctx.cur_freq.f1_hz,
+                            PRE_BFSK_BIT_PERIOD_MS,
+                            PRE_ACK_TIMEOUT_MS,     /* 5s 超时 */
+                            s_ctx.hard_id);
+        
+        s_ctx.pre_linked_phase     = PRE_WAIT_ACK;
+        s_ctx.pre_phase_enter_tick = now_tick;
         return;
     }
     if ((int32_t)(now_tick - s_ctx.self_reply_next_bit_tick) < 0) {
@@ -352,19 +391,227 @@ static void _phase_self_reply(uint32_t now_tick)
     s_ctx.self_reply_next_bit_tick = now_tick + PRE_BFSK_BIT_PERIOD_MS;
 }
 
-/* PHASE3：等井上 ACK（解调 API 未就绪，暂留空）*/
+/* PHASE3：等井上 ACK */
 static void _phase_wait_ack(uint32_t now_tick)
 {
-    (void)now_tick;
-    /* TODO: on_ack_received() 接入后切到 NODE_LINKED；超时回退后续补 */
+    bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
+    
+    if (demod_state == BSW_BFSK_DEMOD_DONE_OK) {
+        /* 收到帧，检查是否为 ACK */
+        bsw_bfsk_demod_result_t demod_result;
+        if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK) {
+            /* 解析帧类型：取 type_info 高 4 位 */
+            uint8_t frame_type = (demod_result.frame_type_info >> 4) & 0x0F;
+            uint8_t msg_num    = demod_result.frame_type_info & 0x0F;
+            
+            /* 检查是否为 REPLY 类型 + REPLY_FREQ_PAIR 消息（井上确认频对）
+             * PROTO_TYPE_REPLY = 0x3, PROTO_REPLY_FREQ_PAIR = 0x0 */
+            if (frame_type == 0x3 && msg_num == 0x0) {
+                
+                /* 解析载荷：[f0_hz(2)][f1_hz(2)] 小端序 */
+                if (demod_result.frame_len >= 4) {
+                    uint16_t ack_f0 = demod_result.frame_payload[0] | (demod_result.frame_payload[1] << 8);
+                    uint16_t ack_f1 = demod_result.frame_payload[2] | (demod_result.frame_payload[3] << 8);
+                    
+                    /* 验证频对是否匹配 */
+                    if (ack_f0 == s_ctx.cur_freq.f0_hz && ack_f1 == s_ctx.cur_freq.f1_hz) {
+                        /* ACK 确认成功，进入 LINKED 工作态 */
+                        bsw_bfsk_demod_stop();
+                        _state_transition(NODE_LINKED, now_tick);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        /* 收到其他帧，继续等待（不重启解调器，继续监听）*/
+        return;
+    }
+    else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
+        /* 超时处理 */
+        bsw_bfsk_demod_stop();
+        
+        if (s_ctx.pre_ack_retry_count < PRE_ACK_MAX_RETRY) {
+            /* 还有重试机会，重新回到 PHASE2 发送 1010 */
+            s_ctx.pre_ack_retry_count++;
+            
+            /* 唤醒 AD9833，重新配置频点 */
+            (void)bsw_ad9833_sleep(false);
+            (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, s_ctx.cur_freq.f0_hz);
+            (void)bsw_ad9833_set_freq(BSW_AD9833_REG_1, s_ctx.cur_freq.f1_hz);
+            (void)bsw_ad9833_select(BSW_AD9833_REG_0);
+            
+            s_ctx.pre_linked_phase         = PRE_SELF_REPLY;
+            s_ctx.pre_phase_enter_tick     = now_tick;
+            s_ctx.self_reply_cur_is_f0     = true;
+            s_ctx.self_reply_next_bit_tick = now_tick + PRE_BFSK_BIT_PERIOD_MS;
+        } else {
+            /* 重试次数用尽，清空频点，重新扫频 */
+            s_ctx.cur_freq.f0_hz     = 0;
+            s_ctx.cur_freq.f1_hz     = 0;
+            s_ctx.sweep_result.f0_hz = 0;
+            s_ctx.sweep_result.f1_hz = 0;
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+    }
+    /* 其他状态（IDLE/RUNNING）继续等待 */
 }
 
-static void _pre_linked_run(uint32_t now_tick)
+/* ========== 状态运行函数（Run Actions） ========== */
+
+static void _state_run_boot(uint32_t now_tick)
+{
+    (void)now_tick;
+    /* BOOT 状态无运行逻辑，等待外部切换 */
+}
+
+static void _state_run_scan_listen(uint32_t now_tick)
+{
+    /* 850 ms 会话硬超时检查（协议 §二 机制 A） */
+    if (s_ctx.sweep_start_tick != SWEEP_NOT_STARTED
+        && (now_tick - s_ctx.sweep_start_tick) >= SWEEP_SESSION_TIMEOUT_MS) {
+        uint8_t cnt = 0;
+        for (int i = 0; i < SWEEP_FREQ_COUNT; ++i) {
+            if (s_ctx.sweep_amp_table[i] > SWEEP_AMP_VALID_THRESHOLD) {
+                ++cnt;
+            }
+        }
+        s_ctx.sweep_start_tick   = SWEEP_NOT_STARTED;
+        s_ctx.sweep_timeout_tick = SWEEP_NOT_STARTED;
+        app_node_fsm_on_sweep_complete(cnt);
+    }
+}
+
+static void _state_run_scan(uint32_t now_tick)
+{
+    if ((now_tick - s_ctx.sweep_start_tick) >= SWEEP_SESSION_TIMEOUT_MS) {
+        uint8_t cnt = 0;
+        for (int i = 0; i < SWEEP_FREQ_COUNT; ++i) {
+            if (s_ctx.sweep_amp_table[i] > SWEEP_AMP_VALID_THRESHOLD) {
+                ++cnt;
+            }
+        }
+        app_node_fsm_on_sweep_complete(cnt);
+    }
+}
+
+static void _state_run_pre_linked(uint32_t now_tick)
 {
     phase_handler_t h = s_phase_handlers[s_ctx.pre_linked_phase];
     if (h != NULL) {
         h(now_tick);
     }
+}
+
+/* ========== LINKED 状态帧处理（函数表驱动） ========== */
+
+typedef void (*frame_handler_t)(const proto_frame_t *frame);
+
+/* 帧类型处理函数（待实现） */
+static void _handle_query_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 QUERY 类型帧（温压/电池/故障查询）*/
+}
+
+static void _handle_control_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 CONTROL 类型帧（休眠/唤醒/阈值设置）*/
+}
+
+static void _handle_ask_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 ASK 类型帧（空闲确认）*/
+}
+
+static void _handle_reply_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 REPLY 类型帧（频点确认/ACK/NACK/重传请求）*/
+}
+
+static void _handle_alarm_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 ALARM 类型帧（低电/温度/压力/传感器故障）*/
+}
+
+static void _handle_scan_frame(const proto_frame_t *frame)
+{
+    (void)frame;
+    /* TODO: 处理 SCAN 类型帧（扫频起始/结束）*/
+}
+
+/* 帧类型分发表（索引对齐 proto_type_t 枚举）*/
+static const frame_handler_t s_frame_handlers[] = {
+    [PROTO_TYPE_QUERY]    = _handle_query_frame,    /* 0x0 */
+    [PROTO_TYPE_CONTROL]  = _handle_control_frame,  /* 0x1 */
+    [PROTO_TYPE_ASK]      = _handle_ask_frame,      /* 0x2 */
+    [PROTO_TYPE_REPLY]    = _handle_reply_frame,    /* 0x3 */
+    [PROTO_TYPE_ALARM]    = _handle_alarm_frame,    /* 0x4 */
+    [5] = NULL, [6] = NULL, [7] = NULL, [8] = NULL, /* 预留 */
+    [9] = NULL, [10] = NULL, [11] = NULL, [12] = NULL,
+    [PROTO_TYPE_SCAN]     = _handle_scan_frame,     /* 0xD */
+    [14] = NULL,
+    [PROTO_TYPE_RESERVED] = NULL,                   /* 0xF */
+};
+
+static void _state_run_linked(uint32_t now_tick)
+{
+    bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
+    
+    if (demod_state == BSW_BFSK_DEMOD_DONE_OK) {
+        bsw_bfsk_demod_result_t demod_result;
+        if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK) {
+            proto_frame_t frame;
+            frame.addr.dst = (demod_result.frame_addr >> 4) & 0x0F;
+            frame.addr.src = demod_result.frame_addr & 0x0F;
+            frame.type_info.type = (proto_type_t)((demod_result.frame_type_info >> 4) & 0x0F);
+            frame.type_info.msg_num = demod_result.frame_type_info & 0x0F;
+            frame.seq = demod_result.frame_seq;
+            frame.payload_len = demod_result.frame_len;
+            memcpy(frame.payload, demod_result.frame_payload, demod_result.frame_len);
+            
+            /* TODO: CRC16 校验（可选） */
+            
+            /* 根据帧类型分发到对应处理函数 */
+            if (frame.type_info.type < sizeof(s_frame_handlers) / sizeof(s_frame_handlers[0])) {
+                frame_handler_t handler = s_frame_handlers[frame.type_info.type];
+                if (handler != NULL) {
+                    handler(&frame);
+                }
+            }
+            
+            app_node_fsm_flag_set(XACT_RX_UP_OK);
+        }
+    }
+    else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
+        bsw_bfsk_demod_stop();
+        /* 根据需要重新启动 */
+    }
+    
+    /* 断链检测 */
+    if ((s_ctx.flags.flag_fwd_up_ok == false)
+        && (s_ctx.flags.flag_fwd_dn_ok == false)) {
+        if (_is_bus_quiet(now_tick)) {
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+    }
+}
+
+static void _state_run_sleep(uint32_t now_tick)
+{
+    if (!app_node_fsm_is_clean()) {
+        _state_transition(NODE_SCAN_LISTEN, now_tick);
+    }
+}
+
+static void _state_run_fault(uint32_t now_tick)
+{
+    (void)now_tick;
+    /* FAULT 状态静默，等待外部复位 */
 }
 
 /* ========== 公共 API 实现 ========== */
@@ -384,121 +631,23 @@ void app_node_fsm_init(uint8_t hard_id)
 
 void app_node_fsm_run(uint32_t now_tick)
 {
-    switch (s_ctx.state) {
+    /* 状态运行函数表 */
+    typedef void (*state_run_t)(uint32_t);
+    static const state_run_t s_run_table[] = {
+        [NODE_BOOT]        = _state_run_boot,
+        [NODE_SCAN_LISTEN] = _state_run_scan_listen,
+        [NODE_SCAN]        = _state_run_scan,
+        [NODE_PRE_LINKED]  = _state_run_pre_linked,
+        [NODE_LINKED]      = _state_run_linked,
+        [NODE_SLEEP]       = _state_run_sleep,
+        [NODE_FAULT]       = _state_run_fault,
+    };
 
-        case NODE_BOOT:
-            break;
-
-        /* -------------------------------------------------------- */
-        case NODE_SCAN_LISTEN:
-            /* 850 ms 会话硬超时检查（协议 §二 机制 A）：
-             *   - 倒计时从首次 on_sweep_detected 调用起算；
-             *   - 到期后强制结算（哪怕 amp_table 没填满）；
-             *   - 由 run() 在每 10 ms 主循环钩中检查触发。 */
-            if (s_ctx.sweep_start_tick != SWEEP_NOT_STARTED
-                && (now_tick - s_ctx.sweep_start_tick) >= SWEEP_SESSION_TIMEOUT_MS) {
-                uint8_t cnt = 0;
-                for (int i = 0; i < SWEEP_FREQ_COUNT; ++i) {
-                    if (s_ctx.sweep_amp_table[i] > SWEEP_AMP_VALID_THRESHOLD) {
-                        ++cnt;
-                    }
-                }
-                s_ctx.sweep_start_tick   = SWEEP_NOT_STARTED;
-                s_ctx.sweep_timeout_tick = SWEEP_NOT_STARTED;
-                app_node_fsm_on_sweep_complete(cnt);
-            }
-            break;
-
-        /* -------------------------------------------------------- */
-        case NODE_SCAN: {
-            if ((now_tick - s_ctx.sweep_start_tick) >= SWEEP_SESSION_TIMEOUT_MS) {
-                uint8_t cnt = 0;
-                for (int i = 0; i < SWEEP_FREQ_COUNT; ++i) {
-                    if (s_ctx.sweep_amp_table[i] > SWEEP_AMP_VALID_THRESHOLD) {
-                        ++cnt;
-                    }
-                }
-                app_node_fsm_on_sweep_complete(cnt);
-            }
-            break;
+    if (s_ctx.state < sizeof(s_run_table) / sizeof(s_run_table[0])) {
+        state_run_t run_fn = s_run_table[s_ctx.state];
+        if (run_fn != NULL) {
+            run_fn(now_tick);
         }
-
-        /* -------------------------------------------------------- */
-        case NODE_PRE_LINKED: {
-            _pre_linked_run(now_tick);
-            break;
-        }
-
-        /* -------------------------------------------------------- */
-        case NODE_LINKED: {
-            /* 工作态：4 标志位驱动断链检测。
-             * 若链路断开（总线静默超时），退回 SCAN_LISTEN 重新扫频。 */
-            
-            /* 检查 BFSK 解调器状态 */
-            bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
-            
-            if (demod_state == BSW_BFSK_DEMOD_DONE_OK) {
-                /* 解调完成，取出域级解析结果 */
-                bsw_bfsk_demod_result_t demod_result;
-                if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK) {
-                    /* 直接从解调器获取完整帧数据（已过滤帧头 + 地址） */
-                    proto_frame_t frame;
-                    frame.addr.dst = (demod_result.frame_addr >> 4) & 0x0F;
-                    frame.addr.src = demod_result.frame_addr & 0x0F;
-                    frame.type_info.type = (proto_type_t)((demod_result.frame_type_info >> 4) & 0x0F);
-                    frame.type_info.msg_num = demod_result.frame_type_info & 0x0F;
-                    frame.seq = demod_result.frame_seq;
-                    frame.payload_len = demod_result.frame_len;
-                    memcpy(frame.payload, demod_result.frame_payload, demod_result.frame_len);
-                    
-                    /* TODO: CRC16 校验（可选）
-                     * uint16_t crc_recv = demod_result.frame_crc16[0] | (demod_result.frame_crc16[1] << 8);
-                     * uint16_t crc_calc = proto_calc_crc16(...);
-                     * if (crc_recv != crc_calc) { ... }
-                     */
-                    
-                    /* 处理接收到的帧 */
-                    /* TODO: 根据 frame.type_info.type 分发到不同处理函数
-                     * - QUERY → 准备应答数据
-                     * - CONTROL → 执行控制命令
-                     * - ASK → 回复 READY
-                     * - ALARM → 记录/转发
-                     */
-                    
-                    /* 示例：设置事务标志位 */
-                    app_node_fsm_flag_set(XACT_RX_UP_OK);
-                }
-                
-                /* 重启解调器，继续监听（如果需要继续接收）*/
-                /* bsw_bfsk_demod_start(...); */
-            }
-            else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
-                /* 解调超时，重启 */
-                bsw_bfsk_demod_stop();
-                /* 根据需要重新启动 */
-            }
-            
-            /* 断链检测 */
-            if ((s_ctx.flags.flag_fwd_up_ok == false)
-                && (s_ctx.flags.flag_fwd_dn_ok == false)) {
-                if (_is_bus_quiet(now_tick)) {
-                    _state_transition(NODE_SCAN_LISTEN, now_tick);
-                }
-            }
-            break;
-        }
-
-        /* -------------------------------------------------------- */
-        case NODE_SLEEP: {
-            if (!app_node_fsm_is_clean()) {
-                _state_transition(NODE_SCAN_LISTEN, now_tick);
-            }
-            break;
-        }
-
-        /* -------------------------------------------------------- */
-        case NODE_FAULT:
-            break;
     }
 }
 
@@ -589,13 +738,25 @@ void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1)
     _state_transition(NODE_LINKED, HAL_GetTick());
 }
 
+/* ========== 事务标志位操作 ========== */
+
 void app_node_fsm_flag_set(node_xact_bit_t bit)
 {
     switch (bit) {
-        case XACT_RX_UP_OK:  s_ctx.flags.flag_rx_up_ok  = true; break;
-        case XACT_FWD_DN_OK: s_ctx.flags.flag_fwd_dn_ok = true; break;
-        case XACT_RX_DN_OK:  s_ctx.flags.flag_rx_dn_ok  = true; break;
-        case XACT_FWD_UP_OK: s_ctx.flags.flag_fwd_up_ok = true; break;
+        case XACT_RX_UP_OK:
+            s_ctx.flags.flag_rx_up_ok = 1;
+            break;
+        case XACT_FWD_DN_OK:
+            s_ctx.flags.flag_fwd_dn_ok = 1;
+            break;
+        case XACT_RX_DN_OK:
+            s_ctx.flags.flag_rx_dn_ok = 1;
+            break;
+        case XACT_FWD_UP_OK:
+            s_ctx.flags.flag_fwd_up_ok = 1;
+            break;
+        default:
+            break;
     }
     s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
 }
@@ -603,10 +764,20 @@ void app_node_fsm_flag_set(node_xact_bit_t bit)
 void app_node_fsm_flag_clear(node_xact_bit_t bit)
 {
     switch (bit) {
-        case XACT_RX_UP_OK:  s_ctx.flags.flag_rx_up_ok  = false; break;
-        case XACT_FWD_DN_OK: s_ctx.flags.flag_fwd_dn_ok = false; break;
-        case XACT_RX_DN_OK:  s_ctx.flags.flag_rx_dn_ok  = false; break;
-        case XACT_FWD_UP_OK: s_ctx.flags.flag_fwd_up_ok = false; break;
+        case XACT_RX_UP_OK:
+            s_ctx.flags.flag_rx_up_ok = 0;
+            break;
+        case XACT_FWD_DN_OK:
+            s_ctx.flags.flag_fwd_dn_ok = 0;
+            break;
+        case XACT_RX_DN_OK:
+            s_ctx.flags.flag_rx_dn_ok = 0;
+            break;
+        case XACT_FWD_UP_OK:
+            s_ctx.flags.flag_fwd_up_ok = 0;
+            break;
+        default:
+            break;
     }
 }
 

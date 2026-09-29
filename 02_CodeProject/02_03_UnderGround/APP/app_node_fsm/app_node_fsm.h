@@ -107,13 +107,14 @@ typedef struct {
  */
 #define PRE_QUIET_OBSERVE_MAX_MS  4000U
 #define PRE_REPLY_DURATION_MS    2000U
-#define PRE_ACK_TIMEOUT_MS       2000U
+#define PRE_ACK_TIMEOUT_MS       5000U   /* PHASE3 等待 ACK 超时 5s */
+#define PRE_ACK_MAX_RETRY        1U      /* 最多重试 1 次（超时后重发 1010，再等 5s）*/
 #define PRE_BFSK_BIT_PERIOD_MS   40U    /* 40 ms/bit：实用平衡点
-                                          * f0=125Hz → 5 周期（多数表决，容错2个 = 40%噪声率）
-                                          * f1=1025Hz → 41 周期（极高稳定性）
-                                          * 速率 = 25 bps（比 50ms 快 25%）
-                                          * 2000ms 应答 → 50 bit（充足）
-                                          * 单帧(200bit) = 8s（优秀）*/
+                                        //   * f0=125Hz → 5 周期（多数表决，容错2个 = 40%噪声率）
+                                        //   * f1=1025Hz → 41 周期（极高稳定性）
+                                        //   * 速率 = 25 bps（比 50ms 快 25%）
+                                        //   * 2000ms 应答 → 50 bit（充足）
+                                        //   * 单帧(200bit) = 8s（优秀）*/
 
 typedef enum {
     PRE_QUIET_OBSERVE = 0,
@@ -156,6 +157,7 @@ typedef struct {
     uint32_t           pre_phase_enter_tick;
     uint8_t            self_reply_cur_is_f0;
     uint32_t           self_reply_next_bit_tick;
+    uint8_t            pre_ack_retry_count;         /**< PHASE3 重试计数（最多重试1次）*/
 } app_node_ctx_t;
 
 /* ========== 公共 API ========== */

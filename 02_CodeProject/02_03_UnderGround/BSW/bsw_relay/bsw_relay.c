@@ -6,7 +6,6 @@
 
 #include "bsw_relay.h"
 #include "mcal_gpio.h"
-#include "bsw_log.h"
 
 /* ========== 私有状态 ========== */
 static uint8_t               s_inited       = 0;
@@ -27,6 +26,12 @@ static uint8_t _to_gpio_level(uint8_t on)
     return on ? GPIO_HIGH : GPIO_LOW;
 }
 
+/* ========== 继电器控制宏 ========== */
+#define RELAY_OPEN    1   /* 逻辑打开（吸合） */
+#define RELAY_CLOSE   0   /* 逻辑关闭（断开） */
+
+#define RELAY_SET_GPIO(state)   mcal_gpio_write(GPIO_PIN_RELAY, _to_gpio_level(state))
+
 /* ================================================================ */
 /*                           公共接口实现                            */
 /* ================================================================ */
@@ -38,17 +43,12 @@ bsw_relay_ret_t bsw_relay_init(bsw_relay_active_t active, uint8_t default_state)
     }
 
     s_active_level = active;
-    s_state        = default_state ? 1 : 0;
+    s_state        = default_state ? RELAY_OPEN : RELAY_CLOSE;
 
     /* 应用默认状态到 GPIO */
-    mcal_gpio_write(GPIO_PIN_RELAY, _to_gpio_level(s_state));
+    RELAY_SET_GPIO(s_state);
 
     s_inited = 1;
-
-    bsw_log("[RELAY] init OK, active=%s, state=%s\r\n",
-            (active == BSW_RELAY_ACTIVE_HIGH) ? "HIGH" : "LOW",
-            s_state ? "ON" : "OFF");
-
     return BSW_RELAY_OK;
 }
 
@@ -57,11 +57,10 @@ bsw_relay_ret_t bsw_relay_on(void)
     if (!s_inited) {
         return BSW_RELAY_ERR_PARAM;
     }
-    if (s_state) return BSW_RELAY_OK;   /* 已在吸合状态，幂等 */
+    if (s_state == RELAY_OPEN) return BSW_RELAY_OK;   /* 已在吸合状态，幂等 */
 
-    s_state = 1;
-    mcal_gpio_write(GPIO_PIN_RELAY, _to_gpio_level(1));
-    bsw_log("[RELAY] ON\r\n");
+    s_state = RELAY_OPEN;
+    RELAY_SET_GPIO(RELAY_OPEN);
     return BSW_RELAY_OK;
 }
 
@@ -70,11 +69,10 @@ bsw_relay_ret_t bsw_relay_off(void)
     if (!s_inited) {
         return BSW_RELAY_ERR_PARAM;
     }
-    if (!s_state) return BSW_RELAY_OK;  /* 已在断开状态，幂等 */
+    if (s_state == RELAY_CLOSE) return BSW_RELAY_OK;  /* 已在断开状态，幂等 */
 
-    s_state = 0;
-    mcal_gpio_write(GPIO_PIN_RELAY, _to_gpio_level(0));
-    bsw_log("[RELAY] OFF\r\n");
+    s_state = RELAY_CLOSE;
+    RELAY_SET_GPIO(RELAY_CLOSE);
     return BSW_RELAY_OK;
 }
 
