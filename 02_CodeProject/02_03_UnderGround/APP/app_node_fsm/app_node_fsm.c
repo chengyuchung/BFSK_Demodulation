@@ -29,6 +29,7 @@
 #include "bsw_proto.h"           /* 协议层：帧解析 */
 #include "bsw_led.h"             /* LED 状态指示 */
 #include "bsw_freq_storage.h"    /* Flash 频点存储 */
+#include "bsw_version.h"         /* 版本管理 */
 
 /* ========== 静态全局上下文 ========== */
 /* C 标准保证 static 存储期对象零初始化，无需 = {0}，避免与枚举混用的告警 */
@@ -669,8 +670,68 @@ typedef void (*frame_handler_t)(const proto_frame_t *frame);
 /* 帧类型处理函数（待实现） */
 static void _handle_query_frame(const proto_frame_t *frame)
 {
-    (void)frame;
-    /* TODO: 处理 QUERY 类型帧（温压/电池/故障查询）*/
+    uint8_t local_addr = bsw_node_id_get();
+    
+    /* 地址过滤：不是发给我的就忽略 */
+    if (frame->addr.dst != local_addr) {
+        return;
+    }
+    
+    /* 根据查询类型处理 */
+    switch (frame->type_info.msg_num) {
+        case PROTO_QUERY_VERSION:
+        {
+            const bsw_version_info_t *ver = bsw_version_get_info();
+            
+            /* 准备回复帧 */
+            proto_frame_t reply;
+            reply.addr.dst = frame->addr.src;  /* 回复给查询方 */
+            reply.addr.src = local_addr;
+            reply.type_info.type = PROTO_TYPE_REPLY;
+            reply.type_info.msg_num = PROTO_REPLY_VERSION;
+            reply.seq = frame->seq;
+            reply.payload_len = PROTO_VERSION_PAYLOAD_SIZE;
+            
+            /* 打包版本号（小端格式）*/
+            reply.payload[0] = (uint8_t)((ver->sw_version_date >>  0) & 0xFFU);
+            reply.payload[1] = (uint8_t)((ver->sw_version_date >>  8) & 0xFFU);
+            reply.payload[2] = (uint8_t)((ver->sw_version_date >> 16) & 0xFFU);
+            reply.payload[3] = (uint8_t)((ver->sw_version_date >> 24) & 0xFFU);
+            reply.payload[4] = (uint8_t)((ver->hw_version_date >>  0) & 0xFFU);
+            reply.payload[5] = (uint8_t)((ver->hw_version_date >>  8) & 0xFFU);
+            reply.payload[6] = (uint8_t)((ver->hw_version_date >> 16) & 0xFFU);
+            reply.payload[7] = (uint8_t)((ver->hw_version_date >> 24) & 0xFFU);
+            
+            /* 发送回复帧（通过 proto_frame_pack 和 BFSK 调制）*/
+            uint8_t tx_buf[PROTO_FRAME_MAX];
+            uint32_t tx_len = 0;
+            proto_err_t err = proto_frame_pack(tx_buf, sizeof(tx_buf), &reply, &tx_len);
+            
+            if (err == PROTO_ERR_OK && tx_len > 0) {
+                /* TODO: 调用 BFSK 调制器发送 tx_buf，长度 tx_len
+                 * 示例：bsw_bfsk_mod_send(tx_buf, tx_len);
+                 * 注意：需要根据 active_link 选择正确的频点对
+                 */
+            }
+            break;
+        }
+        
+        case PROTO_QUERY_TEMP_PRESS:
+            /* TODO: 处理温压查询 */
+            break;
+            
+        case PROTO_QUERY_BATTERY:
+            /* TODO: 处理电池查询 */
+            break;
+            
+        case PROTO_QUERY_FAULT:
+            /* TODO: 处理故障查询 */
+            break;
+            
+        default:
+            /* 未知查询类型，忽略 */
+            break;
+    }
 }
 
 static void _handle_control_frame(const proto_frame_t *frame)
@@ -793,6 +854,7 @@ void app_node_fsm_init(uint8_t hard_id)
 
     bsw_node_id_init(hard_id);
     bsw_led_init();  /* 初始化 LED 指示灯 */
+    bsw_version_init();  /* 初始化版本模块 */
     
     /* 初始化 Flash 频点存储模块 */
     bsw_freq_storage_init();

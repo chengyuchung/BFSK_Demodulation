@@ -126,6 +126,7 @@ typedef enum {
     PROTO_QUERY_TEMP_PRESS = 0x0,   /**< 触发对方上报温压 */
     PROTO_QUERY_BATTERY    = 0x1,   /**< 触发对方上报电池电压/电量 */
     PROTO_QUERY_FAULT      = 0x2,   /**< 触发对方上报传感器故障 */
+    PROTO_QUERY_VERSION    = 0x3,   /**< 触发对方上报软硬件版本号（日期格式）*/
 } proto_query_msg_t;
 
 /** CONTROL - 控制帧（§6.2） */
@@ -149,6 +150,7 @@ typedef enum {
     PROTO_REPLY_ACK       = 0x2,    /**< (空) 业务帧接收成功 */
     PROTO_REPLY_NACK      = 0x3,    /**< 载荷 [err_code(1)] 接收失败，详见 proto_nack_code_t */
     PROTO_REPLY_RETRY_REQ = 0x4,    /**< (空) 请求重传 */
+    PROTO_REPLY_VERSION   = 0x5,    /**< 载荷 [sw_ver(4)][hw_ver(4)] 版本号回复（日期格式 YYYYMMDD）*/
 } proto_reply_msg_t;
 
 /** ALARM - 警报帧（§6.5） */
@@ -210,6 +212,30 @@ typedef enum {
     PROTO_LIMIT_BELOW_LOW  = 0x01,
     PROTO_LIMIT_ABOVE_HIGH = 0x02,
 } proto_alarm_limit_t;
+
+/* ========== 版本号载荷结构（日期格式 YYYYMMDD）========== */
+
+/**
+ * @brief   版本号载荷（用于 PROTO_REPLY_VERSION）
+ * 
+ * 版本号使用日期格式：YYYYMMDD
+ *   - 例如：20261007 表示 2026年10月7日编译的版本
+ *   - 存储为 4 字节（uint32_t），小端传输
+ * 
+ * 载荷格式（共 8 字节）：
+ *   [sw_version_date(4)] + [hw_version_date(4)]
+ * 
+ * @example
+ *   软件版本：20261007（2026年10月7日）
+ *   硬件版本：20260801（2026年8月1日）
+ */
+typedef struct {
+    uint32_t sw_version_date;  /**< 软件版本号（日期格式 YYYYMMDD）*/
+    uint32_t hw_version_date;  /**< 硬件版本号（日期格式 YYYYMMDD）*/
+} proto_version_payload_t;
+
+/** 版本号载荷字节数 */
+#define PROTO_VERSION_PAYLOAD_SIZE  8u
 
 /* ========== 解码后的帧对象 ========== */
 
