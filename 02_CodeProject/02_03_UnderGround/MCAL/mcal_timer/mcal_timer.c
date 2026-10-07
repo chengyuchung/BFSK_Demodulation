@@ -4,6 +4,7 @@
  * @note    原 main.c 的 MX_TIM1_Init / MX_TIM2_Init / MX_TIM6_Init 已移植到本文件
  *          - TIM1: 输入捕获（IC1上升沿 + IC2下降沿）
  *          - TIM2: 基础定时器，1ms 周期（80MHz / (79+1) / (999+1) = 1kHz）
+ *          - TIM3: 基础定时器，500ms 周期（80MHz / (39999+1) / (999+1) = 2Hz）
  *          - TIM6: 基础定时器，10μs 周期，TRGO 触发 ADC1
  *          - DWT 寄存器仍用于微秒级精确延时
  */
@@ -16,11 +17,13 @@ extern void Error_Handler(void);
 /* ========== 内部句柄 ========== */
 static TIM_HandleTypeDef s_htim1;
 static TIM_HandleTypeDef s_htim2;
+static TIM_HandleTypeDef s_htim3;
 static TIM_HandleTypeDef s_htim6;
 
 /* ========== Getter ========== */
 TIM_HandleTypeDef *mcal_timer_get_handle1(void) { return &s_htim1; }
 TIM_HandleTypeDef *mcal_timer_get_handle2(void) { return &s_htim2; }
+TIM_HandleTypeDef *mcal_timer_get_handle3(void) { return &s_htim3; }
 /* TIM6 通过 TRGO 硬件触发 ADC，不需要 IRQ 句柄访问器 */
 
 /* ========== DWT 微秒延时（保留） ========== */
@@ -127,6 +130,41 @@ static void _tim2_init(void)
 }
 
 /* ================================================================ */
+/*              原 MX_TIM3_Init 内容（500ms 基础定时器）              */
+/*  【2026-10-07 已停用】LED 改为 3 个独立 GPIO 控制，不再需要 TIM3  */
+/*  【预留】如需 LED 闪烁效果或其他周期任务时可取消注释启用         */
+/* ================================================================ */
+#if 0  /* TIM3 已停用，取消注释本段可重新启用 */
+static void _tim3_init(void)
+{
+    TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig      = {0};
+
+    s_htim3.Instance               = TIM3;
+    s_htim3.Init.Prescaler         = 39999;  /* 80MHz / (39999+1) = 2kHz */
+    s_htim3.Init.CounterMode       = TIM_COUNTERMODE_UP;
+    s_htim3.Init.Period            = 999;    /* 2kHz / (999+1) = 2Hz = 500ms */
+    s_htim3.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;
+    s_htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+    if (HAL_TIM_Base_Init(&s_htim3) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+    if (HAL_TIM_ConfigClockSource(&s_htim3, &sClockSourceConfig) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode     = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&s_htim3, &sMasterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+}
+#endif  /* TIM3 已停用 */
+
+/* ================================================================ */
 /*           原 MX_TIM6_Init 内容（10μs TRGO 触发 ADC）              */
 /* ================================================================ */
 static void _tim6_init(void)
@@ -157,6 +195,8 @@ void mcal_timer_init(void)
 {
     _tim1_init();
     _tim2_init();
+    /* _tim3_init();  // 【2026-10-07 已停用】LED 改为 3 个独立 GPIO 控制，不再需要 TIM3
+                       // 如需周期性任务（LED 闪烁/传感器轮询），取消注释即可启用 */
     _tim6_init();
     /* 注意：TIM6 此处不启动，由 bsw_adc_ringbuf_enable() 按状态控制 */
 }
@@ -174,6 +214,7 @@ void mcal_timer_base_start(mcal_timer_id_t id)
     switch (id) {
         case MCAL_TIMER_TIM1: htim = &s_htim1; break;
         case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM3: htim = &s_htim3; break;
         case MCAL_TIMER_TIM6: htim = &s_htim6; break;
         default: return;
     }
@@ -186,10 +227,35 @@ void mcal_timer_base_stop(mcal_timer_id_t id)
     switch (id) {
         case MCAL_TIMER_TIM1: htim = &s_htim1; break;
         case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM3: htim = &s_htim3; break;
         case MCAL_TIMER_TIM6: htim = &s_htim6; break;
         default: return;
     }
     (void)HAL_TIM_Base_Stop(htim);
+}
+
+/* ========== TIM 中断模式启停（TIM3 用于 LED 控制） ========== */
+
+void mcal_timer_base_start_it(mcal_timer_id_t id)
+{
+    TIM_HandleTypeDef *htim = NULL;
+    switch (id) {
+        case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM3: htim = &s_htim3; break;
+        default: return;
+    }
+    (void)HAL_TIM_Base_Start_IT(htim);
+}
+
+void mcal_timer_base_stop_it(mcal_timer_id_t id)
+{
+    TIM_HandleTypeDef *htim = NULL;
+    switch (id) {
+        case MCAL_TIMER_TIM2: htim = &s_htim2; break;
+        case MCAL_TIMER_TIM3: htim = &s_htim3; break;
+        default: return;
+    }
+    (void)HAL_TIM_Base_Stop_IT(htim);
 }
 
 /* ========== TIM1 输入捕获启停（仅供 BFSK 解调用，FSM 控制） ==========

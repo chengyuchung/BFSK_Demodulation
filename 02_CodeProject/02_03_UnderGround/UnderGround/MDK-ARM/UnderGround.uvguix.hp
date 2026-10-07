@@ -15,7 +15,7 @@
     <View>
       <WinId>38003</WinId>
       <ViewName>Registers</ViewName>
-      <TableColWidths>140 90</TableColWidths>
+      <TableColWidths>118 112</TableColWidths>
     </View>
     <View>
       <WinId>346</WinId>
@@ -93,8 +93,8 @@
       <flags>2</flags>
       <showCmd>3</showCmd>
       <MinPosition>
-        <xPos>-32000</xPos>
-        <yPos>-32000</yPos>
+        <xPos>-1</xPos>
+        <yPos>-1</yPos>
       </MinPosition>
       <MaxPosition>
         <xPos>-1</xPos>
@@ -1660,7 +1660,7 @@
       <Window>
         <RegID>50018</RegID>
         <PaneID>50018</PaneID>
-        <IsVisible>0</IsVisible>
+        <IsVisible>1</IsVisible>
         <IsFloating>0</IsFloating>
         <IsTabbed>0</IsTabbed>
         <IsActivated>0</IsActivated>
@@ -1670,11 +1670,11 @@
         <RecentRowIndex>0</RecentRowIndex>
         <RectRecentDocked>
           <Len>16</Len>
-          <Data>A3040000660000008D0500000D020000</Data>
+          <Data>F7000000660000008D05000081000000</Data>
         </RectRecentDocked>
         <RectRecentFloat>
           <Len>16</Len>
-          <Data>8A000000A10000007A0100006C010000</Data>
+          <Data>0A0000000A0000006E0000006E000000</Data>
         </RectRecentFloat>
       </Window>
       <Window>
@@ -1866,7 +1866,7 @@
       <Doc>
         <Name>../Core/Src/main.c</Name>
         <ColumnNumber>13</ColumnNumber>
-        <TopLine>10</TopLine>
+        <TopLine>12</TopLine>
         <CurrentLine>16</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
@@ -1875,7 +1875,7 @@
       <Doc>
         <Name>../../APP/app_task/app_task.c</Name>
         <ColumnNumber>21</ColumnNumber>
-        <TopLine>2</TopLine>
+        <TopLine>14</TopLine>
         <CurrentLine>18</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
@@ -1910,9 +1910,9 @@
       </Doc>
       <Doc>
         <Name>../../APP/app_node_fsm/app_node_fsm.c</Name>
-        <ColumnNumber>54</ColumnNumber>
-        <TopLine>435</TopLine>
-        <CurrentLine>445</CurrentLine>
+        <ColumnNumber>42</ColumnNumber>
+        <TopLine>440</TopLine>
+        <CurrentLine>447</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
@@ -1920,7 +1920,7 @@
       <Doc>
         <Name>../../BSW/bsw_bfsk_demod/bsw_bfsk_demod.c</Name>
         <ColumnNumber>2</ColumnNumber>
-        <TopLine>58</TopLine>
+        <TopLine>59</TopLine>
         <CurrentLine>63</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>

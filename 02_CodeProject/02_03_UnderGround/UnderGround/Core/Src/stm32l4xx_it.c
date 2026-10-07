@@ -79,6 +79,12 @@ void TIM2_IRQHandler(void)
     HAL_TIM_IRQHandler(mcal_timer_get_handle2());
 }
 
+/* TIM3 */
+void TIM3_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(mcal_timer_get_handle3());
+}
+
 /* USART1 */
 void USART1_IRQHandler(void)
 {

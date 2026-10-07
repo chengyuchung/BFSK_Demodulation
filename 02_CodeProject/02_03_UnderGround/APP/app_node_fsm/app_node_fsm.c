@@ -35,6 +35,7 @@
 #include "mcal_timer.h"          /* mcal_timer_ic_start/stop，FSM 直接控制 TIM1 输入捕获 */
 #include "bsw_bfsk_demod.h"      /* BFSK 解调器 */
 #include "bsw_proto.h"           /* 协议层：帧解析 */
+#include "bsw_led.h"             /* LED 状态指示 */
 
 /* ========== 静态全局上下文 ========== */
 /* C 标准保证 static 存储期对象零初始化，无需 = {0}，避免与枚举混用的告警 */
@@ -240,6 +241,7 @@ static void _state_entry_boot(uint32_t now_tick)
     (void)now_tick;
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    bsw_led_set_state(LED_STATE_ALL_OFF);
 }
 
 static void _state_entry_scan_listen(uint32_t now_tick)
@@ -250,6 +252,7 @@ static void _state_entry_scan_listen(uint32_t now_tick)
     memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
     s_ctx.sweep_start_tick   = 0;
     s_ctx.sweep_timeout_tick = 0;
+    bsw_led_set_state(LED_STATE_LISTEN);
 }
 
 static void _state_entry_scan(uint32_t now_tick)
@@ -261,6 +264,7 @@ static void _state_entry_scan(uint32_t now_tick)
         s_ctx.sweep_start_tick   = now_tick;
         s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
     }
+    bsw_led_set_state(LED_STATE_SCAN);
 }
 
 static void _state_entry_pre_linked(uint32_t now_tick)
@@ -272,6 +276,7 @@ static void _state_entry_pre_linked(uint32_t now_tick)
     s_ctx.pre_phase_enter_tick       = now_tick;
     s_ctx.self_reply_cur_is_f0       = true;
     s_ctx.pre_ack_retry_count        = 0;
+    bsw_led_set_state(LED_STATE_PRELINK);
 }
 
 static void _state_entry_linked(uint32_t now_tick)
@@ -289,6 +294,7 @@ static void _state_entry_linked(uint32_t now_tick)
                             BFSK_DEMOD_TIMEOUT_MS,
                             s_ctx.hard_id);
     }
+    bsw_led_set_state(LED_STATE_LINKED);
 }
 
 static void _state_entry_sleep(uint32_t now_tick)
@@ -296,6 +302,7 @@ static void _state_entry_sleep(uint32_t now_tick)
     (void)now_tick;
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    bsw_led_set_state(LED_STATE_ALL_OFF);
 }
 
 static void _state_entry_fault(uint32_t now_tick)
@@ -303,6 +310,7 @@ static void _state_entry_fault(uint32_t now_tick)
     (void)now_tick;
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+    bsw_led_set_state(LED_STATE_FAULT);
 }
 
 /* ========== PRE_LINKED 子状态机 ========== */
@@ -624,6 +632,7 @@ void app_node_fsm_init(uint8_t hard_id)
     s_ctx.noise_floor = SWEEP_DEFAULT_NOISE_FLOOR;
 
     bsw_node_id_init(hard_id);
+    bsw_led_init();  /* 初始化 LED 指示灯 */
 
     s_ctx.state_enter_tick = HAL_GetTick();
     _state_transition(NODE_SCAN_LISTEN, s_ctx.state_enter_tick);

@@ -17,7 +17,11 @@ static const gpio_pin_map_t s_gpio_map[] = {
     [GPIO_PIN_RELAY]         = {Relay_Control_GPIO_Port,      Relay_Control_Pin},      /* PA12 */
     [GPIO_PIN_AMP_EN]        = {0,                            0},                      /* 预留，BFSK 模块定义 */
     [GPIO_PIN_DS18B20]       = {DS18B20_GPIO_Port,            DS18B20_Pin},            /* PA2  */
-    [GPIO_PIN_LED_STATUS]    = {LED_Control_GPIO_Port,        LED_Control_Pin},        /* PB5  */
+    [GPIO_PIN_LED_LISTEN]    = {GPIOB,                        GPIO_PIN_5},             /* PB5 LED1：扫频监听态 */
+    [GPIO_PIN_LED_PRELINK]   = {GPIOB,                        GPIO_PIN_4},             /* PB4 LED2：预链接态 */
+    [GPIO_PIN_LED_LINK]      = {GPIOB,                        GPIO_PIN_3},             /* PB3 LED3：工作态 */
+    [GPIO_PIN_LED_SCAN]      = {GPIOD,                        GPIO_PIN_2},             /* PD2 LED4：扫频模式 */
+    [GPIO_PIN_LED_ERROR]     = {GPIOC,                        GPIO_PIN_12},            /* PC12 LED5：故障模式 */
     [GPIO_PIN_AD9833_FSYNC]  = {AD9833_FSYNC_GPIO_Port,       AD9833_FSYNC_Pin},       /* PC4  */
     [GPIO_PIN_COMP_EN]       = {GPIOC,                        GPIO_PIN_10},            /* PC10 比较器电路使能（直接硬编码） */
 };
@@ -39,18 +43,42 @@ void mcal_gpio_init(void)
 {
     /* CubeMX MX_GPIO_Init() 已完成所有引脚初始化，MCAL 层无需重复配置 */
     
-    /* PC10（比较器使能）：CubeMX 未配置，需要手动初始化 */
-    __HAL_RCC_GPIOC_CLK_ENABLE();  /* 确保 GPIOC 时钟已使能 */
-    
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin   = GPIO_PIN_10;
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;     /* 推挽输出 */
-    GPIO_InitStruct.Pull  = GPIO_NOPULL;             /* 无上下拉 */
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;     /* 低速即可 */
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     
-    /* 初始状态：关闭比较器电路（节省功耗） */
+    /* PC10（比较器使能）：CubeMX 未配置，需要手动初始化 */
+    __HAL_RCC_GPIOC_CLK_ENABLE();
+    GPIO_InitStruct.Pin   = GPIO_PIN_10;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
+    
+    /* PC12（LED_ERROR 故障指示灯）：CubeMX 未配置，需要手动初始化 */
+    GPIO_InitStruct.Pin   = GPIO_PIN_12;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, GPIO_PIN_RESET);
+    
+    /* PB3/PB4/PB5（3 个 LED）：CubeMX 可能只配置了 PB5，手动初始化所有 LED */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
+    GPIO_InitStruct.Pin   = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5, GPIO_PIN_RESET);
+    
+    /* PD2（LED_SCAN 扫频指示灯）：CubeMX 未配置，需要手动初始化 */
+    __HAL_RCC_GPIOD_CLK_ENABLE();
+    GPIO_InitStruct.Pin   = GPIO_PIN_2;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);
 }
 
 void mcal_gpio_write(uint8_t pin, uint8_t level)

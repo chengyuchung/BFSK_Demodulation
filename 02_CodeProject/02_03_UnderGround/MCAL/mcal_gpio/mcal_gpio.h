@@ -14,12 +14,16 @@ extern "C" {
 #include "main.h"
 
 /* ========== 宏定义：引脚编号（按项目实际分配） ========== */
-#define GPIO_PIN_RELAY        0    /* 继电器控制 */
-#define GPIO_PIN_AMP_EN       1    /* 功放使能 */
-#define GPIO_PIN_DS18B20      2    /* DS18B20 单总线数据脚 */
-#define GPIO_PIN_LED_STATUS   3    /* 状态指示灯 */
-#define GPIO_PIN_AD9833_FSYNC 4    /* AD9833 软件片选（PC4） */
-#define GPIO_PIN_COMP_EN      5    /* 比较器电路使能（正弦波→方波转换电路） */
+#define GPIO_PIN_RELAY         0    /* 继电器控制 */
+#define GPIO_PIN_AMP_EN        1    /* 功放使能 */
+#define GPIO_PIN_DS18B20       2    /* DS18B20 单总线数据脚 */
+#define GPIO_PIN_LED_LISTEN    3    /* LED1：扫频监听态指示灯（PB5，常亮） */
+#define GPIO_PIN_LED_PRELINK   4    /* LED2：预链接态指示灯（PB4，常亮） */
+#define GPIO_PIN_LED_LINK      5    /* LED3：工作态指示灯（PB3，常亮） */
+#define GPIO_PIN_LED_SCAN      6    /* LED4：扫频模式指示灯（PD2，常亮） */
+#define GPIO_PIN_LED_ERROR     7    /* LED5：故障模式指示灯（PC12，常亮） */
+#define GPIO_PIN_AD9833_FSYNC  8    /* AD9833 软件片选（PC4） */
+#define GPIO_PIN_COMP_EN       9    /* 比较器电路使能（正弦波→方波转换电路） */
 
 /* ========== 宏定义：电平 ========== */
 #define GPIO_LOW   0U

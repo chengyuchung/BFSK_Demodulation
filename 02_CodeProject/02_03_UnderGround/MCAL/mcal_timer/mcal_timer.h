@@ -4,6 +4,7 @@
  * @note    STM32L476 定时器统一管理：
  *              TIM1: 输入捕获（BFSK 信号测频）
  *              TIM2: 1ms 周期基础定时器
+ *              TIM3: 500ms 周期定时器（LINKED 工作模式心跳/超时管理）
  *              TIM6: 10us 周期定时器，TRGO 触发 ADC1
  *
  *          本层仅做两件事：
@@ -28,6 +29,7 @@ extern "C" {
 typedef enum {
     MCAL_TIMER_TIM1 = 0,
     MCAL_TIMER_TIM2,
+    MCAL_TIMER_TIM3,
     MCAL_TIMER_TIM6,
     MCAL_TIMER_MAX
 } mcal_timer_id_t;
@@ -35,7 +37,11 @@ typedef enum {
 /* ========== 函数声明 ========== */
 
 /**
- * @brief   初始化 TIM1（输入捕获）/ TIM2（1ms tick）/ TIM6（10us 触发 ADC）
+ * @brief   初始化 TIM1/TIM2/TIM3/TIM6
+ *          - TIM1: 输入捕获（BFSK 测频）
+ *          - TIM2: 1ms 周期
+ *          - TIM3: 500ms 周期（LINKED 工作模式心跳）
+ *          - TIM6: 10us 触发 ADC
  * @note    必须在 HAL_Init() 之后、调用 ADC 采集之前调用
  */
 void mcal_timer_init(void);
@@ -55,19 +61,31 @@ void mcal_timer_delay_us(uint32_t us);
 void mcal_timer_delay_ms(uint32_t ms);
 
 /**
- * @brief   启动基础定时器（TIM6 10 kHz ADC 触发 / TIM2 1 ms 系统 Tick）
- * @param   id  目标定时器 ID
- * @note    TIM6 由 bsw_adc_ringbuf_enable/disable 间接调用，
- *          业务层通常不需要直接调用。
+ * @brief   启动基础定时器（轮询模式）
+ * @param   id  目标定时器 ID (TIM2/TIM3/TIM6)
+ * @note    不产生中断，仅用于计数器运行
  */
 void mcal_timer_base_start(mcal_timer_id_t id);
 
 /**
- * @brief   停止基础定时器
- * @param   id  目标定时器 ID
- * @note    停 TIM6 即停止 ADC 采样触发源，配合 DMA 停止实现低功耗。
+ * @brief   停止基础定时器（轮询模式）
+ * @param   id  目标定时器 ID (TIM2/TIM3/TIM6)
  */
 void mcal_timer_base_stop(mcal_timer_id_t id);
+
+/**
+ * @brief   启动基础定时器（中断模式）
+ * @param   id  目标定时器 ID (TIM2/TIM3)
+ * @note    - TIM3 用于 LED 呼吸灯/闪烁控制（500ms 周期中断）
+ *          - 中断回调: HAL_TIM_PeriodElapsedCallback()
+ */
+void mcal_timer_base_start_it(mcal_timer_id_t id);
+
+/**
+ * @brief   停止基础定时器（中断模式）
+ * @param   id  目标定时器 ID (TIM2/TIM3)
+ */
+void mcal_timer_base_stop_it(mcal_timer_id_t id);
 
 /**
  * @brief   启动输入捕获通道（仅 TIM1 受支持）
@@ -91,6 +109,7 @@ void mcal_timer_ic_stop(mcal_timer_id_t id);
 /* ========== HAL 句柄访问器（仅供 stm32l4xx_it.c 的 IRQ 入口使用） ========== */
 TIM_HandleTypeDef *mcal_timer_get_handle1(void);  /* TIM1: 输入捕获 */
 TIM_HandleTypeDef *mcal_timer_get_handle2(void);  /* TIM2: 1ms 周期 */
+TIM_HandleTypeDef *mcal_timer_get_handle3(void);  /* TIM3: 500ms 周期 */
 /* TIM6 通过 TRGO 硬件触发 ADC，无需 CPU 中断，因此不导出句柄访问器 */
 
 #ifdef __cplusplus
