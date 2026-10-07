@@ -30,9 +30,10 @@ extern "C" {
 typedef enum {
     NODE_BOOT = 0,          /**< 启动中：时钟/外设初始化，4 标志位全 0 */
     NODE_SCAN_LISTEN,        /**< 扫频监听（被动）：ADC 持续 10 kHz，等上级 19 频点扫频 */
-    NODE_SCAN,               /**< 扫频进行中：命中第一个频点，填 19 格成绩单，启动 850 ms 会话定时器 */
-    NODE_PRE_LINKED,         /**< 预链接（协议 §4.2）：已选出 (f0,f1)，等待通知地面机 + 等 ACK */
-    NODE_LINKED,             /**< 工作模式：与上级锁定频对 (f0, f1)，可收发 BFSK 帧 */
+    NODE_SCAN,               /**< 扫频发送（主动）：上级节点发送 19 个频点 × 40ms */
+    NODE_SCAN_WAIT_REPLY,    /**< 扫频等待回应：上级节点监听下级的 1010 波形，解析频对 */
+    NODE_PRE_LINKED,         /**< 预链接（协议 §4.2）：下级节点已选出 (f0,f1)，发送 1010，等 ACK */
+    NODE_LINKED,             /**< 工作模式：与上/下级锁定频对 (f0, f1)，可收发 BFSK 帧 */
     NODE_SLEEP,              /**< 间歇休眠：清洁态（4 标志位全 0）切入，900 ms 睡 / 100 ms 听 */
     NODE_FAULT               /**< 不可恢复故障：硬件异常或看门狗失败 */
 } node_state_t;
@@ -89,6 +90,31 @@ typedef struct {
 /* ========== 时间常量 ========== */
 #define BUS_QUIET_TIMEOUT_MS      3000U /**< 协议 §6.2：总线静默判定超时（降级休眠） */
 #define ADC_CHECK_PERIOD_MS       40U   /**< PRE_LINKED PHASE1 ADC 能量检测周期 */
+#define SCAN_FREQ_DURATION_MS     40U   /**< SCAN 状态每个频点持续时间（毫秒） */
+#define SCAN_WAIT_REPLY_TIMEOUT_MS 5000U /**< SCAN_WAIT_REPLY 状态等待下级 1010 回应超时（毫秒） */
+#define SCAN_ACK_CONFIRM_TIMEOUT_MS 3000U /**< SCAN_WAIT_REPLY ACK 确认等待超时（毫秒） */
+#define SCAN_ACK_MAX_RETRY        2U     /**< ACK 最大重发次数 */
+
+/* ========== 链路方向常量 ========== */
+#define LINK_UPLINK               1U     /**< 活动链路：上级链路（与上级通信） */
+#define LINK_DOWNLINK             0U     /**< 活动链路：下级链路（与下级通信） */
+
+/* ========== 标志位状态常量 ========== */
+#define FLAG_SET                  1U     /**< 标志位置位 */
+#define FLAG_CLEARED              0U     /**< 标志位清除 */
+
+/* ========== 频率状态常量 ========== */
+#define FREQ_NOT_LOCKED           0U     /**< 频率未锁定 */
+
+/* ========== 时刻状态常量 ========== */
+#define QUIET_NOT_STARTED         0U     /**< 静默检测未开始 */
+
+/* ========== 1010 检测参数 ========== */
+#define REPLY_1010_MIN_BIT_COUNT  8U     /**< 1010 模式最少比特数（10101010 = 8 bit） */
+#define REPLY_1010_MIN_TOGGLE_COUNT 6U   /**< 1010 模式最少交替次数（f0→f1→f0→f1→f0→f1→f0 = 6 次切换） */
+#define REPLY_MIN_AMPLITUDE_MARGIN 50U   /**< 1010 回应最小振幅余量（基于有效信号门槛） */
+#define REPLY_FREQ_DIFF_MIN_HZ    100U   /**< f0 与 f1 最小频率差（Hz，避免噪声干扰） */
+#define REPLY_FREQ_TOLERANCE_HZ   30U    /**< 频率匹配容差（±Hz） */
 
 /* ========== PRE_LINKED 子状态机参数（协议 §4.2） ==========
  *
@@ -122,6 +148,19 @@ typedef enum {
     PRE_WAIT_ACK      = 2,
 } pre_linked_phase_t;
 
+/* ========== SCAN_WAIT_REPLY 子阶段 ========== */
+
+/**
+ * @brief SCAN_WAIT_REPLY 状态子阶段
+ * 
+ * PHASE1 WAIT_1010: 等待下级的 1010 波形（使用 ADC 频率检测）
+ * PHASE2 ACK_SENT:  已发送 ACK，等待确认（使用 BFSK 解调器监听重复的 1010）
+ */
+typedef enum {
+    SCAN_WAIT_1010 = 0,  /**< 等待下级 1010 波形 */
+    SCAN_ACK_SENT  = 1,  /**< 已发送 ACK，确认等待中 */
+} scan_wait_reply_phase_t;
+
 /* ========== 节点全局上下文 ========== */
 
 /**
@@ -143,10 +182,27 @@ typedef struct {
     uint32_t           sweep_start_tick;    /**< 命中第一个频点的时刻 */
     uint32_t           sweep_timeout_tick; /**< 850 ms 会话硬超时到期时刻 */
 
+    /* ---- SCAN 状态主动扫频发送 ---- */
+    uint8_t            scan_freq_index;     /**< 当前发送的频点索引（0~18） */
+    uint32_t           scan_freq_next_tick; /**< 下一次切换频点的时刻 */
+    
+    /* ---- SCAN_WAIT_REPLY 状态等待下级回应 ---- */
+    uint32_t           scan_wait_reply_start_tick; /**< 进入等待回应状态的时刻 */
+    scan_wait_reply_phase_t scan_wait_reply_phase; /**< SCAN_WAIT_REPLY 子阶段 */
+    uint32_t           scan_ack_sent_tick;         /**< ACK 发送时刻 */
+    uint8_t            scan_ack_retry_count;       /**< ACK 重发次数 */
+    uint32_t           scan_1010_detected_tick;    /**< 检测到重复 1010 的时刻（用于等待发送完成）*/
+    uint16_t           reply_last_freq;            /**< 上一次检测到的频率 */
+    uint16_t           reply_detected_f0;          /**< 检测到的第一个频率 */
+    uint16_t           reply_detected_f1;          /**< 检测到的第二个频率 */
+    uint8_t            reply_toggle_count;         /**< 交替切换计数（确认是 1010 模式） */
+
     /* ---- 工作态参数 ---- */
-    node_freq_pair_t   cur_freq;            /**< 当前锁定的工作频对，f0=0 表示未锁定 */
-    uint16_t           noise_floor;         /**< IDLE 期背景底噪（协议门槛一） */
-    uint8_t            hard_id;             /**< 节点硬件 ID（井下底节 = 3） */
+    node_freq_pair_t   uplink_freq;      /**< 上级频点（与上级通信，被扫方建立） */
+    node_freq_pair_t   downlink_freq;    /**< 下级频点（与下级通信，扫频方建立） */
+    uint8_t            active_link_is_uplink; /**< 当前活动链路：LINK_UPLINK=上级链路，LINK_DOWNLINK=下级链路 */
+    uint16_t           noise_floor;      /**< IDLE 期背景底噪（协议门槛一） */
+    uint8_t            hard_id;          /**< 节点硬件 ID（井下底节 = 3） */
 
     /* ---- 休眠鉴别（协议 §6）---- */
     uint32_t           quiet_start_tick;    /**< 总线进入静默的时刻（清洁态鉴别） */
@@ -179,7 +235,25 @@ void app_node_fsm_run(uint32_t now_tick);
  */
 node_state_t  app_node_fsm_get_state(void);
 bool           app_node_fsm_is_clean(void);        /**< 4 标志位全 0 = 清洁态，可进休眠 */
-bool           app_node_fsm_is_freq_locked(void);   /**< f0 ≠ 0 */
+/**
+ * @brief   判断是否已锁定上级频点
+ */
+bool app_node_fsm_is_uplink_locked(void);
+
+/**
+ * @brief   判断是否已锁定下级频点
+ */
+bool app_node_fsm_is_downlink_locked(void);
+
+/**
+ * @brief   获取上级频点
+ */
+void app_node_fsm_get_uplink_freq(uint16_t *f0_hz, uint16_t *f1_hz);
+
+/**
+ * @brief   获取下级频点
+ */
+void app_node_fsm_get_downlink_freq(uint16_t *f0_hz, uint16_t *f1_hz);
 const app_node_ctx_t *app_node_fsm_get_ctx(void);  /**< 调试/业务模块只读上下文 */
 
 /* ========== 事件注入 API（由业务模块调用） ========== */
