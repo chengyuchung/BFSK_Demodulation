@@ -40,22 +40,16 @@ typedef enum {
 
 /* ========== 4 标志位事务上下文（位域紧凑） ========== */
 
-typedef enum {
-    XACT_RX_UP_OK   = 0,   /**< ① 从上接收成功：已收到上级命令 */
-    XACT_FWD_DN_OK  = 1,   /**< ② 向下转发成功：已发给下级并收到下行 ACK */
-    XACT_RX_DN_OK   = 2,   /**< ③ 从下接收成功：已收到下级回传数据 */
-    XACT_FWD_UP_OK  = 3    /**< ④ 向上转发成功：已发给上级并收到上行 ACK */
-} node_xact_bit_t;
-
 /**
- * @brief   4 标志位（协议 §5.1）
+ * @brief   4 标志位
  * @note    任一非默认 = 事务挂起态，绝对禁止进入间歇休眠
+ *          同时作为链路健康度评估（页面状态切换依据）
  */
 typedef struct {
-    uint8_t flag_rx_up_ok  : 1;   /**< ① 从上接收成功 */
-    uint8_t flag_fwd_dn_ok : 1;   /**< ② 向下转发成功 */
-    uint8_t flag_rx_dn_ok  : 1;   /**< ③ 从下接收成功 */
-    uint8_t flag_fwd_up_ok : 1;   /**< ④ 向上转发成功 */
+    uint8_t flag_rx_up_ok  : 1;   /**< 从上接收成功 */
+    uint8_t flag_fwd_dn_ok : 1;   /**< 向下转发成功 */
+    uint8_t flag_rx_dn_ok  : 1;   /**< 从下接收成功 */
+    uint8_t flag_fwd_up_ok : 1;   /**< 向上转发成功 */
 } node_xact_flags_t;
 
 /* ========== 工作频对 ========== */
@@ -65,7 +59,7 @@ typedef struct {
     uint16_t f1_hz;   /**< 高频点 Hz */
 } node_freq_pair_t;
 
-/* ========== 扫频成绩单（协议 §三） ========== */
+/* ========== 扫频成绩单 ========== */
 
 /**
  * 19 个候选频点：125 Hz～1025 Hz，步进 50 Hz
@@ -77,23 +71,40 @@ typedef struct {
 #define SWEEP_FREQ_TOLERANCE_HZ  15   /**< 标称频点就近映射容差 ±15 Hz */
 #define SWEEP_FREQ_INDEX_INVALID 0xFFU /**< 无效频点索引（落在容差外/空白带） */
 
-/* ========== 频对决选参数（协议 §三） ========== */
-#define SWEEP_MIN_FREQ_GAP_HZ    150u   /**< 协议 §三：f1 - f0 最小间距 (Hz) */
-#define SWEEP_VALID_AMP_DELTA    50u    /**< 协议 §三：amp > noise_floor + 该值 才算有效信号
+/* ========== 频对决选参数 ========== */
+#define SWEEP_MIN_FREQ_GAP_HZ    150u   /**< f1 - f0 最小间距 (Hz) */
+#define SWEEP_VALID_AMP_DELTA    50u    /**< amp > noise_floor + 该值 才算有效信号
                                         //   *   用于把 amp_table 里的"信号"和"噪声"区分开：
                                         //   *   没有这个门限，19 格噪声密集抖动时会被误认为 19 个有效信号，
                                         //   *   max+second_max 可能选出"噪声最强两格"导致 1010 回发失败 */
 #define SWEEP_DEFAULT_NOISE_FLOOR 100u  /**< 默认底噪估值（amp 单位），noise_floor 未在线测量时使用 */
 #define SWEEP_MIN_VALID_FREQ_CNT  2u    /**< 频对决选最少需要的有效频点数 */
-#define SWEEP_SESSION_TIMEOUT_MS  850U  /**< 协议 §二：扫频会话硬超时（毫秒） */
+#define SWEEP_SESSION_TIMEOUT_MS  850U  /**< 扫频会话硬超时（毫秒） */
 
 /* ========== 时间常量 ========== */
-#define BUS_QUIET_TIMEOUT_MS      3000U /**< 协议 §6.2：总线静默判定超时（降级休眠） */
+#define BUS_QUIET_TIMEOUT_MS      3000U /**< 总线静默判定超时（降级休眠） */
 #define ADC_CHECK_PERIOD_MS       40U   /**< PRE_LINKED PHASE1 ADC 能量检测周期 */
 #define SCAN_FREQ_DURATION_MS     40U   /**< SCAN 状态每个频点持续时间（毫秒） */
-#define SCAN_WAIT_REPLY_TIMEOUT_MS 5000U /**< SCAN_WAIT_REPLY 状态等待下级 1010 回应超时（毫秒） */
-#define SCAN_ACK_CONFIRM_TIMEOUT_MS 3000U /**< SCAN_WAIT_REPLY ACK 确认等待超时（毫秒） */
+#define SCAN_WAIT_REPLY_TIMEOUT_MS 5000U  /**< SCAN_WAIT_REPLY 状态等待下级 1010 回应超时（毫秒） */
+#define SCAN_ACK_CONFIRM_TIMEOUT_MS 6000U /**< SCAN_WAIT_REPLY ACK 确认等待超时（毫秒）
+                                            // *  注意：必须 > PRE_ACK_TIMEOUT_MS (5s)
+                                            // *  原因：被扫方等待 ACK 5s 超时后才会重发 1010
+                                            // *       扫频方需要等待 > 5s 才能确认"对方收到了 ACK"
+                                            // *       如果 < 5s 就进入 LINKED，可能漏掉被扫方的重发 1010 */
 #define SCAN_ACK_MAX_RETRY        2U     /**< ACK 最大重发次数 */
+
+/* ========== 节点角色定义 ========== */
+
+/**
+ * @brief 节点角色类型
+ * 根据硬件 ID（hard_id）判断节点在通信链路中的角色
+ * 使用 bsw_node_id.h 中的地址定义
+ */
+typedef enum {
+    NODE_ROLE_SURFACE    = 0,  /**< 井上节点（BSW_NODE_ADDR_GROUND = 0）：只有下行链路 */
+    NODE_ROLE_RELAY      = 1,  /**< 中继节点（1~14）：既有上行也有下行 */
+    NODE_ROLE_UNDERGROUND = 2   /**< 井下节点（BSW_NODE_ADDR_UNDERGROUND = 0xF）：只有上行链路 */
+} node_role_t;
 
 /* ========== 链路方向常量 ========== */
 #define LINK_UPLINK               1U     /**< 活动链路：上级链路（与上级通信） */
@@ -116,7 +127,7 @@ typedef struct {
 #define REPLY_FREQ_DIFF_MIN_HZ    100U   /**< f0 与 f1 最小频率差（Hz，避免噪声干扰） */
 #define REPLY_FREQ_TOLERANCE_HZ   30U    /**< 频率匹配容差（±Hz） */
 
-/* ========== PRE_LINKED 子状态机参数（协议 §4.2） ==========
+/* ========== PRE_LINKED 子状态机参数 ==========
  *
  * PRE_LINKED 三阶段：
  *   PHASE1 QUIET_OBSERVE  等待本节点响应槽点 = my_id × BSW_NODE_REPLY_STEP_MS（200 ms）
@@ -171,12 +182,12 @@ typedef struct {
     node_state_t       state;               /**< 当前状态 */
     uint32_t           state_enter_tick;    /**< 进入当前状态的时刻（HAL_GetTick） */
 
-    /* ---- 事务上下文（协议 §5）---- */
+    /* ---- 事务上下文---- */
     node_xact_flags_t  flags;               /**< 4 标志位 */
     uint8_t            pending_buffer[64];  /**< 未完成命令/数据的暂存区 */
     uint16_t           pending_len;         /**< 当前暂存有效字节数 */
 
-    /* ---- 扫频数据（协议 §三）---- */
+    /* ---- 扫频数据---- */
     node_freq_pair_t   sweep_result;       /**< 扫频决选后的工作频对（f0, f1） */
     uint16_t           sweep_amp_table[SWEEP_FREQ_COUNT];  /**< 19 格幅值成绩单 */
     uint32_t           sweep_start_tick;    /**< 命中第一个频点的时刻 */
@@ -256,6 +267,26 @@ void app_node_fsm_get_uplink_freq(uint16_t *f0_hz, uint16_t *f1_hz);
 void app_node_fsm_get_downlink_freq(uint16_t *f0_hz, uint16_t *f1_hz);
 const app_node_ctx_t *app_node_fsm_get_ctx(void);  /**< 调试/业务模块只读上下文 */
 
+/**
+ * @brief   获取节点角色
+ * @return  NODE_ROLE_SURFACE / NODE_ROLE_RELAY / NODE_ROLE_UNDERGROUND
+ */
+node_role_t app_node_fsm_get_role(void);
+
+/**
+ * @brief   判断节点是否有上行链路
+ * @return  true = 有上级节点（中继或井下）
+ *          false = 井上节点，无上级
+ */
+bool app_node_fsm_has_uplink(void);
+
+/**
+ * @brief   判断节点是否有下行链路
+ * @return  true = 有下级节点（井上或中继）
+ *          false = 井下节点，无下级
+ */
+bool app_node_fsm_has_downlink(void);
+
 /* ========== 事件注入 API（由业务模块调用） ========== */
 
 /** 扫频监听态的扫频检测算法（10 ms 滑动窗口）注入一次解算结果
@@ -274,13 +305,25 @@ void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count);
 /** 上级用 (f0, f1) 下发 ACK，链路锁定 */
 void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1);
 
-/** 4 标志位置位 */
-void app_node_fsm_flag_set(node_xact_bit_t bit);
+/** 4 标志位置位：rx_up=已收到上级命令 */
+void app_node_fsm_flag_set_rx_up(void);
+/** 4 标志位置位：fwd_dn=已发给下级并收到下行 ACK */
+void app_node_fsm_flag_set_fwd_dn(void);
+/** 4 标志位置位：rx_dn=已收到下级回传数据 */
+void app_node_fsm_flag_set_rx_dn(void);
+/** 4 标志位置位：fwd_up=已发给上级并收到上行 ACK */
+void app_node_fsm_flag_set_fwd_up(void);
 
-/** 4 标志位清除 */
-void app_node_fsm_flag_clear(node_xact_bit_t bit);
+/** 4 标志位清除：rx_up */
+void app_node_fsm_flag_clear_rx_up(void);
+/** 4 标志位清除：fwd_dn */
+void app_node_fsm_flag_clear_fwd_dn(void);
+/** 4 标志位清除：rx_dn */
+void app_node_fsm_flag_clear_rx_dn(void);
+/** 4 标志位清除：fwd_up */
+void app_node_fsm_flag_clear_fwd_up(void);
 
-/** 总线静默超时（协议 §6.2 降级休眠判断） */
+/** 总线静默超时 */
 void app_node_fsm_on_quiet_timeout(uint32_t now_tick);
 
 /** 硬件/协议不可恢复故障 */

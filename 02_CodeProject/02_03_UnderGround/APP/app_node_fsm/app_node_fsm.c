@@ -98,6 +98,19 @@ static uint8_t _sweep_freq_to_index(uint16_t f_hz)
 }
 
 /**
+ * @brief   校验频点是否在频点表内（精确匹配 ±容差）
+ * @param   f_hz  待校验的频点 (Hz)
+ * @return  true = 在频点表内，false = 不在（垃圾数据或非法频点）
+ * @note    用于 Flash 读取后的二次校验，防止使用非法频点
+ */
+static bool _is_freq_in_table(uint16_t f_hz)
+{
+    /* 利用已有的 _sweep_freq_to_index：
+     * 如果能映射到合法索引，说明在频点表 ±容差范围内 */
+    return (_sweep_freq_to_index(f_hz) != SWEEP_FREQ_INDEX_INVALID);
+}
+
+/**
  * @brief   协议 §三.3 "只记录，不淘汰" 写 amp_table
  * @note    同一频点多次命中时，只保留幅值最大的那次，绝不丢弃前面的记录。
  *          这是协议抗频点衰减的核心机制：哪怕某个频点信号中途掉到 0，
@@ -218,6 +231,67 @@ static bool _is_bus_quiet(uint32_t now_tick)
            && ((now_tick - s_ctx.quiet_start_tick) >= BUS_QUIET_TIMEOUT_MS);
 }
 
+/* ========== LINKED 状态断链检测结果 ========== */
+typedef enum {
+    LINK_OK               = 0,  /**< 链路完好，留在 LINKED */
+    LINK_FAIL_NEED_SCAN   = 1,  /**< 链路异常，需进入 SCAN 主动扫频重建下行 */
+    LINK_FAIL_NEED_LISTEN = 2,  /**< 链路异常，需进入 SCAN_LISTEN 被动监听（占位，后续补场景二） */
+} link_check_result_t;
+
+/**
+ * @brief   LINKED 状态下的断链检测
+ * @param   now_tick  当前 tick
+ * @return  link_check_result_t
+ *
+ * @note    协议 §5.1（4 标志位事务上下文）
+ *          仅在 LINKED 状态调用；其他状态不要使用
+ *
+ * 【场景一】井下节点（hard_id = 0xF）
+ *   特点：无下级，只有上行链路
+ *   策略：不检测下行断链，永远返回 LINK_OK
+ *   原因：井下不主动发送，也不会进入 SCAN 扫频
+ *
+ * 【场景二】井上节点（hard_id = 0x0）
+ *   特点：无上级，只有下行链路
+ *   策略：fwd_dn = 0 || rx_dn = 0 → 进入 SCAN
+ *   原因：井上是总线主控，下行断了就需要主动重新扫频
+ *
+ * 【场景三】中继节点（0x1 ~ 0xE）
+ *   特点：既有上行也有下行
+ *   策略：rx_up = 1 && (fwd_dn = 0 || rx_dn = 0) → 进入 SCAN
+ *   原因：只有在上行通畅的前提下，才能安全地向下扫频
+ *         如果上行也断了，应该进入 SCAN_LISTEN 等待上级扫频
+ */
+static link_check_result_t _check_link_failure_in_linked(uint32_t now_tick)
+{
+    const node_xact_flags_t *f = &s_ctx.flags;
+    
+    /* 井下节点（无下级）：不检测下行断链，永远返回 LINK_OK */
+    if (!app_node_fsm_has_downlink()) {
+        return LINK_OK;
+    }
+
+    /* 井上节点（无上级）：只要下行异常就进入 SCAN */
+    if (!app_node_fsm_has_uplink()) {
+        if ((f->flag_fwd_dn_ok == FLAG_CLEARED) || (f->flag_rx_dn_ok == FLAG_CLEARED)) {
+            if (_is_bus_quiet(now_tick)) {
+                return LINK_FAIL_NEED_SCAN;
+            }
+        }
+        return LINK_OK;
+    }
+    
+    /* 中继节点：上行通畅（rx_up=1）但下行异常 → 进入 SCAN */
+    if ((f->flag_rx_up_ok == FLAG_SET)
+        && ((f->flag_fwd_dn_ok == FLAG_CLEARED) || (f->flag_rx_dn_ok == FLAG_CLEARED))) {
+        if (_is_bus_quiet(now_tick)) {
+            return LINK_FAIL_NEED_SCAN;
+        }
+    }
+
+    return LINK_OK;
+}
+
 /* ========== 状态进入函数（Entry Actions） ========== 
  *
  * ADC / TIM6（采样） vs TIM1 IC（解调） vs AD9833（DDS 发送）的状态归属：
@@ -322,24 +396,69 @@ static void _state_entry_pre_linked(uint32_t now_tick)
 
 static void _state_entry_linked(uint32_t now_tick)
 {
-    (void)now_tick;
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_start(MCAL_TIMER_TIM1);
-    
+
     proto_rx_init(s_ctx.hard_id);
-    
+
     /* 根据活动链路选择频点 */
     node_freq_pair_t *active_freq = (s_ctx.active_link_is_uplink == LINK_UPLINK)
-                                     ? &s_ctx.uplink_freq 
+                                     ? &s_ctx.uplink_freq
                                      : &s_ctx.downlink_freq;
-    
-    if (active_freq->f0_hz != FREQ_NOT_LOCKED && active_freq->f1_hz != FREQ_NOT_LOCKED) {
-        bsw_bfsk_demod_start(active_freq->f0_hz,
-                            active_freq->f1_hz,
-                            PRE_BFSK_BIT_PERIOD_MS,
-                            BFSK_DEMOD_TIMEOUT_MS,
-                            s_ctx.hard_id);
+
+    /* 频点有效性校验（双保险：运行时也可能从其他状态跳转到 LINKED）
+     * 
+     * 策略：和 init 保持一致
+     *   上行 ✗  下行 ✗ → SCAN_LISTEN  （优先被动监听上级）
+     *   上行 ✓  下行 ✗ → SCAN         （主动扫下行）
+     *   上行 ✗  下行 ✓ → SCAN_LISTEN  （被动监听上级）
+     *   上行 ✓  下行 ✓ → 正常进 LINKED
+     */
+    if (active_freq->f0_hz == FREQ_NOT_LOCKED
+        || active_freq->f1_hz == FREQ_NOT_LOCKED) {
+        /* 当前活动链路频点无效，需要重建链路 */
+        
+        bool uplink_valid   = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
+                               && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
+        bool downlink_valid = (s_ctx.downlink_freq.f0_hz != FREQ_NOT_LOCKED 
+                               && s_ctx.downlink_freq.f1_hz != FREQ_NOT_LOCKED);
+        
+        /* 清空无效频点（避免误用） */
+        active_freq->f0_hz = FREQ_NOT_LOCKED;
+        active_freq->f1_hz = FREQ_NOT_LOCKED;
+        
+        /* 根据节点角色和频点有效性选择下一个状态 */
+        if (!app_node_fsm_has_uplink()) {
+            /* 井上节点（无上级）：只检查下行，下行无效就扫频 */
+            if (!downlink_valid) {
+                _state_transition(NODE_SCAN, now_tick);
+            }
+            /* 井上节点下行有效时留在 LINKED，继续下面的 BFSK 启动 */
+        } else if (!app_node_fsm_has_downlink()) {
+            /* 井下节点（无下级）：只检查上行，上行无效就监听 */
+            if (!uplink_valid) {
+                _state_transition(NODE_SCAN_LISTEN, now_tick);
+            }
+            /* 井下节点上行有效时留在 LINKED，继续下面的 BFSK 启动 */
+        } else {
+            /* 中继节点：检查上下行 */
+            if (uplink_valid && !downlink_valid) {
+                /* 只有上行有效：主动扫下行 */
+                _state_transition(NODE_SCAN, now_tick);
+            } else if (!uplink_valid) {
+                /* 上行无效：被动监听上级 */
+                _state_transition(NODE_SCAN_LISTEN, now_tick);
+            }
+            /* 中继节点上下行都有效时留在 LINKED，继续下面的 BFSK 启动 */
+        }
+        return;
     }
+
+    bsw_bfsk_demod_start(active_freq->f0_hz,
+                         active_freq->f1_hz,
+                         PRE_BFSK_BIT_PERIOD_MS,
+                         BFSK_DEMOD_TIMEOUT_MS,
+                         s_ctx.hard_id);
     bsw_led_set_state(LED_STATE_LINKED);
 }
 
@@ -804,7 +923,7 @@ static void _state_run_linked(uint32_t now_tick)
                 }
             }
             
-            app_node_fsm_flag_set(XACT_RX_UP_OK);
+            app_node_fsm_flag_set_rx_up();
         }
     }
     else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
@@ -812,12 +931,48 @@ static void _state_run_linked(uint32_t now_tick)
         /* 根据需要重新启动 */
     }
     
-    /* 断链检测 */
-    if ((s_ctx.flags.flag_fwd_up_ok == false)
-        && (s_ctx.flags.flag_fwd_dn_ok == false)) {
+    /* ========== 断链检测（上行链路） ========== */
+    
+    /* 场景 2：所有标志位为 0（链路完全断裂，频点可能已变化）
+     * - 收不到上级信号
+     * - 也无下行通信活动
+     * → 进入 SCAN_LISTEN 被动等待上级重新扫频
+     * 注意：井上节点（无上级）不会触发此场景，因为它的 rx_up 和 fwd_up 永远为 1 */
+    if ((s_ctx.flags.flag_rx_up_ok  == 0)
+        && (s_ctx.flags.flag_fwd_dn_ok == 0)
+        && (s_ctx.flags.flag_rx_dn_ok  == 0)
+        && (s_ctx.flags.flag_fwd_up_ok == 0))
+    {
         if (_is_bus_quiet(now_tick)) {
+            /* 井上节点不会进入这里（rx_up 永远为 1）
+             * 井下和中继节点：完全孤立，进入监听 */
             _state_transition(NODE_SCAN_LISTEN, now_tick);
+            return;
         }
+    }
+    
+    /* 场景 3：有下行通信活动，但向上转发失败（上行链路中途断裂）
+     * - 下级节点正常工作（能接收或转发给下级）
+     * - 但无法转发给上级（上行频点可能变化）
+     * → 进入 SCAN_LISTEN 重新监听上级新频点
+     * 注意：井上节点（无上级）和井下节点（无下级）不会触发此场景 */
+    if (app_node_fsm_has_uplink() && app_node_fsm_has_downlink()) {
+        /* 仅中继节点检测此场景 */
+        if (((s_ctx.flags.flag_fwd_dn_ok != 0) || (s_ctx.flags.flag_rx_dn_ok != 0))
+            && (s_ctx.flags.flag_fwd_up_ok == 0))
+        {
+            if (_is_bus_quiet(now_tick)) {
+                _state_transition(NODE_SCAN_LISTEN, now_tick);
+                return;
+            }
+        }
+    }
+    
+    /* ========== 断链检测（下行链路） ========== */
+    
+    /* 场景一：上行通畅但下行异常 → 进入 SCAN 主动扫频重建下行 */
+    if (_check_link_failure_in_linked(now_tick) == LINK_FAIL_NEED_SCAN) {
+        _state_transition(NODE_SCAN, now_tick);
     }
 }
 
@@ -843,43 +998,126 @@ void app_node_fsm_init(uint8_t hard_id)
     s_ctx.hard_id = hard_id;
     s_ctx.noise_floor = SWEEP_DEFAULT_NOISE_FLOOR;
     
-    /* 初始化频点为未锁定状态 */
-    s_ctx.uplink_freq.f0_hz = FREQ_NOT_LOCKED;
-    s_ctx.uplink_freq.f1_hz = FREQ_NOT_LOCKED;
+    /* 初始化频点为未锁定状态（Flash 读取失败时的默认值） */
+    s_ctx.uplink_freq.f0_hz   = FREQ_NOT_LOCKED;
+    s_ctx.uplink_freq.f1_hz   = FREQ_NOT_LOCKED;
     s_ctx.downlink_freq.f0_hz = FREQ_NOT_LOCKED;
     s_ctx.downlink_freq.f1_hz = FREQ_NOT_LOCKED;
-    
+
     /* 初始化活动链路为未激活 */
     s_ctx.active_link_is_uplink = LINK_NONE;
 
     bsw_node_id_init(hard_id);
     bsw_led_init();  /* 初始化 LED 指示灯 */
     bsw_version_init();  /* 初始化版本模块 */
-    
+
     /* 初始化 Flash 频点存储模块 */
     bsw_freq_storage_init();
+
+    /* 一次性读取上行 + 下行两对频点
+     * - Flash 有备份 → 直接使用（快速恢复）
+     * - Flash 无备份 → load_all 内部把所有输出置 0（即 FREQ_NOT_LOCKED）
+     *
+     * 注意：这里不直接进入 LINKED 状态，因为：
+     * 1. 对端可能已经掉电重启，频点可能已变化
+     * 2. 需要先通过扫频/监听重新建立通信
+     * 3. 只是将频点作为"上次锁定频点"供诊断和优化使用
+     *
+     * 进入 LINKED 时会在 _state_entry_linked() 中校验频点有效性：
+     * - 有效 → 正常进入 LINKED
+     * - 无效 → 跳转到 SCAN/SCAN_LISTEN（双保险）
+     */
+    uint16_t saved_uf0 = 0, saved_uf1 = 0, saved_df0 = 0, saved_df1 = 0;
+    (void)bsw_freq_storage_load_all(&saved_uf0, &saved_uf1, &saved_df0, &saved_df1);
+    /* load_all 内部已做合理性校验（范围、非零、非 0xFFFF），失败时输出为 0 */
     
-    /* 尝试从 Flash 恢复频点配置（用于快速恢复通信）*/
-    uint16_t saved_f0 = 0, saved_f1 = 0;
-    if (bsw_freq_storage_load(&saved_f0, &saved_f1) == 0) {
-        /* 成功加载备份的频点，保存到上下文
-         * 注意：这里不直接进入 LINKED 状态，因为：
-         * 1. 对端可能已经掉电重启，频点可能已变化
-         * 2. 需要先通过扫频/监听重新建立通信
-         * 3. 只是将频点作为"上次锁定频点"供诊断和优化使用
-         * 
-         * TODO: 未来可以添加"快速恢复"模式：
-         * - 优先尝试使用备份频点直接通信
-         * - 超时后再回退到扫频/监听流程
-         * 
-         * 当前策略：假设井下节点主要作为被扫方，将备份频点视为上级频点
-         */
-        s_ctx.uplink_freq.f0_hz = saved_f0;
-        s_ctx.uplink_freq.f1_hz = saved_f1;
+    /* APP 层二次校验：精确匹配频点表（防止 Flash 垃圾数据）
+     * 
+     * BSW 层只做范围检查（100~2000 Hz），这里做精确表内校验
+     * 只有频点对的两个频点都在表内才认为有效，否则清零
+     */
+    bool uf0_in_table = (saved_uf0 != 0) && _is_freq_in_table(saved_uf0);
+    bool uf1_in_table = (saved_uf1 != 0) && _is_freq_in_table(saved_uf1);
+    bool df0_in_table = (saved_df0 != 0) && _is_freq_in_table(saved_df0);
+    bool df1_in_table = (saved_df1 != 0) && _is_freq_in_table(saved_df1);
+    
+    if (uf0_in_table && uf1_in_table) {
+        s_ctx.uplink_freq.f0_hz = saved_uf0;
+        s_ctx.uplink_freq.f1_hz = saved_uf1;
+    } else {
+        s_ctx.uplink_freq.f0_hz = FREQ_NOT_LOCKED;
+        s_ctx.uplink_freq.f1_hz = FREQ_NOT_LOCKED;
+    }
+    
+    if (df0_in_table && df1_in_table) {
+        s_ctx.downlink_freq.f0_hz = saved_df0;
+        s_ctx.downlink_freq.f1_hz = saved_df1;
+    } else {
+        s_ctx.downlink_freq.f0_hz = FREQ_NOT_LOCKED;
+        s_ctx.downlink_freq.f1_hz = FREQ_NOT_LOCKED;
     }
 
-    s_ctx.state_enter_tick = HAL_GetTick();
-    _state_transition(NODE_SCAN_LISTEN, s_ctx.state_enter_tick);
+    /* ========== 根据 Flash 备份情况和节点角色选择初始状态 ========== 
+     *
+     * 井上节点（无上级）：
+     *   下行 ✓ → LINKED       （有下级，直接工作）
+     *   下行 ✗ → SCAN         （无下级，主动扫频）
+     *
+     * 井下节点（无下级）：
+     *   上行 ✓ → LINKED       （有上级，直接工作）
+     *   上行 ✗ → SCAN_LISTEN  （无上级，被动监听）
+     *
+     * 中继节点（有上下级）：
+     *   上行 ✓  下行 ✓ → LINKED       （全链路，直接工作）
+     *   上行 ✓  下行 ✗ → SCAN         （有上级缺下级，主动扫下行）
+     *   上行 ✗  下行 ✗ → SCAN_LISTEN  （全新节点，被动监听上级）
+     *   上行 ✗  下行 ✓ → SCAN_LISTEN  （有下级缺上级，被动监听上级）
+     */
+    uint32_t now_tick = HAL_GetTick();
+    s_ctx.state_enter_tick = now_tick;
+
+    bool uplink_valid   = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
+                           && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
+    bool downlink_valid = (s_ctx.downlink_freq.f0_hz != FREQ_NOT_LOCKED 
+                           && s_ctx.downlink_freq.f1_hz != FREQ_NOT_LOCKED);
+
+    if (!app_node_fsm_has_uplink()) {
+        /* 井上节点（无上级）*/
+        if (downlink_valid) {
+            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
+            _state_transition(NODE_LINKED, now_tick);
+        } else {
+            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
+            _state_transition(NODE_SCAN, now_tick);
+        }
+    } else if (!app_node_fsm_has_downlink()) {
+        /* 井下节点（无下级）*/
+        if (uplink_valid) {
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_LINKED, now_tick);
+        } else {
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+    } else {
+        /* 中继节点（有上下级）*/
+        if (uplink_valid && downlink_valid) {
+            /* 上下行都有效：直接进入 LINKED 工作态
+             * 选择上行作为活动链路（默认优先与上级通信） */
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_LINKED, now_tick);
+        } else if (uplink_valid && !downlink_valid) {
+            /* 只有上行有效：进入 SCAN 主动扫下行
+             * 活动链路设为下行（扫频目标） */
+            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
+            _state_transition(NODE_SCAN, now_tick);
+        } else {
+            /* 其他情况（上行无效）：进入 SCAN_LISTEN 被动监听
+             * - 全无：等上级扫频
+             * - 只有下行：缺上级，也要等上级扫频 */
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+    }
 }
 
 void app_node_fsm_run(uint32_t now_tick)
@@ -1059,8 +1297,10 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
                 s_ctx.sweep_result.f1_hz = f1;
                 s_ctx.active_link_is_uplink = LINK_DOWNLINK;
                 
-                /* 备份频对到 Flash（上级节点确认下级选择的频点）*/
-                int32_t ret = bsw_freq_storage_save(f0, f1);
+                /* 备份频对到 Flash（扫频方刚确认下行频点，保留上行原值） */
+                int32_t ret = bsw_freq_storage_save_all(
+                    s_ctx.uplink_freq.f0_hz, s_ctx.uplink_freq.f1_hz,
+                    f0, f1);
                 (void)ret;  /* 备份失败不影响通信建立，只是下次掉电无法快速恢复 */
                 
                 /* TODO: 发送 ACK 帧（PROTO_TYPE_REPLY + PROTO_REPLY_FREQ_PAIR）
@@ -1123,8 +1363,10 @@ void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1)
     s_ctx.uplink_freq.f1_hz = f1;
     s_ctx.active_link_is_uplink = LINK_UPLINK;
 
-    /* 备份频对到 Flash（下级节点收到上级 ACK，确认频点被接受）*/
-    int32_t ret = bsw_freq_storage_save(f0, f1);
+    /* 备份频对到 Flash（被扫方刚确认上行频点，保留下行原值） */
+    int32_t ret = bsw_freq_storage_save_all(
+        f0, f1,
+        s_ctx.downlink_freq.f0_hz, s_ctx.downlink_freq.f1_hz);
     (void)ret;  /* 备份失败不影响进入 LINKED，只是下次掉电无法快速恢复 */
 
     _state_transition(NODE_LINKED, HAL_GetTick());
@@ -1132,45 +1374,48 @@ void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1)
 
 /* ========== 事务标志位操作 ========== */
 
-void app_node_fsm_flag_set(node_xact_bit_t bit)
+void app_node_fsm_flag_set_rx_up(void)
 {
-    switch (bit) {
-        case XACT_RX_UP_OK:
-            s_ctx.flags.flag_rx_up_ok = FLAG_SET;
-            break;
-        case XACT_FWD_DN_OK:
-            s_ctx.flags.flag_fwd_dn_ok = FLAG_SET;
-            break;
-        case XACT_RX_DN_OK:
-            s_ctx.flags.flag_rx_dn_ok = FLAG_SET;
-            break;
-        case XACT_FWD_UP_OK:
-            s_ctx.flags.flag_fwd_up_ok = FLAG_SET;
-            break;
-        default:
-            break;
-    }
+    s_ctx.flags.flag_rx_up_ok = FLAG_SET;
     s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
 }
 
-void app_node_fsm_flag_clear(node_xact_bit_t bit)
+void app_node_fsm_flag_set_fwd_dn(void)
 {
-    switch (bit) {
-        case XACT_RX_UP_OK:
-            s_ctx.flags.flag_rx_up_ok = FLAG_CLEARED;
-            break;
-        case XACT_FWD_DN_OK:
-            s_ctx.flags.flag_fwd_dn_ok = FLAG_CLEARED;
-            break;
-        case XACT_RX_DN_OK:
-            s_ctx.flags.flag_rx_dn_ok = FLAG_CLEARED;
-            break;
-        case XACT_FWD_UP_OK:
-            s_ctx.flags.flag_fwd_up_ok = FLAG_CLEARED;
-            break;
-        default:
-            break;
-    }
+    s_ctx.flags.flag_fwd_dn_ok = FLAG_SET;
+    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+}
+
+void app_node_fsm_flag_set_rx_dn(void)
+{
+    s_ctx.flags.flag_rx_dn_ok = FLAG_SET;
+    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+}
+
+void app_node_fsm_flag_set_fwd_up(void)
+{
+    s_ctx.flags.flag_fwd_up_ok = FLAG_SET;
+    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+}
+
+void app_node_fsm_flag_clear_rx_up(void)
+{
+    s_ctx.flags.flag_rx_up_ok = FLAG_CLEARED;
+}
+
+void app_node_fsm_flag_clear_fwd_dn(void)
+{
+    s_ctx.flags.flag_fwd_dn_ok = FLAG_CLEARED;
+}
+
+void app_node_fsm_flag_clear_rx_dn(void)
+{
+    s_ctx.flags.flag_rx_dn_ok = FLAG_CLEARED;
+}
+
+void app_node_fsm_flag_clear_fwd_up(void)
+{
+    s_ctx.flags.flag_fwd_up_ok = FLAG_CLEARED;
 }
 
 void app_node_fsm_on_quiet_timeout(uint32_t now_tick)
@@ -1192,4 +1437,29 @@ void app_node_fsm_on_fault(uint32_t fault_code)
 void app_node_fsm_on_wdt_timeout(void)
 {
     _state_transition(NODE_FAULT, HAL_GetTick());
+}
+
+/* ========== 节点角色判断 ========== */
+
+node_role_t app_node_fsm_get_role(void)
+{
+    if (s_ctx.hard_id == BSW_NODE_ADDR_GROUND) {
+        return NODE_ROLE_SURFACE;  /* 井上节点 */
+    } else if (s_ctx.hard_id == BSW_NODE_ADDR_UNDERGROUND) {
+        return NODE_ROLE_UNDERGROUND;  /* 井下节点 */
+    } else {
+        return NODE_ROLE_RELAY;  /* 中继节点 */
+    }
+}
+
+bool app_node_fsm_has_uplink(void)
+{
+    /* 井上节点（BSW_NODE_ADDR_GROUND = 0）无上级，其余都有上级 */
+    return (s_ctx.hard_id != BSW_NODE_ADDR_GROUND);
+}
+
+bool app_node_fsm_has_downlink(void)
+{
+    /* 井下节点（BSW_NODE_ADDR_UNDERGROUND = 0xF）无下级，其余都有下级 */
+    return (s_ctx.hard_id != BSW_NODE_ADDR_UNDERGROUND);
 }
