@@ -460,7 +460,7 @@ proto_err_t proto_rx_feed_bits(const uint8_t *bit_buf, uint16_t bit_count)
                 if (s_rx_ctx.rx_len < PROTO_FRAME_MAX) {
                     s_rx_ctx.rx_buf[s_rx_ctx.rx_len++] = byte;
                     
-                    /* 早期过滤：检查 ADDR 字段（第 2 字节，索引 1）*/
+                    /* 早期过滤 1：检查 ADDR 字段（第 2 字节，索引 1）*/
                     if (s_rx_ctx.rx_len == PROTO_OFFSET_ADDR) {  /* HEAD 后第 1 字节 = ADDR */
                         /* ADDR = DST(高 4 位) | SRC(低 4 位) */
                         uint8_t dst_addr = (byte >> 4) & PROTO_ADDR_NIBBLE_MASK;
@@ -471,6 +471,30 @@ proto_err_t proto_rx_feed_bits(const uint8_t *bit_buf, uint16_t bit_count)
                             s_rx_ctx.state = PROTO_RX_IDLE;
                             s_rx_ctx.rx_len = 0u;
                             /* 继续处理后续字节（可能包含新的 HEAD）*/
+                            continue;
+                        }
+                    }
+                    
+                    /* 早期过滤 2：检查 TYPE_INFO 字段（第 3 字节，索引 2）*/
+                    if (s_rx_ctx.rx_len == PROTO_OFFSET_TYPE_INFO) {
+                        uint8_t type = (byte >> 4) & PROTO_ADDR_NIBBLE_MASK;
+                        
+                        /* 如果类型非法，丢弃此帧 */
+                        if (!PROTO_TYPE_IS_VALID((proto_type_t)type)) {
+                            s_rx_ctx.state = PROTO_RX_IDLE;
+                            s_rx_ctx.last_error = PROTO_ERR_UNKNOWN_TYPE;
+                            s_rx_ctx.rx_len = 0u;
+                            continue;
+                        }
+                    }
+                    
+                    /* 早期过滤 3：检查 LEN 字段（第 5 字节，索引 4）*/
+                    if (s_rx_ctx.rx_len == PROTO_OFFSET_LEN) {
+                        /* 如果 LEN 超出最大载荷长度，丢弃此帧 */
+                        if (byte > PROTO_PAYLOAD_MAX) {
+                            s_rx_ctx.state = PROTO_RX_IDLE;
+                            s_rx_ctx.last_error = PROTO_ERR_PAYLOAD_TOO_LONG;
+                            s_rx_ctx.rx_len = 0u;
                             continue;
                         }
                     }

@@ -6,26 +6,32 @@
  *              bsw_ad9833      ── 上行回发 / 自载波回显
  *              bsw_bfsk_demod  ── 下行 ACK 接收 / 后续上行数据帧
  *
- * 解调链路：
+ * 解调链路（重构后）：
  *   1. TIM1 输入捕获（mcal_timer_ic_*）记录信号相邻跳变时刻
  *   2. 跳变间隔 Δt → 频率 → BFSK bit（Δt≈1/f0 → 0；Δt≈1/f1 → 1）
- *   3. bit 流累积成帧（帧头 + 数据 + CRC）
- *   4. 解析结果回调给 app_node_fsm
+ *   3. bit 流累积到缓冲区（物理层职责结束）
+ *   4. bit 流交给 bsw_proto 解析成帧（协议层职责）
+ *   5. 帧对象交给 app_frame_handler 处理业务（应用层职责）
  *
  * 频率对来源：
  *   - 从 s_ctx.cur_freq (app_node_fsm) 注入 f0_hz / f1_hz
  *   - 与 bsw_ad9833 已写入的 FREQ0 / FREQ1 对称
  *
  * @dependency  mcal_timer    (TIM1 输入捕获硬件抽象)
- *              app_node_fsm  (注入 cur_freq + 消费解调结果，事件回调)
+ *              bsw_proto     (bit 流 → 帧对象)
+ *              app_node_fsm  (注入 cur_freq + 消费解调结果)
  *
  * @usage
  *   bsw_bfsk_demod_init();
  *   // ...在 FSM 进入 PHASE3 时调用：
  *   bsw_bfsk_demod_start(s_ctx.cur_freq.f0_hz, s_ctx.cur_freq.f1_hz,
- *                        timeout_ms);
+ *                        bit_period_ms, timeout_ms, local_addr);
  *   // 主循环中查询状态：
- *   if (bsw_bfsk_demod_get_state() == BSW_BFSK_DEMOD_DONE_OK) { ... }
+ *   if (bsw_bfsk_demod_get_state() == BSW_BFSK_DEMOD_DONE_OK) {
+ *       bsw_bfsk_demod_result_t result;
+ *       bsw_bfsk_demod_take_result(&result);
+ *       proto_rx_feed_bits(result.bit_buf, result.bit_count);
+ *   }
  */
 
 #ifndef BSW_BFSK_DEMOD_H
@@ -55,19 +61,18 @@ typedef enum {
     BSW_BFSK_DEMOD_ERR_HW    = -3,   /* mcal_timer_ic 启动失败（占位） */
 } bsw_bfsk_demod_ret_t;
 
-/* ========== 解调结果（完整帧结构） ========== */
+/* ========== 解调结果（bit 流） ========== */
+#define BSW_BFSK_DEMOD_BIT_BUF_SIZE  256u  /* bit 缓冲区大小（32字节 = 256 bit，足够一帧）*/
+
 typedef struct {
     /* 频率信息（用于核对） */
-    uint16_t f0_hz;            /* 当时的低频点 */
-    uint16_t f1_hz;            /* 当时的高频点 */
+    uint16_t f0_hz;                                    /* 当时的低频点 */
+    uint16_t f1_hz;                                    /* 当时的高频点 */
     
-    /* 域级解析结果 */
-    uint8_t  frame_addr;       /* ADDR 域（DST(4) + SRC(4)） */
-    uint8_t  frame_type_info;  /* TYPE_INFO 域（TYPE(4) + MSG_NUM(4)） */
-    uint8_t  frame_seq;        /* SEQ 域 */
-    uint8_t  frame_len;        /* LEN 域（PAYLOAD 字节数，最大 10） */
-    uint8_t  frame_payload[10];/* PAYLOAD 域（最大 10 字节） */
-    uint8_t  frame_crc16[2];   /* CRC16 域（低字节在前） */
+    /* bit 流输出（物理层职责） */
+    uint8_t  bit_buf[BSW_BFSK_DEMOD_BIT_BUF_SIZE];    /* bit 流缓冲 */
+    uint16_t bit_count;                                /* 有效 bit 数量 */
+    uint32_t timestamp_ms;                             /* 接收完成时间戳 */
 } bsw_bfsk_demod_result_t;
 
 /* ========== 函数声明 ========== */

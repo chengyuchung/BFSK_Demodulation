@@ -12,8 +12,9 @@
  *       |f_est - f1| < tolerance → bit = 1
  *       否则 → 噪声/错误，丢弃并复位
  *
- * 帧格式（暂定，待协议确认）：
- *   帧头(8 bit) + 数据(N bit) + CRC(8 bit)
+ * 职责边界（重构后）：
+ *   物理层：频率 → bit 流（只输出 bit，不解析帧结构）
+ *   协议层：bit 流 → 帧对象（由 bsw_proto 负责）
  *
  * @dependency  bsw_bfsk_demod.h
  *              mcal_timer.h        (TIM1 IC 启停)
@@ -36,7 +37,7 @@
 #define DEMOD_TIM1_CLK_HZ         10000000U   /* TIM1 时钟频率 (80MHz / 8 分频) */
 #define DEMOD_ARR_OVERFLOW        65536UL     /* TIM1 计数器回绕阈值 */
 #define DEMOD_FREQ_TOLERANCE_PCT  20U         /* 频率容差 ±20% */
-#define DEMOD_MAX_PAYLOAD_LEN     10U         /* 载荷域最大长度（字节） */
+#define DEMOD_BIT_BUF_SIZE        256U        /* bit 缓冲区大小（256 bit = 32 字节）*/
 #define DEMOD_MIN_BIT_DURATION_MS 25U         /* bit 最小持续时间（ms），低于此值视为噪声/偏移残留 */
 #define DEMOD_BITS_PER_BYTE       8U          /* 每字节位数 */
 #define DEMOD_FREQ_NOT_LOCKED     0U          /* 频率未锁定标志 */
@@ -64,19 +65,6 @@ typedef enum {
     FREQ_IS_F1   = 2,  /* 识别为 f1 */
 } freq_id_t;
 
-/* 帧域状态机（边解调边过滤） */
-typedef enum {
-    FIELD_WAIT_HEAD,      /* 等待帧头 0xFF（8 个连续 1） */
-    FIELD_RECV_ADDR,      /* 接收地址域（8 bit：DST(4) + SRC(4)） */
-    FIELD_RECV_TYPE_INFO, /* 接收类型域（8 bit：TYPE(4) + MSG_NUM(4)） */
-    FIELD_RECV_SEQ,       /* 接收序号域（8 bit） */
-    FIELD_RECV_LEN,       /* 接收长度域（8 bit） */
-    FIELD_RECV_PAYLOAD,   /* 接收载荷域（N 字节，由 LEN 决定） */
-    FIELD_RECV_CRC16,     /* 接收 CRC16（2 字节） */
-    FIELD_RECV_TAIL,      /* 接收帧尾 0x00（8 bit） */
-    FIELD_DONE,           /* 完整帧接收完成 */
-} field_state_t;
-
 typedef struct {
     bsw_bfsk_demod_state_t state;
     
@@ -100,21 +88,9 @@ typedef struct {
     uint16_t window_stable_count;   /* 当前频率连续稳定的周期数 */
     uint8_t  window_bit_pushed;     /* 当前窗口是否已 push bit（防重复） */
     
-    /* 域级状态机（边解调边过滤） */
-    field_state_t field_state;
-    uint8_t  byte_buf;           /* 当前字节缓冲（累积 8 bit） */
-    uint8_t  byte_bit_count;     /* 当前字节已累积的 bit 数（0~7） */
-    uint8_t  local_addr;         /* 本机地址（用于 ADDR 域过滤） */
-    
-    /* 帧域缓冲（接收后的完整字段） */
-    uint8_t  frame_addr;         /* ADDR 域（DST + SRC） */
-    uint8_t  frame_type_info;    /* TYPE_INFO 域 */
-    uint8_t  frame_seq;          /* SEQ 域 */
-    uint8_t  frame_len;          /* LEN 域（PAYLOAD 字节数） */
-    uint8_t  frame_payload[DEMOD_MAX_PAYLOAD_LEN];  /* PAYLOAD 域（最大 10 字节） */
-    uint8_t  frame_crc16[2];     /* CRC16 域（2 字节） */
-    uint16_t payload_recv_count; /* PAYLOAD 已接收字节数 */
-    uint8_t  crc_recv_count;     /* CRC16 已接收字节数 */
+    /* bit 流缓冲（物理层职责：只输出 bit，不解析帧） */
+    uint8_t  bit_buf[DEMOD_BIT_BUF_SIZE];  /* bit 流缓冲 */
+    uint16_t bit_count;                     /* 当前累积的 bit 数量 */
     
     /* 超时管理 */
     uint32_t timeout_tick;       /* HAL_GetTick() 超时阈值 */
@@ -129,7 +105,6 @@ static demod_ctx_t s_ctx;  /* 全局静态变量自动零初始化 */
 /* ========== 内部辅助函数（前向声明） ========== */
 static void _push_bit(uint8_t bit);
 static void _reset_bit_buffer(void);
-static void _reset_field_parser(void);
 static void _process_freq_result(freq_id_t freq);
 
 /* ========== 内部辅助函数（实现） ========== */
@@ -145,20 +120,8 @@ static void _reset_bit_buffer(void)
     s_ctx.window_stable_count = 0;
     s_ctx.window_bit_pushed = 0;
     
-    /* 复位域状态机 */
-    _reset_field_parser();
-}
-
-/**
- * @brief   复位域解析状态机（丢弃当前帧，重新搜索帧头）
- */
-static void _reset_field_parser(void)
-{
-    s_ctx.field_state = FIELD_WAIT_HEAD;
-    s_ctx.byte_buf = 0;
-    s_ctx.byte_bit_count = 0;
-    s_ctx.payload_recv_count = 0;
-    s_ctx.crc_recv_count = 0;
+    /* 清空 bit 缓冲区 */
+    s_ctx.bit_count = 0;
 }
 
 /**
@@ -263,141 +226,22 @@ static void _process_freq_result(freq_id_t freq)
 }
 
 /**
- * @brief   向字节缓冲区追加一个 bit（核心：域级状态机 + 早期过滤）
+ * @brief   向 bit 缓冲区追加一个 bit（物理层职责：只累积 bit 流）
  * @param   bit  0 或 1
  */
 static void _push_bit(uint8_t bit)
 {
-    /* 累积当前字节（LSB first）*/
-    if (bit) {
-        s_ctx.byte_buf |= (1U << s_ctx.byte_bit_count);
-    }
-    s_ctx.byte_bit_count++;
-    
-    /* 字节未满 8 bit，继续累积 */
-    if (s_ctx.byte_bit_count < 8) {
+    /* 检查缓冲区是否已满 */
+    if (s_ctx.bit_count >= DEMOD_BIT_BUF_SIZE) {
+        /* 缓冲区满，停止接收（标记为错误） */
+        s_ctx.state = BSW_BFSK_DEMOD_DONE_ERR;
+        mcal_timer_ic_stop(MCAL_TIMER_TIM1);
+        COMPARATOR_CLOSE();
         return;
     }
     
-    /* 字节累积完成（8 bit），处理当前域 */
-    uint8_t byte = s_ctx.byte_buf;
-    uint8_t dst_addr;  /* 提前声明，避免 switch 内声明导致的警告 */
-    
-    switch (s_ctx.field_state) {
-        case FIELD_WAIT_HEAD:
-            /* 搜索帧头 0xFF（8 个连续 1） */
-            if (byte == 0xFF) {
-                /* 找到帧头，进入 ADDR 域 */
-                s_ctx.field_state = FIELD_RECV_ADDR;
-            }
-            /* 否则丢弃，继续搜索下一个字节 */
-            break;
-            
-        case FIELD_RECV_ADDR:
-            /* 接收地址域：DST(高 4 bit) + SRC(低 4 bit) */
-            s_ctx.frame_addr = byte;
-            dst_addr = (byte >> 4) & 0x0F;
-            
-            /* 早期过滤：检查目的地址 */
-            if (dst_addr != s_ctx.local_addr) {
-                /* 地址不匹配，丢弃此帧，重新搜索帧头 */
-                _reset_field_parser();
-                break;
-            }
-            
-            /* 地址匹配，继续接收 TYPE_INFO 域 */
-            s_ctx.field_state = FIELD_RECV_TYPE_INFO;
-            break;
-            
-        case FIELD_RECV_TYPE_INFO:
-            /* 接收类型域：TYPE(高 4 bit) + MSG_NUM(低 4 bit) */
-            s_ctx.frame_type_info = byte;
-            s_ctx.field_state = FIELD_RECV_SEQ;
-            break;
-            
-        case FIELD_RECV_SEQ:
-            /* 接收序号域 */
-            s_ctx.frame_seq = byte;
-            s_ctx.field_state = FIELD_RECV_LEN;
-            break;
-            
-        case FIELD_RECV_LEN:
-            /* 接收长度域 */
-            s_ctx.frame_len = byte;
-            
-            /* 长度合法性检查 */
-            if (s_ctx.frame_len > DEMOD_MAX_PAYLOAD_LEN) {
-                /* 长度非法，丢弃此帧 */
-                _reset_field_parser();
-                break;
-            }
-            
-            /* 如果 PAYLOAD 长度为 0，直接进入 CRC16 域 */
-            if (s_ctx.frame_len == 0) {
-                s_ctx.field_state = FIELD_RECV_CRC16;
-            } else {
-                s_ctx.field_state = FIELD_RECV_PAYLOAD;
-                s_ctx.payload_recv_count = 0;
-            }
-            break;
-            
-        case FIELD_RECV_PAYLOAD:
-            /* 接收载荷域（逐字节） */
-            s_ctx.frame_payload[s_ctx.payload_recv_count++] = byte;
-            
-            /* 检查是否接收完 */
-            if (s_ctx.payload_recv_count >= s_ctx.frame_len) {
-                s_ctx.field_state = FIELD_RECV_CRC16;
-                s_ctx.crc_recv_count = 0;
-            }
-            break;
-            
-        case FIELD_RECV_CRC16:
-            /* 接收 CRC16（2 字节，低字节先） */
-            s_ctx.frame_crc16[s_ctx.crc_recv_count++] = byte;
-            
-            /* 检查是否接收完 */
-            if (s_ctx.crc_recv_count >= 2) {
-                s_ctx.field_state = FIELD_RECV_TAIL;
-            }
-            break;
-            
-        case FIELD_RECV_TAIL:
-            /* 接收帧尾 0x00 */
-            if (byte == 0x00) {
-                /* 帧接收完成！ */
-                s_ctx.field_state = FIELD_DONE;
-                s_ctx.state = BSW_BFSK_DEMOD_DONE_OK;
-                
-                /* 停止硬件 */
-                mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-                
-                /* 关闭比较器电路（节省功耗） */
-                COMPARATOR_CLOSE();
-                
-                /* 填充结果 */
-                s_ctx.result.f0_hz = s_ctx.f0_hz;
-                s_ctx.result.f1_hz = s_ctx.f1_hz;
-                s_ctx.result.frame_addr = s_ctx.frame_addr;
-                s_ctx.result.frame_type_info = s_ctx.frame_type_info;
-                s_ctx.result.frame_seq = s_ctx.frame_seq;
-                s_ctx.result.frame_len = s_ctx.frame_len;
-                memcpy(s_ctx.result.frame_payload, s_ctx.frame_payload, s_ctx.frame_len);
-                memcpy(s_ctx.result.frame_crc16, s_ctx.frame_crc16, 2);
-            } else {
-                /* 帧尾错误，丢弃此帧 */
-                _reset_field_parser();
-            }
-            break;
-            
-        case FIELD_DONE:
-            /* 已完成，不再接收（需调用 take_result 消费） */
-            break;
-    }
-    
-    /* 复位字节缓冲，准备接收下一个字节 */
-    s_ctx.byte_buf = 0;
-    s_ctx.byte_bit_count = 0;
+    /* 累积 bit 到缓冲区 */
+    s_ctx.bit_buf[s_ctx.bit_count++] = bit ? 1u : 0u;
 }
 
 /* ========== 公共 API 实现 ========== */
@@ -446,7 +290,6 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
     s_ctx.f0_hz = f0_hz;
     s_ctx.f1_hz = f1_hz;
     s_ctx.bit_period_ms = bit_period_ms;
-    s_ctx.local_addr = local_addr & 0x0F;  /* 限制为 4 位 */
     s_ctx.f0_half_period_ticks = (DEMOD_TIM1_CLK_HZ / 2) / f0_hz;
     s_ctx.f1_half_period_ticks = (DEMOD_TIM1_CLK_HZ / 2) / f1_hz;
 
@@ -458,7 +301,7 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
                                : s_ctx.f1_half_period_ticks;
     s_ctx.tolerance_ticks = (min_half_period * 30U) / 100U;
 
-    /* 清空 bit 缓冲 + 域状态机 */
+    /* 清空 bit 缓冲 */
     _reset_bit_buffer();
     
     /* 设置超时 */
@@ -495,11 +338,14 @@ void bsw_bfsk_demod_run(uint32_t now_tick)
     /* 超时检查 */
     if (now_tick >= s_ctx.timeout_tick) {
         mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-        
-        /* 超时时先不关闭比较器（超时逻辑待理清） */
-        
+        COMPARATOR_CLOSE();
         s_ctx.state = BSW_BFSK_DEMOD_DONE_TIMEOUT;
     }
+    
+    /* 检查 bit 缓冲区是否接收到足够数据（可选：提前完成条件）
+     * 注：这里可以添加启发式判断，比如接收到一定数量的 bit 后
+     * 就认为一帧可能已完成，提前结束接收。当前简化处理：等超时或缓冲区满。
+     */
 }
 
 bsw_bfsk_demod_state_t bsw_bfsk_demod_get_state(void)
@@ -517,8 +363,14 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out)
         return BSW_BFSK_DEMOD_ERR_STATE;
     }
     
-    /* 拷贝结果 */
-    memcpy(out, &s_ctx.result, sizeof(bsw_bfsk_demod_result_t));
+    /* 填充结果（bit 流 + 频率信息） */
+    out->f0_hz = s_ctx.f0_hz;
+    out->f1_hz = s_ctx.f1_hz;
+    out->bit_count = s_ctx.bit_count;
+    out->timestamp_ms = HAL_GetTick();
+    
+    /* 拷贝 bit 流 */
+    memcpy(out->bit_buf, s_ctx.bit_buf, s_ctx.bit_count);
     
     /* 消费后回到 IDLE，允许下一轮监听 */
     s_ctx.state = BSW_BFSK_DEMOD_IDLE;

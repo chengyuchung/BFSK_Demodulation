@@ -1,41 +1,42 @@
 /**
  * @file    app_node_fsm.c
  * @brief   井下节点状态机实现
- *
- * 状态转移遵循 扫频启动协议.md：
- *   - §一  扫频启动识别（三重物理特征校验）
- *   - §二  扫频结束判定（850 ms 硬超时 + 尾部静默检测）
- *   - §五  断链角色仲裁（4 标志位事务上下文）
- *   - §六  全生命周期休眠逻辑（清洁态鉴别）
  */
 
-#define BFSK_DEMOD_TIMEOUT_MS       5000U   /* BFSK 解调器接收超时（毫秒）*/
-#define SWEEP_AMP_VALID_THRESHOLD    0U     /* 幅度表有效阈值（>0 表示有信号）*/
-#define SWEEP_NOT_STARTED        0U      /* 扫频未启动标志：sweep_start_tick == 0 */
-#define PRE_LINKED_CHECK_INTERVAL_MS 40U    /* PRE_LINKED 状态幅度表检查周期（毫秒）*/
-#define SLOT_NEVER_ARRIVE        0xFFFFFFFFU  /* 槽点永不到达（未初始化） */
-#define LINK_NONE                0U      /* 无活动链路（初始化状态）*/
+#define BFSK_DEMOD_TIMEOUT_MS        5000U
+#define SWEEP_AMP_VALID_THRESHOLD    0U
+#define SWEEP_NOT_STARTED            0U
+#define PRE_LINKED_CHECK_INTERVAL_MS 40U
+#define SLOT_NEVER_ARRIVE            0xFFFFFFFFU
+#define LINK_NONE                    0U
 
 #include "app_node_fsm.h"
-
-#include <string.h>             /* memset */
-
-#include "main.h"                /* HAL_GetTick, Error_Handler */
+#include <string.h>
+#include "main.h"
 #include "bsw_adc_ringbuf.h"
 #include "bsw_ad9833.h"
-#include "bsw_node_id.h"            /* 节点地址模块：本机 hard_id 注入 */
-#include "mcal_timer.h"          /* mcal_timer_ic_start/stop，FSM 直接控制 TIM1 输入捕获 */
-#include "bsw_bfsk_demod.h"      /* BFSK 解调器 */
-#include "bsw_proto.h"           /* 协议层：帧解析 */
-#include "bsw_led.h"             /* LED 状态指示 */
-#include "bsw_freq_storage.h"    /* Flash 频点存储 */
-#include "bsw_version.h"         /* 版本管理 */
+#include "bsw_node_id.h"
+#include "mcal_timer.h"
+#include "bsw_bfsk_demod.h"
+#include "bsw_proto.h"
+#include "bsw_led.h"
+#include "bsw_freq_storage.h"
+#include "bsw_version.h"
+#include "app_frame_handler.h"  /* 帧业务处理层（新模块）*/
 
-/* ========== 静态全局上下文 ========== */
-/* C 标准保证 static 存储期对象零初始化，无需 = {0}，避免与枚举混用的告警 */
+/* 静态全局上下文 */
 static app_node_ctx_t s_ctx;
 
-/* ========== 前向声明 ========== */
+/* 内部类型定义 */
+typedef enum {
+    LINK_OK               = 0,
+    LINK_FAIL_NEED_SCAN   = 1,
+    LINK_FAIL_NEED_LISTEN = 2,
+} link_check_result_t;
+
+/* 前向声明 */
+static void _state_transition(node_state_t next_state, uint32_t now_tick);
+
 static void _state_entry_boot(uint32_t now_tick);
 static void _state_entry_scan_listen(uint32_t now_tick);
 static void _state_entry_scan(uint32_t now_tick);
@@ -58,14 +59,11 @@ static void _phase_quiet_observe(uint32_t now_tick);
 static void _phase_self_reply(uint32_t now_tick);
 static void _phase_wait_ack(uint32_t now_tick);
 
-/* ========== 私有辅助 ========== */
-
 /**
- * @brief   频点 → amp_table 索引的"就近映射"（协议 §三.2）
- * @param   f_hz  扫频检测算法解出的瞬时频率
- * @return  0~18 合法索引；SWEEP_FREQ_INDEX_INVALID 表示落在空白带 / 工频带 / 容差外，应丢弃
- * @note    19 个标称频点：125, 175, 225, ..., 1025 Hz（步进 50 Hz）。
- *          容差 ±15 Hz：超过这个窗口的频点视为无效，不写入 amp_table。
+ * @brief   频点 → amp_table 索引映射
+ * @param   f_hz  频率 (Hz)
+ * @return  0~18 合法索引；SWEEP_FREQ_INDEX_INVALID 表示超出容差
+ * @note    19 个频点：125, 175, 225, ..., 1025 Hz，步进 50 Hz，容差 ±15 Hz
  */
 static uint8_t _sweep_freq_to_index(uint16_t f_hz)
 {
@@ -98,23 +96,47 @@ static uint8_t _sweep_freq_to_index(uint16_t f_hz)
 }
 
 /**
- * @brief   校验频点是否在频点表内（精确匹配 ±容差）
+ * @brief   校验频点是否在频点表内
  * @param   f_hz  待校验的频点 (Hz)
- * @return  true = 在频点表内，false = 不在（垃圾数据或非法频点）
- * @note    用于 Flash 读取后的二次校验，防止使用非法频点
+ * @return  true = 在表内，false = 不在
  */
 static bool _is_freq_in_table(uint16_t f_hz)
 {
-    /* 利用已有的 _sweep_freq_to_index：
-     * 如果能映射到合法索引，说明在频点表 ±容差范围内 */
     return (_sweep_freq_to_index(f_hz) != SWEEP_FREQ_INDEX_INVALID);
 }
 
 /**
- * @brief   协议 §三.3 "只记录，不淘汰" 写 amp_table
- * @note    同一频点多次命中时，只保留幅值最大的那次，绝不丢弃前面的记录。
- *          这是协议抗频点衰减的核心机制：哪怕某个频点信号中途掉到 0，
- *          历史最大幅值仍会留在表里给频对决选用。
+ * @brief   根据频点有效性和节点角色选择初始状态
+ * @note    上行有效 → LINKED（可被上位机控制）
+ *          上行无效 → SCAN_LISTEN（失联，被动监听）
+ *          井上节点（无上级）：直接进入 LINKED（串口直连上位机）
+ */
+static void _select_initial_state(void)
+{
+    uint32_t now_tick = HAL_GetTick();
+    s_ctx.state_enter_tick = now_tick;
+
+    bool uplink_valid   = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
+                           && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
+
+    if (!app_node_fsm_has_uplink()) {
+        /* 井上节点：串口直连上位机，永远可控 */
+        s_ctx.active_link_is_uplink = LINK_DOWNLINK;
+        _state_transition(NODE_LINKED, now_tick);
+    } else {
+        /* 井下/中继节点：上行有效则 LINKED，无效则 SCAN_LISTEN */
+        if (uplink_valid) {
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_LINKED, now_tick);
+        } else {
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+    }
+}
+
+/**
+ * @brief   更新幅度表（只记录最大幅值，不淘汰）
  */
 static void _update_amp_table(uint8_t idx, uint16_t amplitude)
 {
@@ -127,28 +149,28 @@ static void _update_amp_table(uint8_t idx, uint16_t amplitude)
 }
 
 /**
- * @brief   频对决选算法（协议 §三.4）
+ * @brief   频对决选算法
  * @param[out] out_f0  选出的低频点
  * @param[out] out_f1  选出的高频点
- * @retval   DECISION_OK           选出有效 (f0, f1)
- * @retval   DECISION_ERR_NO_VALID amp_table 里 amp > noise_floor + delta 的格 < 2
- * @retval   DECISION_ERR_NO_PAIR  找不出和 f0_idx 间距 ≥ SWEEP_MIN_FREQ_GAP_HZ 的次大候选
- * @note    算法 3 步：
- *          1) 筛有效频点：amp_table[i] > noise_floor + SWEEP_VALID_AMP_DELTA
- *          2) 找最强作为 f0_idx
- *          3) 在剩下的有效候选里，找 amp 次大 + 间距 ≥ SWEEP_MIN_FREQ_GAP_HZ 的作为 f1_idx
- *          协议 §三 要求|f1-f0| ≥ 150 Hz（防止 BFSK 解调频率过近失败）。
+ * @retval   0  成功选出频对
+ * @retval  -1  有效频点数 < 2
+ * @retval  -2  找不到满足间距要求的频对
+ * @note    1. 筛选有效频点：amp > noise_floor + delta
+ *          2. 找最强作为 f0
+ *          3. 找次强且间距 ≥ 150 Hz 作为 f1
  */
 static int32_t _select_freq_pair(uint16_t *out_f0, uint16_t *out_f1)
 {
     uint8_t valid_idx[SWEEP_FREQ_COUNT];
     uint8_t valid_cnt = 0;
+    
     for (uint8_t i = 0; i < SWEEP_FREQ_COUNT; ++i) {
         uint16_t amp = s_ctx.sweep_amp_table[i];
         if (amp > (uint16_t)(s_ctx.noise_floor + SWEEP_VALID_AMP_DELTA)) {
             valid_idx[valid_cnt++] = i;
         }
     }
+    
     if (valid_cnt < SWEEP_MIN_VALID_FREQ_CNT) {
         return -1;
     }
@@ -159,26 +181,31 @@ static int32_t _select_freq_pair(uint16_t *out_f0, uint16_t *out_f1)
             f0_idx = valid_idx[k];
         }
     }
-    /* best_f0 先填好，ERR_NO_PAIR 时调用方也能拿到最强频点 */
+    
     *out_f0 = (uint16_t)SWEEP_FREQ_START + (uint16_t)f0_idx * SWEEP_FREQ_STEP;
 
-    uint8_t  f1_idx       = SWEEP_FREQ_INDEX_INVALID;
-    uint16_t f1_amp_best  = 0;
+    uint8_t  f1_idx = SWEEP_FREQ_INDEX_INVALID;
+    uint16_t f1_amp_best = 0;
+    
     for (uint8_t k = 0; k < valid_cnt; ++k) {
         uint8_t cand = valid_idx[k];
         if (cand == f0_idx) {
             continue;
         }
+        
         uint8_t  gap_idx = (cand > f0_idx) ? (cand - f0_idx) : (f0_idx - cand);
         uint16_t gap_hz  = (uint16_t)gap_idx * SWEEP_FREQ_STEP;
+        
         if (gap_hz < SWEEP_MIN_FREQ_GAP_HZ) {
             continue;
         }
+        
         if (s_ctx.sweep_amp_table[cand] > f1_amp_best) {
             f1_amp_best = s_ctx.sweep_amp_table[cand];
-            f1_idx       = cand;
+            f1_idx = cand;
         }
     }
+    
     if (f1_idx == SWEEP_FREQ_INDEX_INVALID) {
         return -2;
     }
@@ -188,8 +215,7 @@ static int32_t _select_freq_pair(uint16_t *out_f0, uint16_t *out_f1)
 }
 
 /**
- * @brief   内部状态转移（仅本文件调用）
- * @note    每次转移同步记录 state_enter_tick
+ * @brief   内部状态转移
  */
 static void _state_transition(node_state_t next_state, uint32_t now_tick)
 {
@@ -200,7 +226,6 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick)
     s_ctx.state = next_state;
     s_ctx.state_enter_tick = now_tick;
 
-    /* 调用对应状态的 entry 函数 */
     typedef void (*state_entry_t)(uint32_t);
     static const state_entry_t s_entry_table[] = {
         [NODE_BOOT]             = _state_entry_boot,
@@ -222,8 +247,7 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick)
 }
 
 /**
- * @brief   判断总线是否静默超时（清洁态鉴别）
- * @note    协议 §6.2：总线静默后先等 3~5 s，再降级休眠
+ * @brief   判断总线是否静默超时
  */
 static bool _is_bus_quiet(uint32_t now_tick)
 {
@@ -231,81 +255,19 @@ static bool _is_bus_quiet(uint32_t now_tick)
            && ((now_tick - s_ctx.quiet_start_tick) >= BUS_QUIET_TIMEOUT_MS);
 }
 
-/* ========== LINKED 状态断链检测结果 ========== */
-typedef enum {
-    LINK_OK               = 0,  /**< 链路完好，留在 LINKED */
-    LINK_FAIL_NEED_SCAN   = 1,  /**< 链路异常，需进入 SCAN 主动扫频重建下行 */
-    LINK_FAIL_NEED_LISTEN = 2,  /**< 链路异常，需进入 SCAN_LISTEN 被动监听（占位，后续补场景二） */
-} link_check_result_t;
-
 /**
  * @brief   LINKED 状态下的断链检测
- * @param   now_tick  当前 tick
- * @return  link_check_result_t
- *
- * @note    协议 §5.1（4 标志位事务上下文）
- *          仅在 LINKED 状态调用；其他状态不要使用
- *
- * 【场景一】井下节点（hard_id = 0xF）
- *   特点：无下级，只有上行链路
- *   策略：不检测下行断链，永远返回 LINK_OK
- *   原因：井下不主动发送，也不会进入 SCAN 扫频
- *
- * 【场景二】井上节点（hard_id = 0x0）
- *   特点：无上级，只有下行链路
- *   策略：fwd_dn = 0 || rx_dn = 0 → 进入 SCAN
- *   原因：井上是总线主控，下行断了就需要主动重新扫频
- *
- * 【场景三】中继节点（0x1 ~ 0xE）
- *   特点：既有上行也有下行
- *   策略：rx_up = 1 && (fwd_dn = 0 || rx_dn = 0) → 进入 SCAN
- *   原因：只有在上行通畅的前提下，才能安全地向下扫频
- *         如果上行也断了，应该进入 SCAN_LISTEN 等待上级扫频
+ * @note    【完全中心化扫频控制策略】
+ *          所有断链情况由上位机诊断和控制，节点不自动扫频
+ *          返回 LINK_OK，不触发自动 SCAN
  */
 static link_check_result_t _check_link_failure_in_linked(uint32_t now_tick)
 {
-    const node_xact_flags_t *f = &s_ctx.flags;
-    
-    /* 井下节点（无下级）：不检测下行断链，永远返回 LINK_OK */
-    if (!app_node_fsm_has_downlink()) {
-        return LINK_OK;
-    }
-
-    /* 井上节点（无上级）：只要下行异常就进入 SCAN */
-    if (!app_node_fsm_has_uplink()) {
-        if ((f->flag_fwd_dn_ok == FLAG_CLEARED) || (f->flag_rx_dn_ok == FLAG_CLEARED)) {
-            if (_is_bus_quiet(now_tick)) {
-                return LINK_FAIL_NEED_SCAN;
-            }
-        }
-        return LINK_OK;
-    }
-    
-    /* 中继节点：上行通畅（rx_up=1）但下行异常 → 进入 SCAN */
-    if ((f->flag_rx_up_ok == FLAG_SET)
-        && ((f->flag_fwd_dn_ok == FLAG_CLEARED) || (f->flag_rx_dn_ok == FLAG_CLEARED))) {
-        if (_is_bus_quiet(now_tick)) {
-            return LINK_FAIL_NEED_SCAN;
-        }
-    }
-
+    (void)now_tick;
     return LINK_OK;
 }
 
-/* ========== 状态进入函数（Entry Actions） ========== 
- *
- * ADC / TIM6（采样） vs TIM1 IC（解调） vs AD9833（DDS 发送）的状态归属：
- *
- *   | 状态          | ADC ringbuf | TIM6 | TIM1 IC | AD9833  | 用途                              |
- *   |---------------|-------------|------|---------|---------|-----------------------------------|
- *   | BOOT          | disable     | stop | stop    | sleep   | 时钟/外设初始化                   |
- *   | SCAN_LISTEN   | enable      | run  | stop    | sleep   | 被动监听：填 19 格 amp_table      |
- *   | SCAN          | disable     | stop | stop    | active  | 主动扫频：发送 19 个频点 × 40ms   |
- *   | PRE_LINKED    | enable      | run  | stop    | active  | PHASE1 监测总线，PHASE2 发 1010   |
- *   | LINKED        | disable     | stop | start   | sleep   | BFSK 帧收发（解调器工作）         |
- *   | SLEEP         | disable     | stop | stop    | sleep   | 间歇休眠                          |
- *   | FAULT         | disable     | stop | stop    | sleep   | 故障态静默                        |
- */
+/* 状态进入函数 */
 
 static void _state_entry_boot(uint32_t now_tick)
 {
@@ -330,19 +292,17 @@ static void _state_entry_scan(uint32_t now_tick)
 {
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-    /* 850 ms 倒计时接力继承自 SCAN_LISTEN 阶段首次命中时刻 */
+    
     if (s_ctx.sweep_start_tick == SWEEP_NOT_STARTED) {
         s_ctx.sweep_start_tick   = now_tick;
         s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
     }
     
-    /* 初始化扫频发送状态 */
-    s_ctx.scan_freq_index     = 0;  /* 从第一个频点开始（125 Hz） */
+    s_ctx.scan_freq_index     = 0;
     s_ctx.scan_freq_next_tick = now_tick + SCAN_FREQ_DURATION_MS;
     
-    /* 配置 AD9833 发送第一个频点 */
-    uint16_t first_freq = SWEEP_FREQ_START;  /* 125 Hz */
-    (void)bsw_ad9833_sleep(false);  /* 确保唤醒 */
+    uint16_t first_freq = SWEEP_FREQ_START;
+    (void)bsw_ad9833_sleep(false);
     (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, first_freq);
     (void)bsw_ad9833_select(BSW_AD9833_REG_0);
     
@@ -351,24 +311,11 @@ static void _state_entry_scan(uint32_t now_tick)
 
 static void _state_entry_scan_wait_reply(uint32_t now_tick)
 {
-    /* 上级节点扫频完成，等待下级节点的 1010 回应波形
-     * 1. 关闭 AD9833（不再发送）
-     * 2. 启动 ADC 监听（复用扫频检测算法）
-     * 3. 初始化 1010 交替检测状态
-     * 
-     * 注意：这里不需要启动 TIM1 输入捕获！
-     * - TIM1 是 BFSK 解调器专用（半周期解调法）
-     * - 我们这里只是检测 1010 波形的频率，用扫频检测算法（ADC + 频谱分析）即可
-     * - 外部会调用 app_node_fsm_on_sweep_detected() 注入频率检测结果
-     */
     (void)bsw_ad9833_sleep(true);
     bsw_adc_ringbuf_enable();
-    /* 不启动 TIM1 输入捕获 - 我们不需要解调 BFSK，只需要频率检测 */
     
-    /* 清空幅度表（虽然在这个状态下不使用 amp_table，但保持一致性）*/
     memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
     
-    /* 初始化 1010 交替检测状态 - PHASE1: 等待 1010 波形 */
     s_ctx.scan_wait_reply_start_tick = now_tick;
     s_ctx.scan_wait_reply_phase      = SCAN_WAIT_1010;
     s_ctx.scan_ack_sent_tick         = QUIET_NOT_STARTED;
@@ -401,57 +348,29 @@ static void _state_entry_linked(uint32_t now_tick)
 
     proto_rx_init(s_ctx.hard_id);
 
-    /* 根据活动链路选择频点 */
     node_freq_pair_t *active_freq = (s_ctx.active_link_is_uplink == LINK_UPLINK)
                                      ? &s_ctx.uplink_freq
                                      : &s_ctx.downlink_freq;
 
-    /* 频点有效性校验（双保险：运行时也可能从其他状态跳转到 LINKED）
-     * 
-     * 策略：和 init 保持一致
-     *   上行 ✗  下行 ✗ → SCAN_LISTEN  （优先被动监听上级）
-     *   上行 ✓  下行 ✗ → SCAN         （主动扫下行）
-     *   上行 ✗  下行 ✓ → SCAN_LISTEN  （被动监听上级）
-     *   上行 ✓  下行 ✓ → 正常进 LINKED
-     */
+    /* 频点有效性校验 */
     if (active_freq->f0_hz == FREQ_NOT_LOCKED
         || active_freq->f1_hz == FREQ_NOT_LOCKED) {
-        /* 当前活动链路频点无效，需要重建链路 */
         
-        bool uplink_valid   = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
-                               && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
-        bool downlink_valid = (s_ctx.downlink_freq.f0_hz != FREQ_NOT_LOCKED 
-                               && s_ctx.downlink_freq.f1_hz != FREQ_NOT_LOCKED);
+        bool uplink_valid = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
+                             && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
         
-        /* 清空无效频点（避免误用） */
         active_freq->f0_hz = FREQ_NOT_LOCKED;
         active_freq->f1_hz = FREQ_NOT_LOCKED;
         
-        /* 根据节点角色和频点有效性选择下一个状态 */
         if (!app_node_fsm_has_uplink()) {
-            /* 井上节点（无上级）：只检查下行，下行无效就扫频 */
-            if (!downlink_valid) {
-                _state_transition(NODE_SCAN, now_tick);
-            }
-            /* 井上节点下行有效时留在 LINKED，继续下面的 BFSK 启动 */
-        } else if (!app_node_fsm_has_downlink()) {
-            /* 井下节点（无下级）：只检查上行，上行无效就监听 */
+            /* 井上节点：保持 LINKED，等待上位机命令 */
+            return;
+        } else {
             if (!uplink_valid) {
                 _state_transition(NODE_SCAN_LISTEN, now_tick);
             }
-            /* 井下节点上行有效时留在 LINKED，继续下面的 BFSK 启动 */
-        } else {
-            /* 中继节点：检查上下行 */
-            if (uplink_valid && !downlink_valid) {
-                /* 只有上行有效：主动扫下行 */
-                _state_transition(NODE_SCAN, now_tick);
-            } else if (!uplink_valid) {
-                /* 上行无效：被动监听上级 */
-                _state_transition(NODE_SCAN_LISTEN, now_tick);
-            }
-            /* 中继节点上下行都有效时留在 LINKED，继续下面的 BFSK 启动 */
+            return;
         }
-        return;
     }
 
     bsw_bfsk_demod_start(active_freq->f0_hz,
@@ -478,7 +397,7 @@ static void _state_entry_fault(uint32_t now_tick)
     bsw_led_set_state(LED_STATE_FAULT);
 }
 
-/* ========== PRE_LINKED 子状态机 ========== */
+/* PRE_LINKED 子状态机 */
 
 typedef void (*phase_handler_t)(uint32_t now_tick);
 
@@ -488,17 +407,14 @@ static const phase_handler_t s_phase_handlers[] = {
     [PRE_WAIT_ACK]      = _phase_wait_ack,
 };
 
-/* PHASE1：等自己槽点（my_id × 200ms），期间 40ms 节拍器测总线避让他人回发 */
+/* PHASE1：等待自己的时间槽，期间监测总线避让 */
 static void _phase_quiet_observe(uint32_t now_tick)
 {
-    /* 每 40ms 检测一次总线能量（ADC RMS²）
-     * 若检测到应答信号（别人抢先回发）→ 退让，重新扫频 */
     if ((now_tick - s_ctx.pre_linked_last_check_tick) >= PRE_LINKED_CHECK_INTERVAL_MS) {
         s_ctx.pre_linked_last_check_tick = now_tick;
         uint32_t rms_sq = bsw_adc_ringbuf_calc_rms_sq();
         if (rms_sq > BSW_ADC_RINGBUF_SIGNAL_THRESHOLD) {
-            /* 检测到别人应答 → 清空频点，退让重新扫频
-             * 注：enable() 已在 PRE_LINKED entry 调用，此处无需重复启动 ADC */
+            /* 检测到别人应答，退让重新扫频 */
             s_ctx.uplink_freq.f0_hz  = FREQ_NOT_LOCKED;
             s_ctx.uplink_freq.f1_hz  = FREQ_NOT_LOCKED;
             s_ctx.sweep_result.f0_hz = FREQ_NOT_LOCKED;
@@ -519,11 +435,9 @@ static void _phase_quiet_observe(uint32_t now_tick)
         return;
     }
 
-    /* 槽点到期，开始自己回发频对（PHASE2）
-     * 先停 ADC（不再需要监测），再配置 AD9833 */
+    /* 槽点到期，开始回发频对 */
     bsw_adc_ringbuf_disable();
     
-    /* PRE_LINKED 状态使用上级频点（被扫方与上级通信） */
     (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, s_ctx.uplink_freq.f0_hz);
     (void)bsw_ad9833_set_freq(BSW_AD9833_REG_1, s_ctx.uplink_freq.f1_hz);
     (void)bsw_ad9833_select(BSW_AD9833_REG_0);
@@ -534,27 +448,28 @@ static void _phase_quiet_observe(uint32_t now_tick)
     s_ctx.self_reply_next_bit_tick = now_tick + PRE_BFSK_BIT_PERIOD_MS;
 }
 
-/* PHASE2：在 (f0, f1) 上交替 BFSK 调制持续 2s */
+/* PHASE2：在 (f0, f1) 上交替发送 2s */
 static void _phase_self_reply(uint32_t now_tick)
 {
     if ((now_tick - s_ctx.pre_phase_enter_tick) >= PRE_REPLY_DURATION_MS) {
         /* 2s 发送完毕，进入 PHASE3 等待 ACK */
         (void)bsw_ad9833_sleep(true);
         
-        /* 启动 BFSK 解调器监听井上 ACK（使用上级频点） */
         bsw_bfsk_demod_start(s_ctx.uplink_freq.f0_hz,
                             s_ctx.uplink_freq.f1_hz,
                             PRE_BFSK_BIT_PERIOD_MS,
-                            PRE_ACK_TIMEOUT_MS,     /* 5s 超时 */
+                            PRE_ACK_TIMEOUT_MS,
                             s_ctx.hard_id);
         
         s_ctx.pre_linked_phase     = PRE_WAIT_ACK;
         s_ctx.pre_phase_enter_tick = now_tick;
         return;
     }
+    
     if ((int32_t)(now_tick - s_ctx.self_reply_next_bit_tick) < 0) {
         return;
     }
+    
     if (s_ctx.self_reply_cur_is_f0) {
         (void)bsw_ad9833_select(BSW_AD9833_REG_1);
         s_ctx.self_reply_cur_is_f0 = false;
@@ -565,51 +480,53 @@ static void _phase_self_reply(uint32_t now_tick)
     s_ctx.self_reply_next_bit_tick = now_tick + PRE_BFSK_BIT_PERIOD_MS;
 }
 
-/* PHASE3：等井上 ACK */
+/* PHASE3：等待井上 ACK */
 static void _phase_wait_ack(uint32_t now_tick)
 {
     bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
     
     if (demod_state == BSW_BFSK_DEMOD_DONE_OK) {
-        /* 收到帧，检查是否为 ACK */
         bsw_bfsk_demod_result_t demod_result;
         if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK) {
-            /* 解析帧类型：取 type_info 高 4 位 */
-            uint8_t frame_type = (demod_result.frame_type_info >> 4) & 0x0F;
-            uint8_t msg_num    = demod_result.frame_type_info & 0x0F;
+            /* 初始化协议接收器（首次） */
+            static bool proto_rx_initialized = false;
+            if (!proto_rx_initialized) {
+                proto_rx_init(bsw_node_id_get());
+                proto_rx_initialized = true;
+            }
             
-            /* 检查是否为 REPLY 类型 + REPLY_FREQ_PAIR 消息（井上确认频对）
-             * PROTO_TYPE_REPLY = 0x3, PROTO_REPLY_FREQ_PAIR = 0x0 */
-            if (frame_type == 0x3 && msg_num == 0x0) {
-                
-                /* 解析载荷：[f0_hz(2)][f1_hz(2)] 小端序 */
-                if (demod_result.frame_len >= 4) {
-                    uint16_t ack_f0 = demod_result.frame_payload[0] | (demod_result.frame_payload[1] << 8);
-                    uint16_t ack_f1 = demod_result.frame_payload[2] | (demod_result.frame_payload[3] << 8);
-                    
-                    /* 验证频对是否匹配（PRE_LINKED 使用上级频点） */
-                    if (ack_f0 == s_ctx.uplink_freq.f0_hz && ack_f1 == s_ctx.uplink_freq.f1_hz) {
-                        /* ACK 确认成功，进入 LINKED 工作态 */
-                        bsw_bfsk_demod_stop();
-                        _state_transition(NODE_LINKED, now_tick);
-                        return;
+            /* 把 bit 流喂给协议层 */
+            proto_rx_feed_bits(demod_result.bit_buf, demod_result.bit_count);
+            
+            /* 检查是否有解析好的帧 */
+            if (proto_rx_get_state() == PROTO_RX_DONE) {
+                proto_frame_t frame;
+                if (proto_rx_take_frame(&frame) == PROTO_ERR_OK) {
+                    /* 检查是否是 ACK 帧（REPLY_FREQ_PAIR: type=0x3, msg_num=0x0）*/
+                    if (frame.type_info.type == PROTO_TYPE_REPLY 
+                        && frame.type_info.msg_num == PROTO_REPLY_FREQ_PAIR) {
+                        if (frame.payload_len >= 4) {
+                            uint16_t ack_f0 = frame.payload[0] | (frame.payload[1] << 8);
+                            uint16_t ack_f1 = frame.payload[2] | (frame.payload[3] << 8);
+                            
+                            if (ack_f0 == s_ctx.uplink_freq.f0_hz && ack_f1 == s_ctx.uplink_freq.f1_hz) {
+                                bsw_bfsk_demod_stop();
+                                _state_transition(NODE_LINKED, now_tick);
+                                return;
+                            }
+                        }
                     }
                 }
             }
         }
-        
-        /* 收到其他帧，继续等待（不重启解调器，继续监听）*/
         return;
     }
     else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
-        /* 超时处理 */
         bsw_bfsk_demod_stop();
         
         if (s_ctx.pre_ack_retry_count < PRE_ACK_MAX_RETRY) {
-            /* 还有重试机会，重新回到 PHASE2 发送 1010 */
             s_ctx.pre_ack_retry_count++;
             
-            /* 唤醒 AD9833，重新配置频点（使用上级频点） */
             (void)bsw_ad9833_sleep(false);
             (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, s_ctx.uplink_freq.f0_hz);
             (void)bsw_ad9833_set_freq(BSW_AD9833_REG_1, s_ctx.uplink_freq.f1_hz);
@@ -620,7 +537,6 @@ static void _phase_wait_ack(uint32_t now_tick)
             s_ctx.self_reply_cur_is_f0     = true;
             s_ctx.self_reply_next_bit_tick = now_tick + PRE_BFSK_BIT_PERIOD_MS;
         } else {
-            /* 重试次数用尽，清空上级频点，重新扫频 */
             s_ctx.uplink_freq.f0_hz  = FREQ_NOT_LOCKED;
             s_ctx.uplink_freq.f1_hz  = FREQ_NOT_LOCKED;
             s_ctx.sweep_result.f0_hz = FREQ_NOT_LOCKED;
@@ -628,10 +544,9 @@ static void _phase_wait_ack(uint32_t now_tick)
             _state_transition(NODE_SCAN_LISTEN, now_tick);
         }
     }
-    /* 其他状态（IDLE/RUNNING）继续等待 */
 }
 
-/* ========== 状态运行函数（Run Actions） ========== */
+/* 状态运行函数 */
 
 static void _state_run_boot(uint32_t now_tick)
 {
@@ -782,154 +697,67 @@ static void _state_run_pre_linked(uint32_t now_tick)
     }
 }
 
-/* ========== LINKED 状态帧处理（函数表驱动） ========== */
+/* ========== LINKED 状态：帧处理（委托给 app_frame_handler）========== */
 
-typedef void (*frame_handler_t)(const proto_frame_t *frame);
-
-/* 帧类型处理函数（待实现） */
-static void _handle_query_frame(const proto_frame_t *frame)
-{
-    uint8_t local_addr = bsw_node_id_get();
-    
-    /* 地址过滤：不是发给我的就忽略 */
-    if (frame->addr.dst != local_addr) {
-        return;
-    }
-    
-    /* 根据查询类型处理 */
-    switch (frame->type_info.msg_num) {
-        case PROTO_QUERY_VERSION:
-        {
-            const bsw_version_info_t *ver = bsw_version_get_info();
-            
-            /* 准备回复帧 */
-            proto_frame_t reply;
-            reply.addr.dst = frame->addr.src;  /* 回复给查询方 */
-            reply.addr.src = local_addr;
-            reply.type_info.type = PROTO_TYPE_REPLY;
-            reply.type_info.msg_num = PROTO_REPLY_VERSION;
-            reply.seq = frame->seq;
-            reply.payload_len = PROTO_VERSION_PAYLOAD_SIZE;
-            
-            /* 打包版本号（小端格式）*/
-            reply.payload[0] = (uint8_t)((ver->sw_version_date >>  0) & 0xFFU);
-            reply.payload[1] = (uint8_t)((ver->sw_version_date >>  8) & 0xFFU);
-            reply.payload[2] = (uint8_t)((ver->sw_version_date >> 16) & 0xFFU);
-            reply.payload[3] = (uint8_t)((ver->sw_version_date >> 24) & 0xFFU);
-            reply.payload[4] = (uint8_t)((ver->hw_version_date >>  0) & 0xFFU);
-            reply.payload[5] = (uint8_t)((ver->hw_version_date >>  8) & 0xFFU);
-            reply.payload[6] = (uint8_t)((ver->hw_version_date >> 16) & 0xFFU);
-            reply.payload[7] = (uint8_t)((ver->hw_version_date >> 24) & 0xFFU);
-            
-            /* 发送回复帧（通过 proto_frame_pack 和 BFSK 调制）*/
-            uint8_t tx_buf[PROTO_FRAME_MAX];
-            uint32_t tx_len = 0;
-            proto_err_t err = proto_frame_pack(tx_buf, sizeof(tx_buf), &reply, &tx_len);
-            
-            if (err == PROTO_ERR_OK && tx_len > 0) {
-                /* TODO: 调用 BFSK 调制器发送 tx_buf，长度 tx_len
-                 * 示例：bsw_bfsk_mod_send(tx_buf, tx_len);
-                 * 注意：需要根据 active_link 选择正确的频点对
-                 */
-            }
-            break;
-        }
-        
-        case PROTO_QUERY_TEMP_PRESS:
-            /* TODO: 处理温压查询 */
-            break;
-            
-        case PROTO_QUERY_BATTERY:
-            /* TODO: 处理电池查询 */
-            break;
-            
-        case PROTO_QUERY_FAULT:
-            /* TODO: 处理故障查询 */
-            break;
-            
-        default:
-            /* 未知查询类型，忽略 */
-            break;
-    }
-}
-
-static void _handle_control_frame(const proto_frame_t *frame)
-{
-    (void)frame;
-    /* TODO: 处理 CONTROL 类型帧（休眠/唤醒/阈值设置）*/
-}
-
-static void _handle_ask_frame(const proto_frame_t *frame)
-{
-    (void)frame;
-    /* TODO: 处理 ASK 类型帧（空闲确认）*/
-}
-
-static void _handle_reply_frame(const proto_frame_t *frame)
-{
-    (void)frame;
-    /* TODO: 处理 REPLY 类型帧（频点确认/ACK/NACK/重传请求）*/
-}
-
-static void _handle_alarm_frame(const proto_frame_t *frame)
-{
-    (void)frame;
-    /* TODO: 处理 ALARM 类型帧（低电/温度/压力/传感器故障）*/
-}
-
-static void _handle_scan_frame(const proto_frame_t *frame)
-{
-    (void)frame;
-    /* TODO: 处理 SCAN 类型帧（扫频起始/结束）*/
-}
-
-/* 帧类型分发表（索引对齐 proto_type_t 枚举）*/
-static const frame_handler_t s_frame_handlers[] = {
-    [PROTO_TYPE_QUERY]    = _handle_query_frame,    /* 0x0 */
-    [PROTO_TYPE_CONTROL]  = _handle_control_frame,  /* 0x1 */
-    [PROTO_TYPE_ASK]      = _handle_ask_frame,      /* 0x2 */
-    [PROTO_TYPE_REPLY]    = _handle_reply_frame,    /* 0x3 */
-    [PROTO_TYPE_ALARM]    = _handle_alarm_frame,    /* 0x4 */
-    [5] = NULL, [6] = NULL, [7] = NULL, [8] = NULL, /* 预留 */
-    [9] = NULL, [10] = NULL, [11] = NULL, [12] = NULL,
-    [PROTO_TYPE_SCAN]     = _handle_scan_frame,     /* 0xD */
-    [14] = NULL,
-    [PROTO_TYPE_RESERVED] = NULL,                   /* 0xF */
-};
-
-static void _state_run_linked(uint32_t now_tick)
+/**
+ * @brief   处理解调器接收到的 bit 流
+ * @note    调用链：demod → proto → frame_handler
+ *          1. 取 demod 结果（bit 流）
+ *          2. 喂给 proto 状态机（bit → 字节 → 帧）
+ *          3. 解析成功后分发给 app_frame_handler
+ *          4. 设置标志位
+ */
+static void _handle_demod_result(void)
 {
     bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
     
     if (demod_state == BSW_BFSK_DEMOD_DONE_OK) {
         bsw_bfsk_demod_result_t demod_result;
         if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK) {
-            proto_frame_t frame;
-            frame.addr.dst = (demod_result.frame_addr >> 4) & 0x0F;
-            frame.addr.src = demod_result.frame_addr & 0x0F;
-            frame.type_info.type = (proto_type_t)((demod_result.frame_type_info >> 4) & 0x0F);
-            frame.type_info.msg_num = demod_result.frame_type_info & 0x0F;
-            frame.seq = demod_result.frame_seq;
-            frame.payload_len = demod_result.frame_len;
-            memcpy(frame.payload, demod_result.frame_payload, demod_result.frame_len);
+            /* 步骤 1: 初始化协议接收器（首次） */
+            static bool proto_rx_initialized = false;
+            if (!proto_rx_initialized) {
+                proto_rx_init(bsw_node_id_get());
+                proto_rx_initialized = true;
+            }
             
-            /* TODO: CRC16 校验（可选） */
+            /* 步骤 2: 把 bit 流喂给协议层 */
+            proto_err_t proto_err = proto_rx_feed_bits(demod_result.bit_buf, 
+                                                       demod_result.bit_count);
             
-            /* 根据帧类型分发到对应处理函数 */
-            if (frame.type_info.type < sizeof(s_frame_handlers) / sizeof(s_frame_handlers[0])) {
-                frame_handler_t handler = s_frame_handlers[frame.type_info.type];
-                if (handler != NULL) {
-                    handler(&frame);
+            /* 步骤 3: 检查协议层是否有解析好的帧 */
+            if (proto_rx_get_state() == PROTO_RX_DONE) {
+                proto_frame_t frame;
+                if (proto_rx_take_frame(&frame) == PROTO_ERR_OK) {
+                    /* 步骤 4: 分发给业务层处理 */
+                    app_frame_handler_dispatch(&frame);
+                    
+                    /* 步骤 5: 设置标志位（链路活跃）*/
+                    app_node_fsm_flag_set_rx_up();
                 }
             }
             
-            app_node_fsm_flag_set_rx_up();
+            /* 协议层错误处理 */
+            if (proto_rx_get_state() == PROTO_RX_ERROR) {
+                proto_err_t err = proto_rx_get_last_error();
+                (void)err;  /* TODO: 错误统计 */
+            }
         }
     }
     else if (demod_state == BSW_BFSK_DEMOD_DONE_TIMEOUT) {
         bsw_bfsk_demod_stop();
         /* 根据需要重新启动 */
     }
+    else if (demod_state == BSW_BFSK_DEMOD_DONE_ERR) {
+        /* 解调错误（缓冲区满等），复位并重新启动 */
+        bsw_bfsk_demod_stop();
+    }
+}
+
+static void _state_run_linked(uint32_t now_tick)
+{
+    /* 步骤 1: 处理解调结果（bit 流 → 帧 → 业务） */
+    _handle_demod_result();
     
     /* ========== 断链检测（上行链路） ========== */
     
@@ -1057,67 +885,8 @@ void app_node_fsm_init(uint8_t hard_id)
         s_ctx.downlink_freq.f1_hz = FREQ_NOT_LOCKED;
     }
 
-    /* ========== 根据 Flash 备份情况和节点角色选择初始状态 ========== 
-     *
-     * 井上节点（无上级）：
-     *   下行 ✓ → LINKED       （有下级，直接工作）
-     *   下行 ✗ → SCAN         （无下级，主动扫频）
-     *
-     * 井下节点（无下级）：
-     *   上行 ✓ → LINKED       （有上级，直接工作）
-     *   上行 ✗ → SCAN_LISTEN  （无上级，被动监听）
-     *
-     * 中继节点（有上下级）：
-     *   上行 ✓  下行 ✓ → LINKED       （全链路，直接工作）
-     *   上行 ✓  下行 ✗ → SCAN         （有上级缺下级，主动扫下行）
-     *   上行 ✗  下行 ✗ → SCAN_LISTEN  （全新节点，被动监听上级）
-     *   上行 ✗  下行 ✓ → SCAN_LISTEN  （有下级缺上级，被动监听上级）
-     */
-    uint32_t now_tick = HAL_GetTick();
-    s_ctx.state_enter_tick = now_tick;
-
-    bool uplink_valid   = (s_ctx.uplink_freq.f0_hz != FREQ_NOT_LOCKED 
-                           && s_ctx.uplink_freq.f1_hz != FREQ_NOT_LOCKED);
-    bool downlink_valid = (s_ctx.downlink_freq.f0_hz != FREQ_NOT_LOCKED 
-                           && s_ctx.downlink_freq.f1_hz != FREQ_NOT_LOCKED);
-
-    if (!app_node_fsm_has_uplink()) {
-        /* 井上节点（无上级）*/
-        if (downlink_valid) {
-            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
-            _state_transition(NODE_LINKED, now_tick);
-        } else {
-            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
-            _state_transition(NODE_SCAN, now_tick);
-        }
-    } else if (!app_node_fsm_has_downlink()) {
-        /* 井下节点（无下级）*/
-        if (uplink_valid) {
-            s_ctx.active_link_is_uplink = LINK_UPLINK;
-            _state_transition(NODE_LINKED, now_tick);
-        } else {
-            s_ctx.active_link_is_uplink = LINK_UPLINK;
-            _state_transition(NODE_SCAN_LISTEN, now_tick);
-        }
-    } else {
-        /* 中继节点（有上下级）*/
-        if (uplink_valid && downlink_valid) {
-            /* 上下行都有效：直接进入 LINKED 工作态
-             * 选择上行作为活动链路（默认优先与上级通信） */
-            s_ctx.active_link_is_uplink = LINK_UPLINK;
-            _state_transition(NODE_LINKED, now_tick);
-        } else if (uplink_valid && !downlink_valid) {
-            /* 只有上行有效：进入 SCAN 主动扫下行
-             * 活动链路设为下行（扫频目标） */
-            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
-            _state_transition(NODE_SCAN, now_tick);
-        } else {
-            /* 其他情况（上行无效）：进入 SCAN_LISTEN 被动监听
-             * - 全无：等上级扫频
-             * - 只有下行：缺上级，也要等上级扫频 */
-            _state_transition(NODE_SCAN_LISTEN, now_tick);
-        }
-    }
+    /* 根据 Flash 备份的频点情况选择初始状态 */
+    _select_initial_state();
 }
 
 void app_node_fsm_run(uint32_t now_tick)
@@ -1416,6 +1185,33 @@ void app_node_fsm_flag_clear_rx_dn(void)
 void app_node_fsm_flag_clear_fwd_up(void)
 {
     s_ctx.flags.flag_fwd_up_ok = FLAG_CLEARED;
+}
+
+void app_node_fsm_on_scan_order(uint8_t scan_direction)
+{
+    uint32_t now_tick = HAL_GetTick();
+    
+    /* 【中心化扫频控制】
+     * - 井上通过 CMD_SCAN_ORDER 指令指定节点扫频
+     * - scan_direction: 0=扫上行（一般不用），1=扫下行
+     */
+    
+    if (scan_direction == 1) {
+        /* 扫下行：设置活动链路为下行，进入 SCAN 状态 */
+        if (app_node_fsm_has_downlink()) {
+            s_ctx.active_link_is_uplink = LINK_DOWNLINK;
+            _state_transition(NODE_SCAN, now_tick);
+        }
+        /* 井下节点没有下级，忽略此命令 */
+    } else {
+        /* 扫上行：一般不需要，因为上行断了应该自动进入 SCAN_LISTEN
+         * 但为了协议完整性，也支持这个方向 */
+        if (app_node_fsm_has_uplink()) {
+            s_ctx.active_link_is_uplink = LINK_UPLINK;
+            _state_transition(NODE_SCAN_LISTEN, now_tick);
+        }
+        /* 井上节点没有上级，忽略此命令 */
+    }
 }
 
 void app_node_fsm_on_quiet_timeout(uint32_t now_tick)

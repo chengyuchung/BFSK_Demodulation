@@ -95,6 +95,8 @@ extern "C" {
 
 /* ========== 协议字段偏移量（用于早期过滤）========== */
 #define PROTO_OFFSET_ADDR       2u      /* rx_len == 2 时完整接收到 ADDR 字段（索引 1）*/
+#define PROTO_OFFSET_TYPE_INFO  3u      /* rx_len == 3 时完整接收到 TYPE_INFO 字段（索引 2）*/
+#define PROTO_OFFSET_LEN        5u      /* rx_len == 5 时完整接收到 LEN 字段（索引 4）*/
 
 /** 整帧线缆字节上限（最坏情况：PAYLOAD 和 CRC16 每个字节都被转义成 2 字节）
  *      HEAD(1) + ADDR(1) + TYPE_INFO(1) + SEQ(1) + LEN(1)
@@ -236,6 +238,32 @@ typedef struct {
 
 /** 版本号载荷字节数 */
 #define PROTO_VERSION_PAYLOAD_SIZE  8u
+
+/* ========== 温压数据载荷结构（用于 QUERY_TEMP_PRESS 回复）========== */
+
+/**
+ * @brief   温压数据载荷（用于 QUERY 温压查询的 REPLY 回复）
+ * 
+ * 载荷格式（共 6 字节）：
+ *   [temperature_centi_c(2)] + [pressure_pa(4)]
+ * 
+ * 数据单位：
+ *   - temperature_centi_c: int16_t，单位 0.01°C（例如 2550 表示 25.50°C）
+ *   - pressure_pa:         uint32_t，单位 Pa（例如 101325 表示 101.325 kPa）
+ * 
+ * @note    小端传输（低字节在前）
+ * 
+ * @example
+ *   温度：25.50°C  → temperature_centi_c = 2550 → [0xF6, 0x09]
+ *   气压：101325Pa → pressure_pa = 101325 → [0xCD, 0x8B, 0x01, 0x00]
+ */
+typedef struct {
+    int16_t  temperature_centi_c;  /**< 温度，单位 0.01°C，有符号（支持负温）*/
+    uint32_t pressure_pa;          /**< 气压，单位 Pa，无符号 */
+} proto_temp_press_payload_t;
+
+/** 温压载荷字节数 */
+#define PROTO_TEMP_PRESS_PAYLOAD_SIZE  6u
 
 /* ========== 解码后的帧对象 ========== */
 
