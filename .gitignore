@@ -30,6 +30,9 @@ $RECYCLE.BIN/
 *.uvguix.*
 *.scvd
 
+# uVision 配置窗口布局（IDE 自动改写、不同机器布局不同），建议一并忽略
+*.uvoptx
+
 # Keil 编译产物
 *.o
 *.ioc
@@ -47,6 +50,9 @@ $RECYCLE.BIN/
 *.sct
 *.iex
 *.htmdep
+
+# Keil 汇编列表文件（每台机器重新生成）
+*.lst
 
 # Keil 输出目录
 DebugConfig/
@@ -111,3 +117,7 @@ slprj/
 slexec/
 *.mex*
 *.mexw64
+
+# ---------- Keil 工程配置（GUI 状态/编译日志） ----------
+*.uvguix.*
+*.build_log.htm

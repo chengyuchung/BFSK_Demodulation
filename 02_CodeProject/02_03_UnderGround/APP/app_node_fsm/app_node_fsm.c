@@ -161,56 +161,81 @@ static void _update_amp_table(uint8_t idx, uint16_t amplitude)
  */
 static int32_t _select_freq_pair(uint16_t *out_f0, uint16_t *out_f1)
 {
-    uint8_t valid_idx[SWEEP_FREQ_COUNT];
-    uint8_t valid_cnt = 0;
+    /* 【步骤 1】找到幅值最大的频点 */
+    uint16_t max_amp = 0;
     
     for (uint8_t i = 0; i < SWEEP_FREQ_COUNT; ++i) {
-        uint16_t amp = s_ctx.sweep_amp_table[i];
-        if (amp > (uint16_t)(s_ctx.noise_floor + SWEEP_VALID_AMP_DELTA)) {
-            valid_idx[valid_cnt++] = i;
+        if (s_ctx.sweep_amp_table[i] > max_amp) {
+            max_amp = s_ctx.sweep_amp_table[i];
         }
     }
     
-    if (valid_cnt < SWEEP_MIN_VALID_FREQ_CNT) {
-        return -1;
+    if (max_amp == 0) {
+        return -1;  /* 无有效信号 */
+    }
+    
+    /* 【步骤 2】计算强度门限 = max_amp * 70% */
+    uint16_t strength_threshold = (max_amp * SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT) / 100u;
+    
+    /* 【步骤 3】筛选超过门限的频点 */
+    uint8_t strong_idx[SWEEP_FREQ_COUNT];
+    uint8_t strong_cnt = 0;
+    
+    for (uint8_t i = 0; i < SWEEP_FREQ_COUNT; ++i) {
+        if (s_ctx.sweep_amp_table[i] >= strength_threshold) {
+            strong_idx[strong_cnt++] = i;
+        }
+    }
+    
+    if (strong_cnt < SWEEP_MIN_VALID_FREQ_CNT) {
+        return -1;  /* 强度足够的频点不足 */
+    }
+    
+    /* 【步骤 4】在强频点中找幅值最接近的两个，且满足最小间隔要求 */
+    uint8_t  best_f0_idx = SWEEP_FREQ_INDEX_INVALID;
+    uint8_t  best_f1_idx = SWEEP_FREQ_INDEX_INVALID;
+    uint16_t best_amp_diff = 0xFFFFU;  /* 幅值差异最小为目标 */
+    
+    for (uint8_t i = 0; i < strong_cnt; ++i) {
+        for (uint8_t j = i + 1; j < strong_cnt; ++j) {
+            uint8_t  idx_a = strong_idx[i];
+            uint8_t  idx_b = strong_idx[j];
+            uint16_t amp_a = s_ctx.sweep_amp_table[idx_a];
+            uint16_t amp_b = s_ctx.sweep_amp_table[idx_b];
+            
+            /* 检查频率间隔 */
+            uint8_t  gap_idx = (idx_b > idx_a) ? (idx_b - idx_a) : (idx_a - idx_b);
+            uint16_t gap_hz  = (uint16_t)gap_idx * SWEEP_FREQ_STEP;
+            
+            if (gap_hz < SWEEP_MIN_FREQ_GAP_HZ) {
+                continue;  /* 间隔不足，跳过 */
+            }
+            
+            /* 计算幅值差异 */
+            uint16_t amp_diff = (amp_a > amp_b) ? (amp_a - amp_b) : (amp_b - amp_a);
+            
+            /* 选择差异最小的那一对 */
+            if (amp_diff < best_amp_diff) {
+                best_amp_diff = amp_diff;
+                
+                /* f0 为幅值较大的，f1 为幅值较小的 */
+                if (amp_a >= amp_b) {
+                    best_f0_idx = idx_a;
+                    best_f1_idx = idx_b;
+                } else {
+                    best_f0_idx = idx_b;
+                    best_f1_idx = idx_a;
+                }
+            }
+        }
+    }
+    
+    if (best_f0_idx == SWEEP_FREQ_INDEX_INVALID) {
+        return -2;  /* 找不到满足间隔要求的频点对 */
     }
 
-    uint8_t f0_idx = valid_idx[0];
-    for (uint8_t k = 1; k < valid_cnt; ++k) {
-        if (s_ctx.sweep_amp_table[valid_idx[k]] > s_ctx.sweep_amp_table[f0_idx]) {
-            f0_idx = valid_idx[k];
-        }
-    }
-    
-    *out_f0 = (uint16_t)SWEEP_FREQ_START + (uint16_t)f0_idx * SWEEP_FREQ_STEP;
-
-    uint8_t  f1_idx = SWEEP_FREQ_INDEX_INVALID;
-    uint16_t f1_amp_best = 0;
-    
-    for (uint8_t k = 0; k < valid_cnt; ++k) {
-        uint8_t cand = valid_idx[k];
-        if (cand == f0_idx) {
-            continue;
-        }
-        
-        uint8_t  gap_idx = (cand > f0_idx) ? (cand - f0_idx) : (f0_idx - cand);
-        uint16_t gap_hz  = (uint16_t)gap_idx * SWEEP_FREQ_STEP;
-        
-        if (gap_hz < SWEEP_MIN_FREQ_GAP_HZ) {
-            continue;
-        }
-        
-        if (s_ctx.sweep_amp_table[cand] > f1_amp_best) {
-            f1_amp_best = s_ctx.sweep_amp_table[cand];
-            f1_idx = cand;
-        }
-    }
-    
-    if (f1_idx == SWEEP_FREQ_INDEX_INVALID) {
-        return -2;
-    }
-
-    *out_f1 = (uint16_t)SWEEP_FREQ_START + (uint16_t)f1_idx * SWEEP_FREQ_STEP;
+    *out_f0 = (uint16_t)SWEEP_FREQ_START + (uint16_t)best_f0_idx * SWEEP_FREQ_STEP;
+    *out_f1 = (uint16_t)SWEEP_FREQ_START + (uint16_t)best_f1_idx * SWEEP_FREQ_STEP;
     return 0;
 }
 
@@ -1094,19 +1119,20 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
 
 void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count)
 {
-    /* valid_freq_count 供粗筛诊断；严格判定（噪声底 + delta）由 _select_freq_pair 完成 */
-
     uint16_t best_f0 = 0, best_f1 = 0;
-    int32_t  dr      = _select_freq_pair(&best_f0, &best_f1);
+    int32_t dr = _select_freq_pair(&best_f0, &best_f1);
+    
     if (dr == -1) {
         _state_transition(NODE_SCAN_LISTEN, HAL_GetTick());
         return;
     }
+    
     if (dr == -2) {
         _state_transition(NODE_SCAN_LISTEN, HAL_GetTick());
         return;
     }
 
+    /* 成功找到频点对 */
     s_ctx.sweep_result.f0_hz = best_f0;
     s_ctx.sweep_result.f1_hz = best_f1;
     

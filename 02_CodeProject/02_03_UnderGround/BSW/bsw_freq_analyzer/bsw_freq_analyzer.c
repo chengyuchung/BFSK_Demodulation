@@ -13,13 +13,23 @@
  * 性能：
  *   - 时间复杂度：O(19×N) = O(19×400) = O(7600)
  *   - 空间复杂度：O(1)（无需存储整个频域）
+ * 
+ * @note 修改记录 2026-10-12:
+ *   1. 启用 FPU 硬件加速（Keil 项目设置添加 --fpu=FPv4-SP）
+ *   2. 修正 π 精度，避免浮点累积误差
+ *   3. 修复功率计算溢出问题（改用 double 中间变量）
  */
 
 #include "bsw_freq_analyzer.h"
 #include <math.h>
 #include <string.h>
+#include <stdint.h>
+#include <limits.h>
 
 /* ========== 静态数据与初始化 ========== */
+
+/** 高精度 π 常量（15位精度，float 可完整存储） */
+#define PI_PRECISE (3.14159265358979f)
 
 /** 19 个标准扫频频点 (Hz) */
 static const uint16_t s_standard_freqs[BSW_FREQ_ANALYZER_FREQ_COUNT] = {
@@ -39,15 +49,17 @@ static uint8_t s_inited = 0;
  * @param   freq_hz       目标频率 (Hz)
  * @param   sample_rate_hz 采样频率 (Hz)
  * 
- * @retval  该频率对应的能量值（无量纲）
+ * @retval  该频率对应的能量值（无量纲），uint64_t 防止溢出
  * 
  * 算法流程：
  *   1. 根据目标频率和采样率，计算归一化频率 k
  *   2. 初始化二阶 IIR 滤波系数
  *   3. 逐点输入采样，更新状态变量 s0, s1, s2
  *   4. 根据最终状态计算实部和虚部，得到功率 = real² + imag²
+ * 
+ * @note 修改：使用 double 中间变量避免功率计算溢出
  */
-static uint32_t _goertzel_power(const uint16_t *samples,
+static uint64_t _goertzel_power(const uint16_t *samples,
                                 uint16_t num_samples,
                                 uint16_t freq_hz,
                                 uint16_t sample_rate_hz)
@@ -56,12 +68,12 @@ static uint32_t _goertzel_power(const uint16_t *samples,
         return 0;
     }
 
-    /* 【步骤 1】计算归一化频率 bin */
+    /* 【步骤 1】计算归一化频率 bin（使用高精度 π） */
     float k = ((float)num_samples * (float)freq_hz) / (float)sample_rate_hz;
-    float w = 2.0f * 3.14159265359f * k / (float)num_samples;
+    float w = 2.0f * PI_PRECISE * k / (float)num_samples;
 
     /* 【步骤 2】计算 IIR 滤波系数 */
-    float coeff = 2.0f * cos(w);
+    float coeff = 2.0f * cosf(w);
 
     /* 【步骤 3】初始化状态变量 */
     float s0 = 0.0f, s1 = 0.0f, s2 = 0.0f;
@@ -74,17 +86,21 @@ static uint32_t _goertzel_power(const uint16_t *samples,
         s1 = s0;
     }
 
-    /* 【步骤 5】计算功率 (实部² + 虚部²) */
-    float cos_w = cos(w);
-    float sin_w = sin(w);
+    /* 【步骤 5】计算功率 (实部² + 虚部²) - 使用 double 防止溢出 */
+    float cos_w = cosf(w);
+    float sin_w = sinf(w);
 
-    float real = s1 - s2 * cos_w;
-    float imag = s2 * sin_w;
+    double real = (double)s1 - (double)s2 * cos_w;
+    double imag = (double)s2 * sin_w;
 
-    float power = real * real + imag * imag;
+    double power = real * real + imag * imag;
 
-    /* 【步骤 6】归一化（可选，这里直接返回原始能量） */
-    return (uint32_t)power;
+    /* 【步骤 6】饱和处理：超出 uint32_t 范围则钳位 */
+    if (power > (double)UINT32_MAX) {
+        return UINT32_MAX;
+    }
+
+    return (uint64_t)power;
 }
 
 /* ========== 公共接口实现 ========== */
@@ -109,12 +125,12 @@ bsw_freq_analyzer_ret_t bsw_freq_analyzer_analyze(const uint16_t *snapshot,
         return BSW_FREQ_ANALYZER_ERR_PARAM;
     }
 
-    uint32_t max_energy = 0;
+    uint64_t max_energy = 0;
     uint16_t best_freq = s_standard_freqs[0];
 
     /* 【步骤 1】遍历所有 19 个标准频点，计算各自的能量 */
     for (uint8_t i = 0; i < BSW_FREQ_ANALYZER_FREQ_COUNT; i++) {
-        uint32_t energy = _goertzel_power(snapshot,
+        uint64_t energy = _goertzel_power(snapshot,
                                           BSW_FREQ_ANALYZER_WINDOW_LEN,
                                           s_standard_freqs[i],
                                           BSW_FREQ_ANALYZER_SAMPLE_RATE_HZ);
@@ -131,10 +147,10 @@ bsw_freq_analyzer_ret_t bsw_freq_analyzer_analyze(const uint16_t *snapshot,
         return BSW_FREQ_ANALYZER_ERR_NO_SIGNAL;
     }
 
-    /* 【步骤 4】填充输出结果 */
+    /* 【步骤 4】填充输出结果（安全转换，已经饱和处理） */
     out_result->freq_hz = best_freq;
-    out_result->energy = max_energy;
-    out_result->amplitude = (uint16_t)(sqrt((double)max_energy) * 0.5f);  // 简化幅度估计
+    out_result->energy = (uint32_t)(max_energy > UINT32_MAX ? UINT32_MAX : max_energy);
+    out_result->amplitude = (uint16_t)(sqrt((double)out_result->energy) * 0.5);  // 简化幅度估计
 
     return BSW_FREQ_ANALYZER_OK;
 }

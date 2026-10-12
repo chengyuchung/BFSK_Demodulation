@@ -49,11 +49,13 @@ typedef struct {
 #define SWEEP_FREQ_INDEX_INVALID 0xFFU
 
 /* 频对决选参数 */
-#define SWEEP_MIN_FREQ_GAP_HZ    150u
-#define SWEEP_VALID_AMP_DELTA    50u
-#define SWEEP_DEFAULT_NOISE_FLOOR 100u
-#define SWEEP_MIN_VALID_FREQ_CNT 2u
-#define SWEEP_SESSION_TIMEOUT_MS 850U
+#define SWEEP_MIN_FREQ_GAP_HZ                   100u   /* 最小频率间隔：100 Hz */
+#define SWEEP_VALID_AMP_DELTA                   50u
+#define SWEEP_DEFAULT_NOISE_FLOOR               100u
+#define SWEEP_MIN_VALID_FREQ_CNT                2u
+#define SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT    70u    /* 强度门限：最大幅值的 70% */
+
+#define SWEEP_SESSION_TIMEOUT_MS        850U
 
 /* 时间常量 */
 #define BUS_QUIET_TIMEOUT_MS        3000U
