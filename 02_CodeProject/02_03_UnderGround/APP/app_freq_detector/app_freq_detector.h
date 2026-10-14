@@ -23,45 +23,46 @@ extern "C" {
 
 #include <stdint.h>
 
-/* ========== 返回码 ========== */
+/* ============================================================================
+ * 返回码定义
+ * ============================================================================ */
 
 typedef enum {
-    APP_FREQ_DETECTOR_OK    = 0,
-    APP_FREQ_DETECTOR_ERROR = -1,
+    APP_FREQ_DETECTOR_OK    = 0,    // 操作成功
+    APP_FREQ_DETECTOR_ERROR = -1,   // 操作失败
 } app_freq_detector_ret_t;
 
-/* ========== 公共接口 ========== */
+/* ============================================================================
+ * 公共接口
+ * ============================================================================ */
 
 /**
- * @brief   初始化频率检测器
- * 
- * @note    必须在 bsw_adc_ringbuf_init() 之后调用
- * @retval  APP_FREQ_DETECTOR_OK
+ * @brief 初始化频率检测模块
+ * @return app_freq_detector_ret_t - 成功返回 APP_FREQ_DETECTOR_OK
+ * @note 必须在 bsw_adc_ringbuf_init() 之后调用
+ * @details 初始化内部状态、快照缓冲和 BSW 分析器模块
  */
 app_freq_detector_ret_t app_freq_detector_init(void);
 
 /**
- * @brief   频率检测主循环（由 FreeRTOS 任务每 10ms 调用一次）
- * 
- * @param   now_tick  当前时刻 (HAL_GetTick)
- * 
- * @note    - 此函数应该在 10ms 周期的 FreeRTOS 任务中调用
- *          - 内部会自动检测频率变化，只在变化时注入 FSM 事件
- *          - 如果当前检测不到有效信号，会保持上一次的结果
+ * @brief 频率检测周期任务
+ * @param now_tick 当前系统时刻（如 HAL_GetTick()）
+ * @note 每 10ms 从 FreeRTOS 任务调度器调用
+ * @details 获取 ADC 快照，执行频率分析，仅当频率改变时触发 FSM 事件
  */
 void app_freq_detector_task(uint32_t now_tick);
 
 /**
- * @brief   获取最后一次检测的频率
- * 
- * @retval  上次检测的频率 (Hz)，0 表示无效或未检测
+ * @brief 获取最后检测到的频率值
+ * @return uint16_t 频率（Hz），0 表示无有效检测
+ * @note 非阻塞缓存读取
  */
 uint16_t app_freq_detector_get_last_freq(void);
 
 /**
- * @brief   获取最后一次检测的能量
- * 
- * @retval  上次检测的能量值
+ * @brief 获取最后检测到的信号能量
+ * @return uint32_t 最后一次分析的能量值
+ * @note 非阻塞缓存读取
  */
 uint32_t app_freq_detector_get_last_energy(void);
 

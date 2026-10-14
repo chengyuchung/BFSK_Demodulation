@@ -340,7 +340,7 @@
               <MiscControls>--fpu=FPv4-SP</MiscControls>
               <Define>USE_HAL_DRIVER,STM32L476xx,ARM_MATH_CM4</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_sensor;../../APP/app_task;../../APP/app_node_fsm;../../BSW/bsw_ds18b20;../../BSW/bsw_log;../../BSW/bsw_bmp280;../../BSW/bsw_ad9833;../../BSW/bsw_adc_ringbuf;../../BSW/bsw_relay;../../BSW/bsw_node_id;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ow;../../BSW/bsw_bfsk_demod;../../BSW/bsw_proto;../../BSW/bsw_led;../../BSW/bsw_freq_storage;../../BSW/bsw_version;..\..\APP\app_frame_handler;..\..\BSW\bsw_bfsk_mod;..\..\APP\app_freq_detector;..\..\BSW\bsw_freq_analyzer</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc;../Drivers/STM32L4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32L4xx/Include;../Drivers/CMSIS/Include;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;../../APP/app_main;../../APP/app_sensor;../../APP/app_task;../../APP/app_node_fsm;../../BSW/bsw_ds18b20;../../BSW/bsw_log;../../BSW/bsw_bmp280;../../BSW/bsw_ad9833;../../BSW/bsw_adc_ringbuf;../../BSW/bsw_relay;../../BSW/bsw_node_id;../../MCAL/mcal_clock;../../MCAL/mcal_gpio;../../MCAL/mcal_dma;../../MCAL/mcal_adc;../../MCAL/mcal_timer;../../MCAL/mcal_spi;../../MCAL/mcal_uart;../../MCAL/mcal_i2c;../../MCAL/mcal_ow;../../BSW/bsw_bfsk_demod;../../BSW/bsw_proto;../../BSW/bsw_led;../../BSW/bsw_freq_storage;../../BSW/bsw_version;..\..\APP\app_frame_handler;..\..\BSW\bsw_bfsk_mod;..\..\APP\app_freq_detector;..\..\BSW\bsw_freq_analyzer;..\..\BSW\bsw_power_ctrl</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1361,11 +1361,6 @@
               <FilePath>../../BSW/bsw_ad9833/bsw_ad9833.c</FilePath>
             </File>
             <File>
-              <FileName>bsw_relay</FileName>
-              <FileType>1</FileType>
-              <FilePath>../../BSW/bsw_relay/bsw_relay.c</FilePath>
-            </File>
-            <File>
               <FileName>bsw_adc_ringbuf</FileName>
               <FileType>1</FileType>
               <FilePath>../../BSW/bsw_adc_ringbuf/bsw_adc_ringbuf.c</FilePath>
@@ -1409,6 +1404,11 @@
               <FileName>bsw_freq_analyzer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BSW\bsw_freq_analyzer\bsw_freq_analyzer.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsw_power_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\BSW\bsw_power_ctrl\bsw_power_ctrl.c</FilePath>
             </File>
           </Files>
         </Group>

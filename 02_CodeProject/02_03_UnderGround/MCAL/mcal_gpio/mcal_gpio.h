@@ -24,6 +24,7 @@ extern "C" {
 #define GPIO_PIN_LED_ERROR     7    /* LED5：故障模式指示灯（PC12，常亮） */
 #define GPIO_PIN_AD9833_FSYNC  8    /* AD9833 软件片选（PC4） */
 #define GPIO_PIN_COMP_EN       9    /* 比较器电路使能（正弦波→方波转换电路） */
+#define GPIO_PIN_PA_POWER      10   /* 功率放大器电源控制（PC8） */
 
 /* ========== 宏定义：电平 ========== */
 #define GPIO_LOW   0U

@@ -24,6 +24,7 @@ static const gpio_pin_map_t s_gpio_map[] = {
     [GPIO_PIN_LED_ERROR]     = {GPIOC,                        GPIO_PIN_12},            /* PC12 LED5：故障模式 */
     [GPIO_PIN_AD9833_FSYNC]  = {AD9833_FSYNC_GPIO_Port,       AD9833_FSYNC_Pin},       /* PC4  */
     [GPIO_PIN_COMP_EN]       = {GPIOC,                        GPIO_PIN_10},            /* PC10 比较器电路使能（直接硬编码） */
+    [GPIO_PIN_PA_POWER]      = {GPIOC,                        GPIO_PIN_8},             /* PC8 功率放大器电源控制 */
 };
 
 /* ========== 引脚数量 ========== */
@@ -53,6 +54,14 @@ void mcal_gpio_init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
     HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
+    
+    /* PC8（功率放大器电源控制）：CubeMX 未配置，需要手动初始化 */
+    GPIO_InitStruct.Pin   = GPIO_PIN_8;
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);  /* 初始状态：功放断电 */
     
     /* PC12（LED_ERROR 故障指示灯）：CubeMX 未配置，需要手动初始化 */
     GPIO_InitStruct.Pin   = GPIO_PIN_12;
