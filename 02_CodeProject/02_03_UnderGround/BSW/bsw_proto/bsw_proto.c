@@ -14,10 +14,11 @@
  *   - unpack：校验 HEAD → 读固定 4 字节 → 解转义 PAYLOAD+CRC16（按 LEN 切分）
  *             → 计算 CRC16 校验 → 校验 TAIL
  *
- * @dependency  bsw_proto.h
+ * @dependency  bsw_proto.h, bsw_node_id.h
  */
 
 #include "bsw_proto.h"
+#include "bsw_node_id.h"
 
 #include <string.h>     /* 当前未使用，预留 */
 
@@ -465,8 +466,16 @@ proto_err_t proto_rx_feed_bits(const uint8_t *bit_buf, uint16_t bit_count)
                         /* ADDR = DST(高 4 位) | SRC(低 4 位) */
                         uint8_t dst_addr = (byte >> 4) & PROTO_ADDR_NIBBLE_MASK;
                         
-                        /* 如果目的地址不是本机，丢弃此帧 */
-                        if (dst_addr != s_rx_ctx.local_addr) {
+                        /* 接收条件：
+                         *   1. 目的地址是本机
+                         *   2. 目的地址是广播（0xF）且（上级或下级地址未知）
+                         */
+                        bool accept = (dst_addr == s_rx_ctx.local_addr);
+                        if (!accept && (dst_addr == BSW_NODE_ADDR_BROADCAST)) {
+                            accept = bsw_node_id_can_accept_broadcast();
+                        }
+                        
+                        if (!accept) {
                             /* 丢弃：复位到 IDLE，继续搜索下一个 HEAD */
                             s_rx_ctx.state = PROTO_RX_IDLE;
                             s_rx_ctx.rx_len = 0u;

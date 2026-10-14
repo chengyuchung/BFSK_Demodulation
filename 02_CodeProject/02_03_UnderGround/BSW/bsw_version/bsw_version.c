@@ -9,7 +9,7 @@
  *
  * 协议集成：
  *   - 井上通过 PROTO_TYPE_QUERY + PROTO_QUERY_VERSION 查询版本
- *   - 井下返回 PROTO_TYPE_REPLY + PROTO_REPLY_VERSION 携带版本信息
+ *   - 井下返回 PROTO_TYPE_QUERY + PROTO_QUERY_VERSION（携带版本载荷）
  *   - 载荷格式：[sw_version_date(4)][hw_version_date(4)] 共 8 字节
  *
  * 版本号更新流程：

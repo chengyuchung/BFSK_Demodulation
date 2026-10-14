@@ -846,9 +846,9 @@ static void _phase_wait_ack(uint32_t now_tick)
                 proto_frame_t frame;
                 if (proto_rx_take_frame(&frame) == PROTO_ERR_OK)
                 {
-                    // 检查是否是 ACK 帧（REPLY_FREQ_PAIR: type=0x3, msg_num=0x0）
-                    if (frame.type_info.type == PROTO_TYPE_REPLY 
-                        && frame.type_info.msg_num == PROTO_REPLY_FREQ_PAIR)
+                    // 检查是否是 ACK 帧（ASK_FREQ_PAIR: type=0x2, msg_num=0xC）
+                    if (frame.type_info.type == PROTO_TYPE_ASK 
+                        && frame.type_info.msg_num == PROTO_ASK_FREQ_PAIR)
                     {
                         if (frame.payload_len >= 4)
                         {
@@ -1620,7 +1620,7 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
                     f0, f1);
                 (void)ret;  // 备份失败不影响通信建立，只是下次掉电无法快速恢复
                 
-                // TODO: 发送 ACK 帧（PROTO_TYPE_REPLY + PROTO_REPLY_FREQ_PAIR）
+                // TODO: 发送 ACK 帧（PROTO_TYPE_ASK + PROTO_ASK_FREQ_PAIR）
                 // 载荷：[f0_hz(2)][f1_hz(2)] 小端序
                 // 暂时先切换到 PHASE2，等协议层完善后再实现 ACK 发送
                 

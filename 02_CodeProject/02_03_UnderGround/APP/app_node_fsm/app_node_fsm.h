@@ -100,7 +100,7 @@ typedef struct {
 #define SWEEP_MIN_FREQ_GAP_HZ                   (100u)  // 最小频率间隔（Hz）
 #define SWEEP_VALID_AMP_DELTA                   (50u)   // 有效幅值差（保留）
 #define SWEEP_DEFAULT_NOISE_FLOOR               (100u)  // 默认噪声底（保留）
-#define SWEEP_MIN_VALID_FREQ_CNT                (2u)    // 最少有效频点数
+#define SWEEP_MIN_VALID_FREQ_CNT                (10u)   // 最少有效频点数
 #define SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT    (70u)   // 强度门限（最大幅值的 70%）
 
 #define SWEEP_SESSION_TIMEOUT_MS                (850U)  // 扫频会话超时（ms）
@@ -171,7 +171,7 @@ typedef enum {
 // ============================================================================
 
 #define PRE_QUIET_OBSERVE_MAX_MS (4000U)  // 静默观察最大时长（ms）
-#define PRE_REPLY_DURATION_MS    (2000U)  // 回应发送时长（ms）
+#define PRE_REPLY_DURATION_MS    (1000U)  // 回应发送时长（ms）
 #define PRE_ACK_TIMEOUT_MS       (5000U)  // ACK 超时（ms）
 #define PRE_ACK_MAX_RETRY        (1U)     // ACK 最大重试次数
 #define PRE_BFSK_BIT_PERIOD_MS   (40U)    // BFSK 码元周期（ms）

@@ -15,13 +15,13 @@
  *
  * 使用场景：
  *   - 井上设备通过 PROTO_QUERY_VERSION 查询井下节点版本号
- *   - 井下节点通过 PROTO_REPLY_VERSION 回复版本信息
+ *   - 井下节点通过 PROTO_TYPE_QUERY + PROTO_QUERY_VERSION 回复版本信息（携带载荷）
  *   - 现场调试时快速确认固件版本
  *   - OTA 升级前的版本校验
  *
  * 协议集成：
  *   井上查询：PROTO_TYPE_QUERY + PROTO_QUERY_VERSION（无载荷）
- *   井下回复：PROTO_TYPE_REPLY + PROTO_REPLY_VERSION
+ *   井下回复：PROTO_TYPE_QUERY + PROTO_QUERY_VERSION（携带版本载荷）
  *            载荷格式：[sw_version_date(4)][hw_version_date(4)]
  *
  * @usage

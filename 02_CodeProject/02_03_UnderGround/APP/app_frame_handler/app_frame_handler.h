@@ -2,11 +2,16 @@
  * @file    app_frame_handler.h
  * @brief   帧业务处理层 - 独立处理各类协议帧
  *
- * 职责：
- *   - 接收协议层解析好的帧对象（proto_frame_t）
- *   - 根据帧类型分发到对应的处理函数
- *   - 处理具体业务逻辑（版本查询、温压查询、控制命令等）
- *   - 构造回复帧并发送
+ * 处理流程（单一职责）：
+ *   接收帧 → 判断类型 → 执行业务逻辑 → 组装回复帧 → 调制发送 → 返回结果
+ *
+ * 职责分工：
+ *   ✓ 接收协议层解析好的帧对象（proto_frame_t）
+ *   ✓ 根据帧类型分发到对应的处理函数
+ *   ✓ 处理具体业务逻辑（版本查询、温压查询、控制命令等）
+ *   ✓ 构造所有回复帧
+ *   ✓ 内部调用调制器发送所有回复帧
+ *   ✓ 返回处理结果
  *
  * 分层关系：
  *   app_node_fsm（状态机）
@@ -14,21 +19,22 @@
  *   app_frame_handler（帧业务处理）← 本模块
  *       ↓ 使用
  *   bsw_proto（协议帧打包/解包）
- *       ↓ 使用
- *   bsw_bfsk_demod（物理层 bit 流）
+ *   bsw_bfsk_mod（调制发送）
  *
  * @dependency  bsw_proto.h        (帧结构定义)
  *              bsw_version.h      (版本信息)
  *              bsw_node_id.h      (节点地址)
+ *              bsw_bfsk_mod.h     (调制发送)
  *
  * @usage
  *   // 初始化
  *   app_frame_handler_init();
  *   
  *   // 在 app_node_fsm 中接收到帧后调用
+ *   // 此函数内部完成：业务处理 → 组装回复帧 → 发送 → 返回
  *   proto_frame_t frame;
  *   proto_rx_take_frame(&frame);
- *   app_frame_handler_dispatch(&frame);
+ *   frame_handler_ret_t ret = app_frame_handler_dispatch(&frame);
  */
 
 #ifndef APP_FRAME_HANDLER_H
