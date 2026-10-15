@@ -5,15 +5,39 @@
  * 处理流程（单一流程）：
  *   接收帧 → 判断类型 → 执行业务逻辑 → 组装回复帧 → 调制发送 → 返回结果
  *
- * 当前已实现的处理函数：
- *   - _handle_query_frame()    QUERY 类型查询处理
+ * 架构设计：
+ *   - 顶层分发：使用 switch 按帧类型（4 种稳定类型）分发
+ *   - 子类型处理：使用函数表模式，便于扩展和单元测试
+ *   - 每个子类型处理函数独立，职责清晰
+ *
+ * 当前实现状态：
+ *   - _handle_query_frame()    QUERY 类型查询处理（函数表，4 项）
  *     - PROTO_QUERY_VERSION    版本号查询（✅ 已完成）
  *     - PROTO_QUERY_TEMP_PRESS 温压查询（✅ 已完成）
- *     - PROTO_QUERY_BATTERY    电池查询（TODO）
- *     - PROTO_QUERY_FAULT      故障查询（TODO）
- *   - _handle_control_frame()  CONTROL 类型控制帧（TODO）
- *   - _handle_ask_frame()      ASK 类型询问/应答帧（TODO）
- *   - _handle_alarm_frame()    ALARM 类型警报帧（TODO）
+ *     - PROTO_QUERY_BATTERY    电池查询（⏳ 待实现）
+ *     - PROTO_QUERY_FAULT      故障查询（⏳ 待实现）
+ *
+ *   - _handle_control_frame()  CONTROL 类型控制帧（函数表，5 项）
+ *     - PROTO_CONTROL_SET_SLEEP_DUR    设置休眠时长（⏳ 待实现）
+ *     - PROTO_CONTROL_SLEEP            立刻休眠（⏳ 待实现）
+ *     - PROTO_CONTROL_WAKE             强制唤醒（⏳ 待实现）
+ *     - PROTO_CONTROL_SET_TEMP_THRESH  设置温度阈值（⏳ 待实现）
+ *     - PROTO_CONTROL_SET_PRESS_THRESH 设置气压阈值（⏳ 待实现）
+ *
+ *   - _handle_ask_frame()      ASK 类型询问/应答帧（函数表，6 项）
+ *     - PROTO_ASK_HEARTBEAT    心跳查询（⏳ 待实现）
+ *     - PROTO_ASK_ALIVE        心跳应答（⏳ 待实现）
+ *     - PROTO_ASK_ACK          确认应答（⏳ 待实现）
+ *     - PROTO_ASK_NACK         否定应答（⏳ 待实现）
+ *     - PROTO_ASK_RETRY_REQ    重传请求（⏳ 待实现）
+ *     - PROTO_ASK_FREQ_PAIR    频点确认（⏳ 待实现）
+ *
+ *   - _handle_alarm_frame()    ALARM 类型警报帧（函数表，5 项）
+ *     - PROTO_ALARM_LOW_BATT    电池低电告警（⏳ 待实现）
+ *     - PROTO_ALARM_TEMP_OVER   温度超限告警（⏳ 待实现）
+ *     - PROTO_ALARM_PRESS_OVER  气压超限告警（⏳ 待实现）
+ *     - PROTO_ALARM_SENSOR_FAULT 传感器故障告警（⏳ 待实现）
+ *     - PROTO_ALARM_LINK_FAIL   链路失败告警（⏳ 待实现）
  *
  * @dependency  app_frame_handler.h
  *              bsw_proto.h
@@ -63,6 +87,69 @@ typedef struct
     const char *p_name;             /**< 名称（调试用）*/
 } QueryHandlerEntry_t;
 
+/**
+ * @brief ASK 子类型处理函数原型
+ * @param frame 接收到的 ASK 帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：实际需要回复的帧数量
+ * @return 处理结果
+ */
+typedef frame_handler_ret_t (*ask_handler_t)(const proto_frame_t *frame,
+                                             proto_frame_t *p_reply_buf,
+                                             uint8_t *p_reply_count);
+
+/**
+ * @brief ASK 处理表项
+ */
+typedef struct
+{
+    uint8_t msg_num;                /**< 子类型编号（proto_ask_msg_t）*/
+    ask_handler_t handler;          /**< 处理函数 */
+    const char *p_name;             /**< 名称（调试用）*/
+} AskHandlerEntry_t;
+
+/**
+ * @brief CONTROL 子类型处理函数原型
+ * @param frame 接收到的控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：实际需要回复的帧数量
+ * @return 处理结果
+ */
+typedef frame_handler_ret_t (*control_handler_t)(const proto_frame_t *frame,
+                                                 proto_frame_t *p_reply_buf,
+                                                 uint8_t *p_reply_count);
+
+/**
+ * @brief CONTROL 处理表项
+ */
+typedef struct
+{
+    uint8_t msg_num;                /**< 子类型编号（proto_control_msg_t）*/
+    control_handler_t handler;      /**< 处理函数 */
+    const char *p_name;             /**< 名称（调试用）*/
+} ControlHandlerEntry_t;
+
+/**
+ * @brief ALARM 子类型处理函数原型
+ * @param frame 接收到的警报帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：实际需要回复的帧数量
+ * @return 处理结果
+ */
+typedef frame_handler_ret_t (*alarm_handler_t)(const proto_frame_t *frame,
+                                               proto_frame_t *p_reply_buf,
+                                               uint8_t *p_reply_count);
+
+/**
+ * @brief ALARM 处理表项
+ */
+typedef struct
+{
+    uint8_t msg_num;                /**< 子类型编号（proto_alarm_msg_t）*/
+    alarm_handler_t handler;        /**< 处理函数 */
+    const char *p_name;             /**< 名称（调试用）*/
+} AlarmHandlerEntry_t;
+
 /* ========== 内部函数声明 ========== */
 
 static frame_handler_ret_t _handle_query_frame(const proto_frame_t *frame,
@@ -92,6 +179,60 @@ static frame_handler_ret_t _handle_query_fault(const proto_frame_t *frame,
                                                proto_frame_t *p_reply_buf,
                                                uint8_t *p_reply_count);
 
+/* ASK 子类型处理 */
+static frame_handler_ret_t _handle_ask_heartbeat(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_ask_alive(const proto_frame_t *frame,
+                                              proto_frame_t *p_reply_buf,
+                                              uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_ask_ack(const proto_frame_t *frame,
+                                            proto_frame_t *p_reply_buf,
+                                            uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
+                                             proto_frame_t *p_reply_buf,
+                                             uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_ask_retry_req(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_ask_freq_pair(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count);
+
+/* CONTROL 子类型处理 */
+static frame_handler_ret_t _handle_control_set_sleep_dur(const proto_frame_t *frame,
+                                                          proto_frame_t *p_reply_buf,
+                                                          uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_control_sleep(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_control_wake(const proto_frame_t *frame,
+                                                 proto_frame_t *p_reply_buf,
+                                                 uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_control_set_temp_thresh(const proto_frame_t *frame,
+                                                            proto_frame_t *p_reply_buf,
+                                                            uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_control_set_press_thresh(const proto_frame_t *frame,
+                                                             proto_frame_t *p_reply_buf,
+                                                             uint8_t *p_reply_count);
+
+/* ALARM 子类型处理 */
+static frame_handler_ret_t _handle_alarm_low_batt(const proto_frame_t *frame,
+                                                   proto_frame_t *p_reply_buf,
+                                                   uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_alarm_temp_over(const proto_frame_t *frame,
+                                                    proto_frame_t *p_reply_buf,
+                                                    uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_alarm_press_over(const proto_frame_t *frame,
+                                                     proto_frame_t *p_reply_buf,
+                                                     uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_alarm_sensor_fault(const proto_frame_t *frame,
+                                                       proto_frame_t *p_reply_buf,
+                                                       uint8_t *p_reply_count);
+static frame_handler_ret_t _handle_alarm_link_fail(const proto_frame_t *frame,
+                                                    proto_frame_t *p_reply_buf,
+                                                    uint8_t *p_reply_count);
+
 /* 通用辅助函数 */
 static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t count);
 static void _make_ack_frame(const proto_frame_t *req_frame, proto_frame_t *p_ack_frame);
@@ -115,6 +256,61 @@ static const QueryHandlerEntry_t s_query_handler_table[] =
 };
 
 #define QUERY_HANDLER_TABLE_SIZE  (sizeof(s_query_handler_table) / sizeof(s_query_handler_table[0]))
+
+/* ========== ASK 处理函数表 ========== */
+
+/**
+ * @brief ASK 子类型处理表
+ * @note 新增 ASK 子类型时，在此表添加一项即可，无需修改 _handle_ask_frame()
+ */
+static const AskHandlerEntry_t s_ask_handler_table[] =
+{
+    /* msg_num,              handler,                name */
+    { PROTO_ASK_HEARTBEAT,    _handle_ask_heartbeat, "HEARTBEAT" },
+    { PROTO_ASK_ALIVE,        _handle_ask_alive,     "ALIVE" },
+    { PROTO_ASK_ACK,          _handle_ask_ack,       "ACK" },
+    { PROTO_ASK_NACK,         _handle_ask_nack,      "NACK" },
+    { PROTO_ASK_RETRY_REQ,    _handle_ask_retry_req, "RETRY_REQ" },
+    { PROTO_ASK_FREQ_PAIR,    _handle_ask_freq_pair, "FREQ_PAIR" },
+};
+
+#define ASK_HANDLER_TABLE_SIZE  (sizeof(s_ask_handler_table) / sizeof(s_ask_handler_table[0]))
+
+/* ========== CONTROL 处理函数表 ========== */
+
+/**
+ * @brief CONTROL 子类型处理表
+ * @note 新增 CONTROL 子类型时，在此表添加一项即可，无需修改 _handle_control_frame()
+ */
+static const ControlHandlerEntry_t s_control_handler_table[] =
+{
+    /* msg_num,                          handler,                            name */
+    { PROTO_CONTROL_SET_SLEEP_DUR,      _handle_control_set_sleep_dur,      "SET_SLEEP_DUR" },
+    { PROTO_CONTROL_SLEEP,              _handle_control_sleep,              "SLEEP" },
+    { PROTO_CONTROL_WAKE,               _handle_control_wake,               "WAKE" },
+    { PROTO_CONTROL_SET_TEMP_THRESH,    _handle_control_set_temp_thresh,    "SET_TEMP_THRESH" },
+    { PROTO_CONTROL_SET_PRESS_THRESH,   _handle_control_set_press_thresh,   "SET_PRESS_THRESH" },
+};
+
+#define CONTROL_HANDLER_TABLE_SIZE  (sizeof(s_control_handler_table) / sizeof(s_control_handler_table[0]))
+
+/* ========== ALARM 处理函数表 ========== */
+
+/**
+ * @brief ALARM 子类型处理表
+ * @note 新增 ALARM 子类型时，在此表添加一项即可，无需修改 _handle_alarm_frame()
+ */
+static const AlarmHandlerEntry_t s_alarm_handler_table[] =
+{
+    /* msg_num,                  handler,                        name */
+    { PROTO_ALARM_LOW_BATT,      _handle_alarm_low_batt,         "LOW_BATT" },
+    { PROTO_ALARM_TEMP_OVER,     _handle_alarm_temp_over,        "TEMP_OVER" },
+    { PROTO_ALARM_PRESS_OVER,    _handle_alarm_press_over,       "PRESS_OVER" },
+    { PROTO_ALARM_SENSOR_FAULT,  _handle_alarm_sensor_fault,     "SENSOR_FAULT" },
+    { PROTO_ALARM_LINK_FAIL,     _handle_alarm_link_fail,        "LINK_FAIL" },
+};
+
+#define ALARM_HANDLER_TABLE_SIZE  (sizeof(s_alarm_handler_table) / sizeof(s_alarm_handler_table[0]))
 
 /* ========== 公共 API 实现 ========== */
 
@@ -359,68 +555,498 @@ static frame_handler_ret_t _handle_query_fault(const proto_frame_t *frame,
     return FRAME_HANDLER_OK;
 }
 
-/* ========== CONTROL 类型帧处理（TODO）========== */
+/* ========== CONTROL 类型帧处理 ========== */
 
 /**
- * @brief 处理 CONTROL 类型帧（TODO）
+ * @brief 处理 CONTROL 类型帧 - 使用函数表模式
  * @param frame 控制帧
  * @param p_reply_buf 回复帧缓冲区
  * @param p_reply_count 输出：回复帧数量
  * @return 处理结果
+ * 
+ * @details
+ * 为什么用函数表：
+ * 1. 添加新 CONTROL 子类型时只需在表中添加，无需修改此函数
+ * 2. 每个子类型处理逻辑独立，便于单元测试
+ * 3. 表项集中管理，便于查看所有支持的控制命令
  */
 static frame_handler_ret_t _handle_control_frame(const proto_frame_t *frame,
+                                                 proto_frame_t *p_reply_buf,
+                                                 uint8_t *p_reply_count)
+{
+    /* 在处理表中查找对应的处理函数 */
+    for (size_t i = 0; i < CONTROL_HANDLER_TABLE_SIZE; i++)
+    {
+        if (s_control_handler_table[i].msg_num == frame->type_info.msg_num)
+        {
+            return s_control_handler_table[i].handler(frame, p_reply_buf, p_reply_count);
+        }
+    }
+    
+    /* 未找到对应的处理函数 */
+    return FRAME_HANDLER_ERR_UNKNOWN_TYPE;
+}
+
+/**
+ * @brief 处理设置休眠时长控制命令
+ * @param frame 控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：根据载荷设置下次休眠时长
+ */
+static frame_handler_ret_t _handle_control_set_sleep_dur(const proto_frame_t *frame,
+                                                          proto_frame_t *p_reply_buf,
+                                                          uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 SET_SLEEP_DUR 处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理立刻进入休眠控制命令
+ * @param frame 控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：触发系统进入休眠状态
+ */
+static frame_handler_ret_t _handle_control_sleep(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 SLEEP 处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理强制唤醒控制命令
+ * @param frame 控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：唤醒系统（中继/井上使用）
+ */
+static frame_handler_ret_t _handle_control_wake(const proto_frame_t *frame,
                                                  proto_frame_t *p_reply_buf,
                                                  uint8_t *p_reply_count)
 {
     (void)frame;
     (void)p_reply_buf;
     (void)p_reply_count;
-    /* TODO: 实现控制帧处理（设置休眠时长、阈值等）*/
+    /* TODO: 实现 WAKE 处理 */
     return FRAME_HANDLER_OK;
 }
 
-/* ========== ASK 类型帧处理（询问/应答）========== */
+/**
+ * @brief 处理设置温度阈值控制命令
+ * @param frame 控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：设置温度告警上下限
+ */
+static frame_handler_ret_t _handle_control_set_temp_thresh(const proto_frame_t *frame,
+                                                            proto_frame_t *p_reply_buf,
+                                                            uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 SET_TEMP_THRESH 处理 */
+    return FRAME_HANDLER_OK;
+}
 
 /**
- * @brief 处理 ASK 类型帧（询问/应答）
+ * @brief 处理设置气压阈值控制命令
+ * @param frame 控制帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：设置气压告警上下限
+ */
+static frame_handler_ret_t _handle_control_set_press_thresh(const proto_frame_t *frame,
+                                                             proto_frame_t *p_reply_buf,
+                                                             uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 SET_PRESS_THRESH 处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/* ========== ASK 类型帧处理 ========== */
+
+/**
+ * @brief 处理 ASK 类型帧 - 使用函数表模式
  * @param frame 询问/应答帧
  * @param p_reply_buf 回复帧缓冲区
  * @param p_reply_count 输出：回复帧数量
  * @return 处理结果
  * 
  * @details
- * ASK 帧处理：
+ * 为什么用函数表：
+ * 1. ASK 有 6 个子类型（询问 1 个 + 应答 5 个），用函数表便于管理
+ * 2. 添加新 ASK 子类型时只需在表中添加，无需修改此函数
+ * 3. 每个子类型处理逻辑独立，便于单元测试
+ * 
+ * ASK 帧分类：
  * - MSG_NUM < 0x8：询问帧（例如 IDLE_CONFIRM）
- * - MSG_NUM >= 0x8：应答帧（例如 ACK、NACK）
+ * - MSG_NUM >= 0x8：应答帧（例如 ACK、NACK、READY）
  */
 static frame_handler_ret_t _handle_ask_frame(const proto_frame_t *frame,
                                              proto_frame_t *p_reply_buf,
                                              uint8_t *p_reply_count)
 {
-    (void)frame;
-    (void)p_reply_buf;
-    (void)p_reply_count;
-    /* TODO: 实现 ASK 类型帧处理（握手、ACK/NACK 等）*/
+    /* 在处理表中查找对应的处理函数 */
+    for (size_t i = 0; i < ASK_HANDLER_TABLE_SIZE; i++)
+    {
+        if (s_ask_handler_table[i].msg_num == frame->type_info.msg_num)
+        {
+            return s_ask_handler_table[i].handler(frame, p_reply_buf, p_reply_count);
+        }
+    }
+    
+    /* 未找到对应的处理函数 */
+    return FRAME_HANDLER_ERR_UNKNOWN_TYPE;
+}
+
+/**
+ * @brief 处理心跳查询（HEARTBEAT）
+ * @param frame 询问帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 流程：
+ * 1. 收到心跳查询，说明对方询问"你还活着吗？"
+ * 2. 如果能正确解析并执行到这里，说明本机活着且能接收数据
+ * 3. 回复 ALIVE 应答
+ * 
+ * 实现：构造 ALIVE 应答帧（空载荷）
+ */
+static frame_handler_ret_t _handle_ask_heartbeat(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count)
+{
+    /* 组装 ALIVE 应答帧 */
+    proto_frame_t *p_reply = &p_reply_buf[0];
+    p_reply->addr.dst = frame->addr.src;  /* 回复给查询方 */
+    p_reply->addr.src = bsw_node_id_get();
+    p_reply->type_info.type = PROTO_TYPE_ASK;
+    p_reply->type_info.msg_num = PROTO_ASK_ALIVE;
+    p_reply->seq = frame->seq;
+    p_reply->payload_len = 0;  /* 空载荷，收到即说明活着 */
+    
+    *p_reply_count = 1;  /* 回复 1 个 ALIVE 帧 */
     return FRAME_HANDLER_OK;
 }
 
-/* ========== ALARM 类型帧处理（TODO）========== */
+/**
+ * @brief 处理心跳应答（ALIVE）
+ * @param frame 应答帧
+ * @param p_reply_buf 回复帧缓冲区（本函数不需要回复）
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 流程：
+ * 1. 收到 ALIVE 应答，说明对方还活着
+ * 2. 更新心跳时间戳，标记链路存活
+ * 3. 不需要回复
+ * 
+ * 待实现：通知状态机"链路心跳正常"
+ */
+static frame_handler_ret_t _handle_ask_alive(const proto_frame_t *frame,
+                                              proto_frame_t *p_reply_buf,
+                                              uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    
+    /* 无需回复 */
+    *p_reply_count = 0;
+    
+    /* TODO: 更新心跳时间戳，标记链路存活 */
+    /* 示例：g_last_heartbeat_time = get_current_time(); */
+    /* 示例：g_link_alive = true; */
+    
+    return FRAME_HANDLER_OK;
+}
 
 /**
- * @brief 处理 ALARM 类型帧（TODO）
+ * @brief 处理 ACK 应答
+ * @param frame 应答帧
+ * @param p_reply_buf 回复帧缓冲区（本函数不需要回复）
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到 ACK，说明对方成功接收了我们发送的帧
+ * 不需要回复，只需要通知发送模块"发送成功"
+ */
+static frame_handler_ret_t _handle_ask_ack(const proto_frame_t *frame,
+                                            proto_frame_t *p_reply_buf,
+                                            uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    
+    /* 无需回复 */
+    *p_reply_count = 0;
+    
+    /* TODO: 通知发送模块"ACK 收到，发送成功" */
+    
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理 NACK 应答
+ * @param frame 应答帧
+ * @param p_reply_buf 回复帧缓冲区（本函数不需要回复）
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到 NACK，说明对方接收失败（CRC错误、地址不匹配等）
+ * 载荷格式：[err_code(1)]
+ * 不需要回复，但需要触发重传逻辑
+ */
+static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
+                                             proto_frame_t *p_reply_buf,
+                                             uint8_t *p_reply_count)
+{
+    (void)p_reply_buf;
+    
+    /* 无需回复 */
+    *p_reply_count = 0;
+    
+    /* TODO: 解析错误码并根据错误码决定是否重传 */
+    if (frame->payload_len >= 1)
+    {
+        proto_nack_code_t err_code = (proto_nack_code_t)frame->payload[0];
+        (void)err_code;  /* 避免未使用警告 */
+    }
+    
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理重传请求（RETRY_REQ）
+ * @param frame 应答帧
+ * @param p_reply_buf 回复帧缓冲区（本函数不需要回复）
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到 RETRY_REQ，说明对方没收到我们的帧，请求重传
+ * 不需要回复，只需要触发重传逻辑
+ */
+static frame_handler_ret_t _handle_ask_retry_req(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    
+    /* 无需回复 */
+    *p_reply_count = 0;
+    
+    /* TODO: 触发重传逻辑 */
+    
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理频点确认（FREQ_PAIR）
+ * @param frame 应答帧
+ * @param p_reply_buf 回复帧缓冲区（本函数不需要回复）
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到 FREQ_PAIR，说明对方确认了扫频后的频点
+ * 载荷格式：[f0_hz(2)][f1_hz(2)]
+ * 不需要回复，只需要保存频点信息
+ */
+static frame_handler_ret_t _handle_ask_freq_pair(const proto_frame_t *frame,
+                                                  proto_frame_t *p_reply_buf,
+                                                  uint8_t *p_reply_count)
+{
+    (void)p_reply_buf;
+    
+    /* 无需回复 */
+    *p_reply_count = 0;
+    
+    /* TODO: 解析频点信息（小端）并保存 */
+    if (frame->payload_len >= 4)
+    {
+        uint16_t f0_hz = (uint16_t)((frame->payload[1] << 8) | frame->payload[0]);
+        uint16_t f1_hz = (uint16_t)((frame->payload[3] << 8) | frame->payload[2]);
+        (void)f0_hz;  /* 避免未使用警告 */
+        (void)f1_hz;  /* 避免未使用警告 */
+    }
+    
+    return FRAME_HANDLER_OK;
+}
+
+/* ========== ALARM 类型帧处理 ========== */
+
+/**
+ * @brief 处理 ALARM 类型帧 - 使用函数表模式
  * @param frame 警报帧
  * @param p_reply_buf 回复帧缓冲区
  * @param p_reply_count 输出：回复帧数量
  * @return 处理结果
+ * 
+ * @details
+ * 为什么用函数表：
+ * 1. 添加新 ALARM 子类型时只需在表中添加，无需修改此函数
+ * 2. 每个子类型处理逻辑独立，便于单元测试
+ * 3. 表项集中管理，便于查看所有支持的告警类型
  */
 static frame_handler_ret_t _handle_alarm_frame(const proto_frame_t *frame,
                                                proto_frame_t *p_reply_buf,
                                                uint8_t *p_reply_count)
 {
+    /* 在处理表中查找对应的处理函数 */
+    for (size_t i = 0; i < ALARM_HANDLER_TABLE_SIZE; i++)
+    {
+        if (s_alarm_handler_table[i].msg_num == frame->type_info.msg_num)
+        {
+            return s_alarm_handler_table[i].handler(frame, p_reply_buf, p_reply_count);
+        }
+    }
+    
+    /* 未找到对应的处理函数 */
+    return FRAME_HANDLER_ERR_UNKNOWN_TYPE;
+}
+
+/**
+ * @brief 处理电池低电告警
+ * @param frame 告警帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到电池低电告警，响应处理
+ * 载荷格式：[batt_pct(1)]
+ */
+static frame_handler_ret_t _handle_alarm_low_batt(const proto_frame_t *frame,
+                                                   proto_frame_t *p_reply_buf,
+                                                   uint8_t *p_reply_count)
+{
     (void)frame;
     (void)p_reply_buf;
     (void)p_reply_count;
-    /* TODO: 实现警报帧处理 */
+    /* TODO: 实现 LOW_BATT 告警处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理温度超限告警
+ * @param frame 告警帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到温度超限告警，响应处理
+ * 载荷格式：[current_temp(2)][limit_type(1)]
+ */
+static frame_handler_ret_t _handle_alarm_temp_over(const proto_frame_t *frame,
+                                                    proto_frame_t *p_reply_buf,
+                                                    uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 TEMP_OVER 告警处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理气压超限告警
+ * @param frame 告警帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到气压超限告警，响应处理
+ * 载荷格式：[current_press(2)][limit_type(1)]
+ */
+static frame_handler_ret_t _handle_alarm_press_over(const proto_frame_t *frame,
+                                                     proto_frame_t *p_reply_buf,
+                                                     uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 PRESS_OVER 告警处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理传感器故障告警
+ * @param frame 告警帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到传感器故障告警，响应处理
+ * 载荷格式：[fault_code(1)][fault_data(2)]
+ */
+static frame_handler_ret_t _handle_alarm_sensor_fault(const proto_frame_t *frame,
+                                                       proto_frame_t *p_reply_buf,
+                                                       uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 SENSOR_FAULT 告警处理 */
+    return FRAME_HANDLER_OK;
+}
+
+/**
+ * @brief 处理链路失败告警
+ * @param frame 告警帧
+ * @param p_reply_buf 回复帧缓冲区
+ * @param p_reply_count 输出：回复帧数量
+ * @return 处理结果
+ * 
+ * @details
+ * 待实现：收到链路失败告警，响应处理
+ * 载荷格式：[retry_count(1)]
+ */
+static frame_handler_ret_t _handle_alarm_link_fail(const proto_frame_t *frame,
+                                                    proto_frame_t *p_reply_buf,
+                                                    uint8_t *p_reply_count)
+{
+    (void)frame;
+    (void)p_reply_buf;
+    (void)p_reply_count;
+    /* TODO: 实现 LINK_FAIL 告警处理 */
     return FRAME_HANDLER_OK;
 }
 

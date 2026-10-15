@@ -18,7 +18,7 @@
 #include "app_task.h"
 
 #include "cmsis_os.h"          /* CMSIS-RTOS v1 wrapper */
-#include "main.h"              /* HAL_GetTick() */
+#include "FreeRTOS.h"          /* xTaskGetTickCount() */
 
 #include "bsw_log.h"
 #include "app_sensor.h"
@@ -46,7 +46,9 @@ static void entry_sensor(void const *arg)
 {
     (void)arg;
     for (;;) {
-        app_sensor_task(HAL_GetTick());
+        /* 使用 FreeRTOS API 获取时间戳，避免 HAL_GetTick() */
+        uint32_t now = xTaskGetTickCount();
+        app_sensor_task(now);
         osDelay(APP_TASK_SENSOR_TICK_MS);
     }
 }

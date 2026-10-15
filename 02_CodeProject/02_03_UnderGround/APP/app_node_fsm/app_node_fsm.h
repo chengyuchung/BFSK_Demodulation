@@ -260,6 +260,7 @@ typedef struct {
 /**
  * @brief 初始化节点状态机
  * @param hard_id 节点硬件地址
+ * @param now_tick 当前系统时刻（ms），来自 xTaskGetTickCount()
  * 
  * @details
  *  初始化流程：
@@ -267,8 +268,12 @@ typedef struct {
  *  2. 从 Flash 读取频点备份
  *  3. 校验频点有效性
  *  4. 选择初始状态（LINKED 或 SCAN_LISTEN）
+ * 
+ * @details FreeRTOS 兼容性：
+ *          接收外部传入的 now_tick 参数，避免内部调用 HAL_GetTick()
+ *          调用方示例：app_node_fsm_init(hard_id, xTaskGetTickCount());
  */
-void app_node_fsm_init(uint8_t hard_id);
+void app_node_fsm_init(uint8_t hard_id, uint32_t now_tick);
 
 /**
  * @brief 状态机运行函数（周期调用）
@@ -372,21 +377,23 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
 /**
  * @brief 扫频完成事件注入
  * @param valid_freq_count 有效频点数量
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  扫频会话超时后调用，触发频对决选算法
  */
-void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count);
+void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count, uint32_t now_tick);
 
 /**
  * @brief ACK 接收事件注入
  * @param f0 ACK 中的低频点（Hz）
  * @param f1 ACK 中的高频点（Hz）
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  收到上级 ACK 确认后调用，确认频点并进入 LINKED 状态
  */
-void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1);
+void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1, uint32_t now_tick);
 
 // ============================================================================
 // 事件注入 API - 标志位操作
@@ -456,24 +463,26 @@ void app_node_fsm_on_quiet_timeout(uint32_t now_tick);
  * @details
  *  系统检测到故障时调用，进入 FAULT 状态
  */
-void app_node_fsm_on_fault(uint32_t fault_code);
+void app_node_fsm_on_fault(uint32_t fault_code, uint32_t now_tick);
 
 /**
  * @brief 看门狗超时事件注入
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  看门狗超时时调用，进入 FAULT 状态
  */
-void app_node_fsm_on_wdt_timeout(void);
+void app_node_fsm_on_wdt_timeout(uint32_t now_tick);
 
 /**
  * @brief 扫频命令事件注入
  * @param scan_direction 扫频方向（0=扫上行，1=扫下行）
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  上位机发送扫频命令时调用，中心化扫频控制
  */
-void app_node_fsm_on_scan_order(uint8_t scan_direction);
+void app_node_fsm_on_scan_order(uint8_t scan_direction, uint32_t now_tick);
 
 #ifdef __cplusplus
 }

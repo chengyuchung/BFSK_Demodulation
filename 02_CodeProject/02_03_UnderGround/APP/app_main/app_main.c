@@ -81,7 +81,7 @@ void app_main_init(void)
      * 本机地址由 LOCAL_ADDRESS 单点配置（见 bsw_node_id.h），
      * init() 会立即触发 NODE_SCAN_LISTEN 转移，
      * 同步启动 TIM6 + DMA，ADC 链路正式通电。 */
-    app_node_fsm_init(LOCAL_ADDRESS);
+    app_node_fsm_init(LOCAL_ADDRESS, 0);  /* 初始化阶段使用 0，FreeRTOS 尚未启动 */
 
     /* ============ BSW 日志首发（验证 MCAL UART → BSW log 链路） ============ */
     bsw_log("UnderGround node boot OK (RTOS online)\r\n");

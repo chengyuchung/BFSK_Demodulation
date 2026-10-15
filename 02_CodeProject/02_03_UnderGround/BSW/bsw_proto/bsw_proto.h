@@ -46,7 +46,7 @@
  *   ---------|------------------|----------------|-----------------------------------------------
  *   0x0      | PROTO_TYPE_QUERY   | 查询帧（请求上报）| 4 种（VERSION、TEMP_PRESS、BATTERY、FAULT）
  *   0x1      | PROTO_TYPE_CONTROL | 控制帧（设置参数）| 5 种（SET_SLEEP_DUR、SLEEP、WAKE、SET_TEMP_THRESH、SET_PRESS_THRESH）
- *   0x2      | PROTO_TYPE_ASK     | 询问/应答帧（握手）| 询问：IDLE_CONFIRM(0x0) / 应答：READY(0x8)、ACK(0x9)、NACK(0xA)、RETRY_REQ(0xB)、FREQ_PAIR(0xC)
+ *   0x2      | PROTO_TYPE_ASK     | 询问/应答帧（握手）| 询问：HEARTBEAT(0x0) / 应答：ALIVE(0x8)、ACK(0x9)、NACK(0xA)、RETRY_REQ(0xB)、FREQ_PAIR(0xC)
  *   0x4      | PROTO_TYPE_ALARM   | 警报帧（告警）    | 5 种（LOW_BATT、TEMP_OVER、PRESS_OVER、SENSOR_FAULT、LINK_FAIL）
  *   其他     | PROTO_TYPE_RESERVED | 保留              | -
  *
@@ -61,8 +61,8 @@
  *      3. 井下 → 井上: QUERY_TEMP_PRESS + 数据（回复温压数据）
  *
  *   场景 2：握手（井上 → 井下）
- *      1. 井上 → 井下: ASK_IDLE_CONFIRM（你能接收吗？）
- *      2. 井下 → 井上: REPLY_READY（我有空）
+ *      1. 井上 → 井下: ASK_HEARTBEAT（心跳查询：你还活着吗？）
+ *      2. 井下 → 井上: ASK_ALIVE（心跳应答：我还活着）
  *      3. 井上 → 井下: QUERY_xxx（开始查询）
  *
  *   场景 3：警报（井下 → 井上）
@@ -194,15 +194,15 @@ typedef enum
  *          - 0x8-0xF：应答（Reply）
  * 
  * @note 版本号通过 PROTO_TYPE_QUERY + PROTO_QUERY_VERSION 查询，
- *       此处仅保留握手相关的应答：就绪、ACK、NACK、重传请求、频点确认
+ *       此处仅保留握手相关的应答：心跳应答、ACK、NACK、重传请求、频点确认
  */
 typedef enum
 {
     /* 询问子类型 (0x0 - 0x7) */
-    PROTO_ASK_IDLE_CONFIRM = 0x0,   /* (空) 你能接收数据吗？ */
+    PROTO_ASK_HEARTBEAT = 0x0,      /* (空) 心跳查询：你还活着吗？ */
     
     /* 应答子类型 (0x8 - 0xF) */
-    PROTO_ASK_READY        = 0x8,   /* (空) 应答：当前有空 */
+    PROTO_ASK_ALIVE        = 0x8,   /* (空) 心跳应答：我还活着 */
     PROTO_ASK_ACK          = 0x9,   /* (空) 应答：业务帧接收成功 */
     PROTO_ASK_NACK         = 0xA,   /* 载荷 [err_code(1)] 应答：接收失败，详见 proto_nack_code_t */
     PROTO_ASK_RETRY_REQ    = 0xB,   /* (空) 应答：请求重传 */

@@ -25,7 +25,8 @@
 
 #include <stddef.h>   /* NULL 定义 */
 #include <string.h>   /* memset */
-#include "main.h"     /* HAL_GetTick, TIM_HandleTypeDef */
+#include "FreeRTOS.h"  /* xTaskGetTickCountFromISR() */
+#include "task.h"      /* FreeRTOS task API */
 #include "mcal_timer.h"
 #include "mcal_gpio.h"  /* 比较器电路使能控制 */
 
@@ -104,18 +105,23 @@ static demod_ctx_t s_ctx;  /* 全局静态变量自动零初始化 */
 
 /* ========== 内部辅助函数（前向声明） ========== */
 static void _push_bit(uint8_t bit);
-static void _reset_bit_buffer(void);
-static void _process_freq_result(freq_id_t freq);
+static void _reset_bit_buffer(uint32_t now_tick);
+static void _process_freq_result(freq_id_t freq, uint32_t now_tick);
 
 /* ========== 内部辅助函数（实现） ========== */
 
 /**
  * @brief   复位 bit 缓冲区（检测到异常频率时调用）
+ * @param   now_tick 当前系统时刻（ms）
+ * 
+ * @rationale: 为什么接收时间参数而非内部获取
+ * - ISR 中禁止调用 HAL_GetTick()（与 FreeRTOS SysTick 冲突）
+ * - 时间由调用者（ISR 或任务）获取后传入
  */
-static void _reset_bit_buffer(void)
+static void _reset_bit_buffer(uint32_t now_tick)
 {
     s_ctx.edge_state = EDGE_WAIT_RISE1;  /* 复位边沿状态机 */
-    s_ctx.window_start_tick = HAL_GetTick();
+    s_ctx.window_start_tick = now_tick;
     s_ctx.window_current_freq = FREQ_UNKNOWN;
     s_ctx.window_stable_count = 0;
     s_ctx.window_bit_pushed = 0;
@@ -126,7 +132,9 @@ static void _reset_bit_buffer(void)
 
 /**
  * @brief   处理单个周期的频率判定结果（时间窗口累积 + 频率切换同步）
- * @param   freq  本周期识别出的频率 (FREQ_IS_F0 / FREQ_IS_F1 / FREQ_UNKNOWN)
+ * @param   freq     本周期识别出的频率 (FREQ_IS_F0 / FREQ_IS_F1 / FREQ_UNKNOWN)
+ * @param   now_tick 当前系统时刻（ms）
+ * 
  * @note    双重保底机制（解决时序对齐问题）：
  *          
  *          机制 1：40ms 时间窗口到期
@@ -159,14 +167,17 @@ static void _reset_bit_buffer(void)
  *              → push bit=1
  *            
  *          对齐成功！后续时序正确。
+ * 
+ * @rationale: 为什么接收时间参数而非内部获取
+ * - ISR 中禁止调用 HAL_GetTick()（与 FreeRTOS SysTick 冲突）
+ * - 时间由调用者（ISR）从 xTaskGetTickCountFromISR() 获取
+ * - 确保与应用层时间戳来源一致
  */
-static void _process_freq_result(freq_id_t freq)
+static void _process_freq_result(freq_id_t freq, uint32_t now_tick)
 {
-    uint32_t now_tick = HAL_GetTick();
-    
     if (freq == FREQ_UNKNOWN) {
         /* 无效周期（对称性或频率不匹配） → 复位 */
-        _reset_bit_buffer();
+        _reset_bit_buffer(now_tick);
         return;
     }
     
@@ -257,7 +268,8 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
                                          uint16_t f1_hz,
                                          uint32_t bit_period_ms,
                                          uint32_t timeout_ms,
-                                         uint8_t local_addr)
+                                         uint8_t local_addr,
+                                         uint32_t now_tick)
 {
     /* 参数合法性检查（仅最基本项） */
     if ((f0_hz == DEMOD_FREQ_NOT_LOCKED) || (f1_hz == DEMOD_FREQ_NOT_LOCKED)) {
@@ -302,10 +314,10 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
     s_ctx.tolerance_ticks = (min_half_period * 30U) / 100U;
 
     /* 清空 bit 缓冲 */
-    _reset_bit_buffer();
+    _reset_bit_buffer(now_tick);
     
-    /* 设置超时 */
-    s_ctx.timeout_tick = HAL_GetTick() + timeout_ms;
+    /* 设置超时（使用传入的 now_tick，不调用 HAL_GetTick()） */
+    s_ctx.timeout_tick = now_tick + timeout_ms;
 
     /* 使能比较器电路（正弦波→方波转换） */
     COMPARATOR_OPEN();
@@ -324,7 +336,8 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_stop(void)
     /* 关闭比较器电路（节省功耗） */
     COMPARATOR_CLOSE();
     
-    _reset_bit_buffer();
+    /* 传递虚拟时间戳（stop 不需要实际时间，只用于重置） */
+    _reset_bit_buffer(0);
     s_ctx.state = BSW_BFSK_DEMOD_IDLE;
     return BSW_BFSK_DEMOD_OK;
 }
@@ -353,7 +366,8 @@ bsw_bfsk_demod_state_t bsw_bfsk_demod_get_state(void)
     return s_ctx.state;
 }
 
-bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out)
+bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out,
+                                                 uint32_t now_tick)
 {
     if (out == NULL) {
         return BSW_BFSK_DEMOD_ERR_PARAM;
@@ -367,7 +381,7 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out)
     out->f0_hz = s_ctx.f0_hz;
     out->f1_hz = s_ctx.f1_hz;
     out->bit_count = s_ctx.bit_count;
-    out->timestamp_ms = HAL_GetTick();
+    out->timestamp_ms = now_tick;  /* 使用传入的时间戳，不调用 HAL_GetTick() */
     
     /* 拷贝 bit 流 */
     memcpy(out->bit_buf, s_ctx.bit_buf, s_ctx.bit_count);
@@ -388,6 +402,9 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out)
  *            EDGE_WAIT_RISE1 → CH1上升沿 → EDGE_WAIT_FALL
  *            EDGE_WAIT_FALL  → CH2下降沿 → EDGE_WAIT_RISE2
  *            EDGE_WAIT_RISE2 → CH1上升沿 → 完整周期判定 → 回到 EDGE_WAIT_FALL
+ * 
+ * @important FreeRTOS 兼容性：
+ *            从 xTaskGetTickCountFromISR() 获取时间戳，避免调用 HAL_GetTick()
  */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
@@ -398,6 +415,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     if (s_ctx.state != BSW_BFSK_DEMOD_RUNNING) {
         return;
     }
+    
+    /* 获取当前时间戳（ISR 上下文） */
+    uint32_t now_tick = xTaskGetTickCountFromISR();
     
     /* CH1: 上升沿捕获 */
     if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
@@ -466,7 +486,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
             }
             
             /* 交给时间窗口解调逻辑处理（累积到当前窗口，窗口到期时多数表决） */
-            _process_freq_result(detected_freq);
+            /* 传递时间戳参数，避免在 ISR 中调用 HAL_GetTick() */
+            _process_freq_result(detected_freq, now_tick);
             
             /* 继续下一周期 */
             s_ctx.edge_state = EDGE_WAIT_FALL;

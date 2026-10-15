@@ -187,6 +187,7 @@ static bool _is_freq_in_table(uint16_t f_hz)
 
 /**
  * @brief 根据频点有效性和节点角色选择初始状态
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  决策逻辑：
@@ -195,9 +196,8 @@ static bool _is_freq_in_table(uint16_t f_hz)
  *    * 上行频点有效 → LINKED（恢复链路）
  *    * 上行频点无效 → SCAN_LISTEN（失联，被动监听上级扫频）
  */
-static void _select_initial_state(void)
+static void _select_initial_state(uint32_t now_tick)
 {
-    uint32_t now_tick = HAL_GetTick();
     s_ctx.state_enter_tick = now_tick;
 
     // 检查上行频点有效性（两个频点都非 FREQ_NOT_LOCKED）
@@ -648,7 +648,8 @@ static void _state_entry_linked(uint32_t now_tick)
                          p_active_freq->f1_hz,
                          PRE_BFSK_BIT_PERIOD_MS,
                          APP_NODE_FSM_DEMOD_TIMEOUT_MS,
-                         s_ctx.hard_id);
+                         s_ctx.hard_id,
+                         now_tick);  /* 传入系统时刻 */
     bsw_led_set_state(LED_STATE_LINKED);
 }
 
@@ -782,7 +783,8 @@ static void _phase_self_reply(uint32_t now_tick)
                             s_ctx.uplink_freq.f1_hz,
                             PRE_BFSK_BIT_PERIOD_MS,
                             PRE_ACK_TIMEOUT_MS,
-                            s_ctx.hard_id);
+                            s_ctx.hard_id,
+                            now_tick);  /* 传入系统时刻 */
         
         s_ctx.pre_linked_phase     = PRE_WAIT_ACK;
         s_ctx.pre_phase_enter_tick = now_tick;
@@ -827,7 +829,7 @@ static void _phase_wait_ack(uint32_t now_tick)
     if (demod_state == BSW_BFSK_DEMOD_DONE_OK)
     {
         bsw_bfsk_demod_result_t demod_result;
-        if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK)
+        if (bsw_bfsk_demod_take_result(&demod_result, now_tick) == BSW_BFSK_DEMOD_OK)  /* 传入系统时刻 */
         {
             // 初始化协议接收器（首次）
             static bool s_proto_rx_initialized = false;
@@ -937,7 +939,7 @@ static void _state_run_scan_listen(uint32_t now_tick)
         }
         s_ctx.sweep_start_tick   = APP_NODE_FSM_SWEEP_NOT_STARTED;
         s_ctx.sweep_timeout_tick = APP_NODE_FSM_SWEEP_NOT_STARTED;
-        app_node_fsm_on_sweep_complete(cnt);
+        app_node_fsm_on_sweep_complete(cnt, now_tick);  /* 传入系统时刻 */
     }
 }
 
@@ -1119,15 +1121,17 @@ static void _state_run_pre_linked(uint32_t now_tick)
  *  2. 喂给 proto 状态机（bit → 字节 → 帧）
  *  3. 解析成功后分发给 app_frame_handler
  *  4. 设置标志位
+ * 
+ * @param now_tick 当前系统时刻（ms），用于生成时间戳
  */
-static void _handle_demod_result(void)
+static void _handle_demod_result(uint32_t now_tick)
 {
     bsw_bfsk_demod_state_t demod_state = bsw_bfsk_demod_get_state();
     
     if (demod_state == BSW_BFSK_DEMOD_DONE_OK)
     {
         bsw_bfsk_demod_result_t demod_result;
-        if (bsw_bfsk_demod_take_result(&demod_result) == BSW_BFSK_DEMOD_OK)
+        if (bsw_bfsk_demod_take_result(&demod_result, now_tick) == BSW_BFSK_DEMOD_OK)  /* 传入系统时刻 */
         {
             // 步骤 1: 初始化协议接收器（首次）
             static bool s_proto_rx_initialized = false;
@@ -1188,7 +1192,7 @@ static void _handle_demod_result(void)
 static void _state_run_linked(uint32_t now_tick)
 {
     // 步骤 1: 处理解调结果（bit 流 → 帧 → 业务）
-    _handle_demod_result();
+    _handle_demod_result(now_tick);  /* 传入系统时刻 */
     
     // ========== 断链检测（上行链路） ==========
     
@@ -1284,7 +1288,7 @@ static void _state_run_fault(uint32_t now_tick)
  *  5. 校验频点有效性（精确匹配频点表）
  *  6. 选择初始状态（LINKED 或 SCAN_LISTEN）
  */
-void app_node_fsm_init(uint8_t hard_id)
+void app_node_fsm_init(uint8_t hard_id, uint32_t now_tick)
 {
     memset(&s_ctx, 0, sizeof(s_ctx));
 
@@ -1354,7 +1358,7 @@ void app_node_fsm_init(uint8_t hard_id)
     }
 
     // 根据 Flash 备份的频点情况选择初始状态
-    _select_initial_state();
+    _select_initial_state(now_tick);  /* 传入系统时刻 */
 }
 
 /**
@@ -1627,7 +1631,7 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
                 // 停止 ADC，启动 BFSK 解调器监听重复的 1010
                 bsw_adc_ringbuf_disable();
                 mcal_timer_ic_start(MCAL_TIMER_TIM1);
-                bsw_bfsk_demod_start(f0, f1, PRE_BFSK_BIT_PERIOD_MS, SCAN_ACK_CONFIRM_TIMEOUT_MS, s_ctx.hard_id);
+                bsw_bfsk_demod_start(f0, f1, PRE_BFSK_BIT_PERIOD_MS, SCAN_ACK_CONFIRM_TIMEOUT_MS, s_ctx.hard_id, now_tick);  /* 传入系统时刻 */
                 
                 // 切换到 PHASE2: ACK 已发送，等待确认
                 s_ctx.scan_wait_reply_phase = SCAN_ACK_SENT;
@@ -1650,20 +1654,20 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
  *  2. 选择失败 → 回到 SCAN_LISTEN
  *  3. 选择成功 → 保存频对，进入 PRE_LINKED 状态
  */
-void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count)
+void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count, uint32_t now_tick)
 {
     uint16_t best_f0 = 0, best_f1 = 0;
     int32_t dr = _select_freq_pair(&best_f0, &best_f1);
     
     if (dr == -1)
     {
-        _state_transition(NODE_SCAN_LISTEN, HAL_GetTick());
+        _state_transition(NODE_SCAN_LISTEN, now_tick);  /* 使用传入的时间戳 */
         return;
     }
     
     if (dr == -2)
     {
-        _state_transition(NODE_SCAN_LISTEN, HAL_GetTick());
+        _state_transition(NODE_SCAN_LISTEN, now_tick);  /* 使用传入的时间戳 */
         return;
     }
 
@@ -1679,18 +1683,19 @@ void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count)
     // 扫频完成 → 进入预链接状态（协议 §4.2）
     // 已选出最佳频对 (f0, f1)，后续工作（协议 §4.2.1 自载波 1010 回显、
     // §4.2.3 等 ACK、§4.2.3 超时回退）在 PRE_LINKED 状态中处理
-    _state_transition(NODE_PRE_LINKED, HAL_GetTick());
+    _state_transition(NODE_PRE_LINKED, now_tick);  /* 使用传入的时间戳 */
 }
 
 /**
  * @brief ACK 接收事件注入
  * @param f0 ACK 中的低频点
  * @param f1 ACK 中的高频点
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  被扫方收到上级 ACK，确认上级频点并进入 LINKED 状态
  */
-void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1)
+void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1, uint32_t now_tick)
 {
     if (s_ctx.state != NODE_SCAN)
     {
@@ -1708,7 +1713,7 @@ void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1)
         s_ctx.downlink_freq.f0_hz, s_ctx.downlink_freq.f1_hz);
     (void)ret;  // 备份失败不影响进入 LINKED，只是下次掉电无法快速恢复
 
-    _state_transition(NODE_LINKED, HAL_GetTick());
+    _state_transition(NODE_LINKED, now_tick);  /* 使用传入的时间戳 */
 }
 
 // ============================================================================
@@ -1800,10 +1805,8 @@ void app_node_fsm_flag_clear_fwd_up(void)
  *  - 1 = 扫下行：设置活动链路为下行，进入 SCAN 状态
  *  - 0 = 扫上行：设置活动链路为上行，进入 SCAN_LISTEN 状态
  */
-void app_node_fsm_on_scan_order(uint8_t scan_direction)
+void app_node_fsm_on_scan_order(uint8_t scan_direction, uint32_t now_tick)
 {
-    uint32_t now_tick = HAL_GetTick();
-    
     if (scan_direction == 1)
     {
         // 扫下行：设置活动链路为下行，进入 SCAN 状态
@@ -1852,25 +1855,27 @@ void app_node_fsm_on_quiet_timeout(uint32_t now_tick)
 /**
  * @brief 故障事件注入
  * @param fault_code 故障码
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  系统检测到故障时调用，进入 FAULT 状态
  */
-void app_node_fsm_on_fault(uint32_t fault_code)
+void app_node_fsm_on_fault(uint32_t fault_code, uint32_t now_tick)
 {
     (void)fault_code;
-    _state_transition(NODE_FAULT, HAL_GetTick());
+    _state_transition(NODE_FAULT, now_tick);  /* 使用传入的时间戳 */
 }
 
 /**
  * @brief 看门狗超时事件注入
+ * @param now_tick 当前系统时刻（ms）
  * 
  * @details
  *  看门狗超时，系统异常，进入 FAULT 状态
  */
-void app_node_fsm_on_wdt_timeout(void)
+void app_node_fsm_on_wdt_timeout(uint32_t now_tick)
 {
-    _state_transition(NODE_FAULT, HAL_GetTick());
+    _state_transition(NODE_FAULT, now_tick);  /* 使用传入的时间戳 */
 }
 
 // ============================================================================

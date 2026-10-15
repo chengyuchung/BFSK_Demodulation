@@ -93,6 +93,7 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_init(void);
  * @param   bit_period_ms 每个 bit 持续时间（ms），协议层统一配置
  * @param   timeout_ms    监听超时（ms，协议 §4.2.3 给出上限）
  * @param   local_addr    本机地址（用于 ADDR 域早期过滤）
+ * @param   now_tick      当前系统时刻（ms），来自 xTaskGetTickCount()
  * @retval  BSW_BFSK_DEMOD_OK / ERR_PARAM / ERR_STATE
  *
  * @note    1) 启用 TIM1 IC（mcal_timer_ic_start）
@@ -101,12 +102,17 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_init(void);
  *          4) 状态置 RUNNING
  *          5) 基于时间窗口解调：每个 bit_period_ms 窗口内对所有周期频率多数表决
  *          6) 域级状态机：边解调边过滤（帧头检测 + 地址过滤）
+ * 
+ * @details FreeRTOS 兼容性：
+ *          接收外部传入的 now_tick 参数，避免内部调用 HAL_GetTick()
+ *          调用方示例：bsw_bfsk_demod_start(f0, f1, 40, 500, addr, xTaskGetTickCount());
  */
 bsw_bfsk_demod_ret_t bsw_bfsk_demod_start(uint16_t f0_hz,
                                          uint16_t f1_hz,
                                          uint32_t bit_period_ms,
                                          uint32_t timeout_ms,
-                                         uint8_t local_addr);
+                                         uint8_t local_addr,
+                                         uint32_t now_tick);
 
 /**
  * @brief   主动停止解调（状态机切走 / 复位 / 调试时用）
@@ -118,8 +124,13 @@ bsw_bfsk_demod_ret_t bsw_bfsk_demod_stop(void);
 
 /**
  * @brief   主循环钩子：检查超时 / 处理异步事件
- * @param   now_tick    HAL_GetTick() 或 OS 时钟
+ * @param   now_tick    系统时刻（ms），来自 xTaskGetTickCount() 在任务中
+ *                      或 xTaskGetTickCountFromISR() 在 ISR 中
  * @note    需在 app_task 10ms 节拍器里调用
+ * 
+ * @details FreeRTOS 兼容性：
+ *          使用 FreeRTOS 提供的时间戳而非 HAL_GetTick()，避免 SysTick 冲突
+ *          示例：bsw_bfsk_demod_run(xTaskGetTickCount());
  */
 void bsw_bfsk_demod_run(uint32_t now_tick);
 
@@ -130,12 +141,18 @@ bsw_bfsk_demod_state_t bsw_bfsk_demod_get_state(void);
 
 /**
  * @brief   取出最近一次 DONE_OK 的解调结果（消费一次后清空）
- * @param[out] out   目标缓冲区
+ * @param[out] out      目标缓冲区
+ * @param      now_tick 当前系统时刻（ms），来自 xTaskGetTickCount()
  * @retval  BSW_BFSK_DEMOD_OK           已填充
  *          BSW_BFSK_DEMOD_ERR_PARAM    out 为 NULL
  *          BSW_BFSK_DEMOD_ERR_STATE    当前无有效结果
+ * 
+ * @details FreeRTOS 兼容性：
+ *          接收外部传入的 now_tick 参数，避免内部调用 HAL_GetTick()
+ *          调用方示例：bsw_bfsk_demod_take_result(&result, xTaskGetTickCount());
  */
-bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out);
+bsw_bfsk_demod_ret_t bsw_bfsk_demod_take_result(bsw_bfsk_demod_result_t *out,
+                                                 uint32_t now_tick);
 
 /* ========== 内部回调（mcal_timer 调用，不要在应用层直接调） ========== */
 
