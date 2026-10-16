@@ -205,8 +205,7 @@ typedef enum
     PROTO_ASK_ALIVE        = 0x8,   /* (空) 心跳应答：我还活着 */
     PROTO_ASK_ACK          = 0x9,   /* (空) 应答：业务帧接收成功 */
     PROTO_ASK_NACK         = 0xA,   /* 载荷 [err_code(1)] 应答：接收失败，详见 proto_nack_code_t */
-    PROTO_ASK_RETRY_REQ    = 0xB,   /* (空) 应答：请求重传 */
-    PROTO_ASK_FREQ_PAIR    = 0xC,   /* 载荷 [f0_hz(2)][f1_hz(2)] 应答：频点确认回复（扫频后建链） */
+    PROTO_ASK_FREQ_PAIR    = 0xB,   /* 载荷 [f0_hz(2)][f1_hz(2)] 应答：频点确认回复（扫频后建链） */
 } proto_ask_msg_t;
 
 /**

@@ -54,7 +54,7 @@
 #include "bsw_version.h"
 #include "bsw_node_id.h"
 #include "app_sensor.h"
-#include "bsw_bfsk_mod.h"
+#include "app_msg_send.h"
 
 /* ========== 配置宏定义 ========== */
 
@@ -192,9 +192,6 @@ static frame_handler_ret_t _handle_ask_ack(const proto_frame_t *frame,
 static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
                                              proto_frame_t *p_reply_buf,
                                              uint8_t *p_reply_count);
-static frame_handler_ret_t _handle_ask_retry_req(const proto_frame_t *frame,
-                                                  proto_frame_t *p_reply_buf,
-                                                  uint8_t *p_reply_count);
 static frame_handler_ret_t _handle_ask_freq_pair(const proto_frame_t *frame,
                                                   proto_frame_t *p_reply_buf,
                                                   uint8_t *p_reply_count);
@@ -234,6 +231,7 @@ static frame_handler_ret_t _handle_alarm_link_fail(const proto_frame_t *frame,
                                                     uint8_t *p_reply_count);
 
 /* 通用辅助函数 */
+static bool _is_ack_frame(const proto_frame_t *p_frame);
 static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t count);
 static void _make_ack_frame(const proto_frame_t *req_frame, proto_frame_t *p_ack_frame);
 static void _make_nack_frame(const proto_frame_t *req_frame,
@@ -270,7 +268,6 @@ static const AskHandlerEntry_t s_ask_handler_table[] =
     { PROTO_ASK_ALIVE,        _handle_ask_alive,     "ALIVE" },
     { PROTO_ASK_ACK,          _handle_ask_ack,       "ACK" },
     { PROTO_ASK_NACK,         _handle_ask_nack,      "NACK" },
-    { PROTO_ASK_RETRY_REQ,    _handle_ask_retry_req, "RETRY_REQ" },
     { PROTO_ASK_FREQ_PAIR,    _handle_ask_freq_pair, "FREQ_PAIR" },
 };
 
@@ -800,20 +797,23 @@ static frame_handler_ret_t _handle_ask_alive(const proto_frame_t *frame,
  * @return 处理结果
  * 
  * @details
- * 待实现：收到 ACK，说明对方成功接收了我们发送的帧
- * 不需要回复，只需要通知发送模块"发送成功"
+ * 流程：
+ * 1. 收到 ACK，说明对方成功接收了我们发送的帧
+ * 2. 通知 app_msg_send 模块"ACK 已收到"
+ * 3. app_msg_send 会停止重传该帧
+ * 4. 不需要再回复
  */
 static frame_handler_ret_t _handle_ask_ack(const proto_frame_t *frame,
                                             proto_frame_t *p_reply_buf,
                                             uint8_t *p_reply_count)
 {
-    (void)frame;
     (void)p_reply_buf;
     
     /* 无需回复 */
     *p_reply_count = 0;
     
-    /* TODO: 通知发送模块"ACK 收到，发送成功" */
+    /* 通知发送模块"ACK 收到，发送成功" */
+    app_msg_send_notify_ack(frame->seq);
     
     return FRAME_HANDLER_OK;
 }
@@ -826,9 +826,12 @@ static frame_handler_ret_t _handle_ask_ack(const proto_frame_t *frame,
  * @return 处理结果
  * 
  * @details
- * 待实现：收到 NACK，说明对方接收失败（CRC错误、地址不匹配等）
- * 载荷格式：[err_code(1)]
- * 不需要回复，但需要触发重传逻辑
+ * 流程：
+ * 1. 收到 NACK，说明对方接收失败（CRC错误、地址不匹配、传感器故障等）
+ * 2. 通知 app_msg_send 模块"收到 NACK"
+ * 3. app_msg_send 会根据错误码决定是否重传
+ * 4. 载荷格式：[err_code(1)]
+ * 5. 不需要回复
  */
 static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
                                              proto_frame_t *p_reply_buf,
@@ -839,11 +842,13 @@ static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
     /* 无需回复 */
     *p_reply_count = 0;
     
-    /* TODO: 解析错误码并根据错误码决定是否重传 */
+    /* 解析错误码 */
     if (frame->payload_len >= 1)
     {
         proto_nack_code_t err_code = (proto_nack_code_t)frame->payload[0];
-        (void)err_code;  /* 避免未使用警告 */
+        
+        /* 通知发送模块"NACK 收到，可能需要重传" */
+        app_msg_send_notify_nack(frame->seq, err_code);
     }
     
     return FRAME_HANDLER_OK;
@@ -860,21 +865,6 @@ static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
  * 待实现：收到 RETRY_REQ，说明对方没收到我们的帧，请求重传
  * 不需要回复，只需要触发重传逻辑
  */
-static frame_handler_ret_t _handle_ask_retry_req(const proto_frame_t *frame,
-                                                  proto_frame_t *p_reply_buf,
-                                                  uint8_t *p_reply_count)
-{
-    (void)frame;
-    (void)p_reply_buf;
-    
-    /* 无需回复 */
-    *p_reply_count = 0;
-    
-    /* TODO: 触发重传逻辑 */
-    
-    return FRAME_HANDLER_OK;
-}
-
 /**
  * @brief 处理频点确认（FREQ_PAIR）
  * @param frame 应答帧
@@ -1053,16 +1043,52 @@ static frame_handler_ret_t _handle_alarm_link_fail(const proto_frame_t *frame,
 /* ========== 通用辅助函数 ========== */
 
 /**
- * @brief 统一发送一组帧
- * @param p_frames 帧数组
- * @param count 帧数量
- * @return 处理结果
+ * @brief 判断帧是否是 ACK/NACK 确认帧
+ * @param p_frame 待判断的帧
+ * @return true 表示是 ACK/NACK，false 表示是普通数据帧
  * 
  * @details
- * 流程：
- * 1. 逐个帧进行打包
- * 2. 调用 BFSK 调制器发送
- * 3. 任何帧发送失败则返回错误
+ * ACK/NACK 帧特征：
+ * - 类型为 PROTO_TYPE_ASK
+ * - msg_num 为 PROTO_ASK_ACK 或 PROTO_ASK_NACK
+ * 
+ * 发送策略的区别：
+ * - ACK/NACK：直接发送，不需要等待和重传（确认帧本身不需要确认）
+ * - 其他帧：需要等待对方的 ACK 和自动重传保障
+ */
+static bool _is_ack_frame(const proto_frame_t *p_frame)
+{
+    if (p_frame == NULL)
+    {
+        return false;
+    }
+    
+    if (p_frame->type_info.type == PROTO_TYPE_ASK)
+    {
+        return (p_frame->type_info.msg_num == PROTO_ASK_ACK ||
+                p_frame->type_info.msg_num == PROTO_ASK_NACK);
+    }
+    
+    return false;
+}
+
+/**
+ * @brief 发送多个回复帧（智能选择发送方式）
+ * @param p_frames 帧数组
+ * @param count 帧数量
+ * @return FRAME_HANDLER_OK 表示全部发送成功
+ * 
+ * @details
+ * 智能发送策略：
+ * - ACK/NACK 帧：调用 app_msg_send_ack()（直接发送，无需等待）
+ * - 其他帧（查询应答、控制应答等）：调用 app_msg_send_frame()（等待 ACK，自动重传）
+ * 
+ * 为什么分类？
+ * 1. ACK/NACK 只是确认收到，不需要二次确认（避免无限往复）
+ * 2. 数据帧需要对方的 ACK 确认，才能确保可靠传输（重传保障）
+ * 
+ * @note 改进：相比旧设计，新增了 _is_ack_frame() 来识别确认帧，
+ *       根据帧类型自动选择不同的发送策略，统一在此函数处理。
  */
 static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t count)
 {
@@ -1073,19 +1099,20 @@ static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t c
     
     for (uint8_t i = 0; i < count; i++)
     {
-        /* 打包帧为线缆字节流 */
-        uint8_t tx_buf[PROTO_FRAME_MAX];
-        uint32_t tx_len = 0;
-        proto_err_t err = proto_frame_pack(tx_buf, sizeof(tx_buf), &p_frames[i], &tx_len);
+        msg_send_ret_t send_ret;
         
-        if (err != PROTO_ERR_OK || tx_len == 0)
+        if (_is_ack_frame(&p_frames[i]))
         {
-            return FRAME_HANDLER_ERR_SEND_FAIL;
+            /* ACK/NACK 帧：直接发送，不等待对方确认 */
+            send_ret = app_msg_send_ack(&p_frames[i]);
+        }
+        else
+        {
+            /* 数据帧：需要等待 ACK 和重传保障（1000ms 超时） */
+            send_ret = app_msg_send_frame(&p_frames[i], 1000);
         }
         
-        /* 调用 BFSK 调制器发送 */
-        bsw_bfsk_mod_ret_t mod_ret = bsw_bfsk_mod_send(tx_buf, (uint16_t)tx_len);
-        if (mod_ret != BSW_BFSK_MOD_OK)
+        if (send_ret != MSG_SEND_OK)
         {
             return FRAME_HANDLER_ERR_SEND_FAIL;
         }

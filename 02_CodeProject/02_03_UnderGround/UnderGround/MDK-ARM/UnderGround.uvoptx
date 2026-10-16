@@ -812,7 +812,7 @@
 
   <Group>
     <GroupName>BSW</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1061,6 +1061,18 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\APP\app_freq_detector\app_freq_detector.c</PathWithFileName>
       <FilenameWithoutPath>app_freq_detector.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>70</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\APP\app_msg_send\app_msg_send.c</PathWithFileName>
+      <FilenameWithoutPath>app_msg_send.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
