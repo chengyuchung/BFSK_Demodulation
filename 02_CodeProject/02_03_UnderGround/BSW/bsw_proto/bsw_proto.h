@@ -204,7 +204,7 @@ typedef enum
     /* 应答子类型 (0x8 - 0xF) */
     PROTO_ASK_ALIVE        = 0x8,   /* (空) 心跳应答：我还活着 */
     PROTO_ASK_ACK          = 0x9,   /* (空) 应答：业务帧接收成功 */
-    PROTO_ASK_NACK         = 0xA,   /* 载荷 [err_code(1)] 应答：接收失败，详见 proto_nack_code_t */
+    PROTO_ASK_NACK         = 0xA,   /* (空) 应答：接收失败 */
     PROTO_ASK_FREQ_PAIR    = 0xB,   /* 载荷 [f0_hz(2)][f1_hz(2)] 应答：频点确认回复（扫频后建链） */
 } proto_ask_msg_t;
 
@@ -243,18 +243,20 @@ typedef enum
 } proto_err_t;
 
 /* ============================================================================
- * NACK 错误码（协议 §6.4 列出，独立于 API 错误码）
- * ============================================================================ */
-
-typedef enum
-{
-    PROTO_NACK_CRC_FAIL         = 0x01,     /* CRC 校验失败 */
-    PROTO_NACK_LEN_BAD          = 0x02,     /* 长度异常 */
-    PROTO_NACK_TYPE_UNKNOWN     = 0x03,     /* TYPE/MSG_NUM 未知 */
-    PROTO_NACK_ADDR_MISMATCH    = 0x04,     /* 目标地址不匹配 */
-    PROTO_NACK_SEQ_DUP          = 0x05,     /* SEQ 序号重复/过期 */
-    PROTO_NACK_SENSOR_FAIL      = 0x06,     /* 传感器故障（无有效数据）*/
-} proto_nack_code_t;
+ * NACK 帧说明（协议 §6.4）
+ * ============================================================================
+ * 
+ * @design 说明：
+ * NACK 帧表示"收到请求但拒绝执行"，不携带错误码（payload 长度为 0）。
+ * 
+ * 为什么不需要错误码：
+ * - 硬件层错误（HEAD/TAIL/CRC/长度/转义异常）在 proto_frame_unpack() 就被拒绝
+ * - 地址错误在 app_frame_handler_dispatch() 就被过滤
+ * - 传感器故障由专门的 ALARM 帧上报（见 proto_alarm_fault_t）
+ * - 业务层失败统一处理，不需要区分具体原因
+ * 
+ * NACK 载荷格式：无载荷（payload_len = 0）
+ */
 
 /* ============================================================================
  * ALARM 传感器故障码（协议 §6.5）

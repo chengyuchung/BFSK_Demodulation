@@ -24,13 +24,12 @@
  *     - PROTO_CONTROL_SET_TEMP_THRESH  设置温度阈值（⏳ 待实现）
  *     - PROTO_CONTROL_SET_PRESS_THRESH 设置气压阈值（⏳ 待实现）
  *
- *   - _handle_ask_frame()      ASK 类型询问/应答帧（函数表，6 项）
- *     - PROTO_ASK_HEARTBEAT    心跳查询（⏳ 待实现）
- *     - PROTO_ASK_ALIVE        心跳应答（⏳ 待实现）
- *     - PROTO_ASK_ACK          确认应答（⏳ 待实现）
- *     - PROTO_ASK_NACK         否定应答（⏳ 待实现）
- *     - PROTO_ASK_RETRY_REQ    重传请求（⏳ 待实现）
- *     - PROTO_ASK_FREQ_PAIR    频点确认（⏳ 待实现）
+ *   - _handle_ask_frame()      ASK 类型询问/应答帧（函数表，5 项）
+ *     - PROTO_ASK_HEARTBEAT    心跳查询（✅ 已完成）
+ *     - PROTO_ASK_ALIVE        心跳应答（✅ 已完成）
+ *     - PROTO_ASK_ACK          确认应答（✅ 已完成）
+ *     - PROTO_ASK_NACK         否定应答（✅ 已完成）
+ *     - PROTO_ASK_FREQ_PAIR    频点确认（✅ 已完成）
  *
  *   - _handle_alarm_frame()    ALARM 类型警报帧（函数表，5 项）
  *     - PROTO_ALARM_LOW_BATT    电池低电告警（⏳ 待实现）
@@ -50,11 +49,14 @@
 #include "app_frame_handler.h"
 
 #include <string.h>
+#include "main.h"
 #include "bsw_proto.h"
 #include "bsw_version.h"
 #include "bsw_node_id.h"
 #include "app_sensor.h"
 #include "app_msg_send.h"
+#include "app_link.h"
+#include "app_node_fsm.h"
 
 /* ========== 配置宏定义 ========== */
 
@@ -235,7 +237,6 @@ static bool _is_ack_frame(const proto_frame_t *p_frame);
 static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t count);
 static void _make_ack_frame(const proto_frame_t *req_frame, proto_frame_t *p_ack_frame);
 static void _make_nack_frame(const proto_frame_t *req_frame,
-                             proto_nack_code_t err_code,
                              proto_frame_t *p_nack_frame);
 
 /* ========== QUERY 处理函数表 ========== */
@@ -484,7 +485,7 @@ static frame_handler_ret_t _handle_query_temp_press(const proto_frame_t *frame,
     if (!sensor_data.temp_valid && !sensor_data.press_valid)
     {
         /* 两个传感器都失败，组装 NACK */
-        _make_nack_frame(frame, PROTO_NACK_SENSOR_FAIL, &p_reply_buf[0]);
+        _make_nack_frame(frame, &p_reply_buf[0]);
         *p_reply_count = 1;
         return FRAME_HANDLER_OK;
     }
@@ -842,14 +843,8 @@ static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
     /* 无需回复 */
     *p_reply_count = 0;
     
-    /* 解析错误码 */
-    if (frame->payload_len >= 1)
-    {
-        proto_nack_code_t err_code = (proto_nack_code_t)frame->payload[0];
-        
-        /* 通知发送模块"NACK 收到，可能需要重传" */
-        app_msg_send_notify_nack(frame->seq, err_code);
-    }
+    /* NACK 不携带错误码（payload_len = 0），直接通知发送模块 */
+    app_msg_send_notify_nack(frame->seq);
     
     return FRAME_HANDLER_OK;
 }
@@ -877,6 +872,22 @@ static frame_handler_ret_t _handle_ask_nack(const proto_frame_t *frame,
  * 载荷格式：[f0_hz(2)][f1_hz(2)]
  * 不需要回复，只需要保存频点信息
  */
+/**
+ * @brief 处理频点确认帧（FREQ_PAIR）- 扫频后建立链接
+ * @param frame 接收到的帧
+ * @param p_reply_buf 回复帧缓冲区（本帧无需回复）
+ * @param p_reply_count 回复帧数量
+ * @return 处理结果
+ * 
+ * @design 说明：
+ * 井上在扫频后确定通信频点，但不知道中继的地址，所以用广播地址发送 FREQ_PAIR。
+ * 井下中继接收到此帧后：
+ * 1. 提取源地址（SRC）和频点信息（f0_hz, f1_hz）
+ * 2. 比较 SRC 与本机地址：
+ *    - SRC > 本机地址 → SRC 是下级节点（向下通信）
+ *    - SRC < 本机地址 → SRC 是上级节点（向上通信）
+ * 3. 保存频点和节点关系，后续用此频点与该节点通信
+ */
 static frame_handler_ret_t _handle_ask_freq_pair(const proto_frame_t *frame,
                                                   proto_frame_t *p_reply_buf,
                                                   uint8_t *p_reply_count)
@@ -886,17 +897,44 @@ static frame_handler_ret_t _handle_ask_freq_pair(const proto_frame_t *frame,
     /* 无需回复 */
     *p_reply_count = 0;
     
-    /* TODO: 解析频点信息（小端）并保存 */
-    if (frame->payload_len >= 4)
+    /* 检查载荷长度：必须至少 4 字节（f0_hz(2) + f1_hz(2)） */
+    if (frame->payload_len < 4)
     {
-        uint16_t f0_hz = (uint16_t)((frame->payload[1] << 8) | frame->payload[0]);
-        uint16_t f1_hz = (uint16_t)((frame->payload[3] << 8) | frame->payload[2]);
-        (void)f0_hz;  /* 避免未使用警告 */
-        (void)f1_hz;  /* 避免未使用警告 */
+        return FRAME_HANDLER_OK;  /* 载荷不足，忽略 */
     }
+    
+    /* 解析频点信息（小端字节序） */
+    uint16_t f0_hz = (uint16_t)((frame->payload[1] << 8) | frame->payload[0]);
+    uint16_t f1_hz = (uint16_t)((frame->payload[3] << 8) | frame->payload[2]);
+    
+    /* 提取源地址（发送方的地址） */
+    uint8_t peer_addr = frame->addr.src;
+    
+    /* 获取本机地址 */
+    uint8_t local_addr = bsw_node_id_get();
+    
+    /* 比较地址确定节点关系并保存到 app_link */
+    if (peer_addr > local_addr)
+    {
+        /* peer_addr > local_addr：peer 是下级节点（井上 -> 井下） */
+        app_link_set_downlink(peer_addr, f0_hz, f1_hz);
+    }
+    else if (peer_addr < local_addr)
+    {
+        /* peer_addr < local_addr：peer 是上级节点（井下 -> 井上） */
+        app_link_set_uplink(peer_addr, f0_hz, f1_hz);
+    }
+    /* else: peer_addr == local_addr，这不应该发生 */
+    
+    /* 为什么：通知状态机有新的频点对可用 */
+    /* 状态机根据当前状态决定是否进入 LINKED 或更新频点 */
+    /* 频点已由 app_link 保存，状态机只需处理状态转换逻辑 */
+    uint32_t now_tick = HAL_GetTick();
+    app_node_fsm_on_freq_pair_received(peer_addr, now_tick);
     
     return FRAME_HANDLER_OK;
 }
+
 
 /* ========== ALARM 类型帧处理 ========== */
 
@@ -1108,8 +1146,8 @@ static frame_handler_ret_t _send_frames(const proto_frame_t *p_frames, uint8_t c
         }
         else
         {
-            /* 数据帧：需要等待 ACK 和重传保障（1000ms 超时） */
-            send_ret = app_msg_send_frame(&p_frames[i], 1000);
+            /* 数据帧：需要等待 ACK 和重传保障（内部默认 5000ms 超时） */
+            send_ret = app_msg_send_frame(&p_frames[i]);
         }
         
         if (send_ret != MSG_SEND_OK)
@@ -1161,7 +1199,6 @@ static void _make_ack_frame(const proto_frame_t *req_frame, proto_frame_t *p_ack
  * - PAYLOAD[0] = err_code
  */
 static void _make_nack_frame(const proto_frame_t *req_frame,
-                             proto_nack_code_t err_code,
                              proto_frame_t *p_nack_frame)
 {
     p_nack_frame->addr.dst = req_frame->addr.src;  /* 回复给发送方 */
@@ -1169,6 +1206,5 @@ static void _make_nack_frame(const proto_frame_t *req_frame,
     p_nack_frame->type_info.type = PROTO_TYPE_ASK;
     p_nack_frame->type_info.msg_num = PROTO_ASK_NACK;
     p_nack_frame->seq = req_frame->seq;
-    p_nack_frame->payload_len = 1;
-    p_nack_frame->payload[0] = (uint8_t)err_code;
+    p_nack_frame->payload_len = 0;  /* NACK 不携带错误码 */
 }

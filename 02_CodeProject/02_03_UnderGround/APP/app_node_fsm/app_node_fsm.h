@@ -30,6 +30,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 #include "mcal_timer.h"
+#include "app_msg_freq.h"
 
 // ============================================================================
 // 节点状态枚举
@@ -84,24 +85,23 @@ typedef struct {
 } node_freq_pair_t;
 
 // ============================================================================
-// 扫频参数宏定义
+// 扫频参数宏定义（已迁移到 app_msg_freq.h）
 // ============================================================================
-
-#define SWEEP_FREQ_COUNT         (19)    // 扫频频点数量
-#define SWEEP_FREQ_START         (125)   // 起始频率（Hz）
-#define SWEEP_FREQ_STEP          (50)    // 频率步进（Hz）
-#define SWEEP_FREQ_TOLERANCE_HZ  (15)    // 频率容差（Hz）
-#define SWEEP_FREQ_INDEX_INVALID (0xFFU) // 无效索引
+// 使用 app_msg_freq.h 中的常量：
+//   APP_MSG_FREQ_COUNT         (19)
+//   APP_MSG_FREQ_START         (125)
+//   APP_MSG_FREQ_STEP          (50)
+//   APP_MSG_FREQ_TOLERANCE     (15)
+//   APP_MSG_FREQ_INVALID_INDEX (0xFF)
 
 // ============================================================================
-// 频对决选参数宏定义
+// 频对决选参数宏定义（已迁移到 app_scan_listen 模块）
 // ============================================================================
-
-#define SWEEP_MIN_FREQ_GAP_HZ                   (100u)  // 最小频率间隔（Hz）
-#define SWEEP_VALID_AMP_DELTA                   (50u)   // 有效幅值差（保留）
-#define SWEEP_DEFAULT_NOISE_FLOOR               (100u)  // 默认噪声底（保留）
-#define SWEEP_MIN_VALID_FREQ_CNT                (10u)   // 最少有效频点数
-#define SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT    (70u)   // 强度门限（最大幅值的 70%）
+// 
+// 以下常量已不再使用，保留作为参考：
+// - SWEEP_MIN_FREQ_GAP_HZ → 使用 APP_SCAN_LISTEN_MIN_FREQ_GAP_HZ (150Hz)
+// - SWEEP_MIN_VALID_FREQ_CNT → 内部使用 (10)
+// - SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT → 内部使用 (70%)
 
 #define SWEEP_SESSION_TIMEOUT_MS                (850U)  // 扫频会话超时（ms）
 
@@ -109,7 +109,6 @@ typedef struct {
 // 时间常量宏定义
 // ============================================================================
 
-#define BUS_QUIET_TIMEOUT_MS        (3000U)  // 总线静默超时（ms）
 #define ADC_CHECK_PERIOD_MS         (40U)    // ADC 检查周期（ms）
 #define SCAN_FREQ_DURATION_MS       (40U)    // 单个频点发送时长（ms）
 #define SCAN_WAIT_REPLY_TIMEOUT_MS  (5000U)  // 等待回应超时（ms）
@@ -214,8 +213,8 @@ typedef struct {
     uint16_t           pending_len;        // 待发送长度（保留）
 
     // 扫频相关
-    node_freq_pair_t   sweep_result;                     // 扫频结果频对
-    uint16_t           sweep_amp_table[SWEEP_FREQ_COUNT]; // 幅度表
+    node_freq_pair_t   sweep_result;                       // 扫频结果频对
+    uint16_t           sweep_amp_table[APP_MSG_FREQ_COUNT]; // 幅度表
     uint32_t           sweep_start_tick;                  // 扫频开始时刻（ms）
     uint32_t           sweep_timeout_tick;                // 扫频超时时刻（ms）
 
@@ -238,11 +237,7 @@ typedef struct {
     node_freq_pair_t   uplink_freq;          // 上行频点
     node_freq_pair_t   downlink_freq;        // 下行频点
     uint8_t            active_link_is_uplink; // 活动链路方向（1=上行，0=下行）
-    uint16_t           noise_floor;           // 噪声底（保留）
     uint8_t            hard_id;               // 节点硬件地址
-
-    // 静默检测
-    uint32_t           quiet_start_tick;      // 静默开始时刻（ms）
 
     // PRE_LINKED 状态相关
     uint32_t           pre_linked_last_check_tick;  // 上次检查时刻（ms）
@@ -483,6 +478,32 @@ void app_node_fsm_on_wdt_timeout(uint32_t now_tick);
  *  上位机发送扫频命令时调用，中心化扫频控制
  */
 void app_node_fsm_on_scan_order(uint8_t scan_direction, uint32_t now_tick);
+
+/**
+ * @brief 收到 FREQ_PAIR 帧事件注入
+ * @param peer_addr 对端节点地址
+ * @param now_tick 当前系统时刻（ms）
+ * 
+ * @details
+ *  收到 FREQ_PAIR 帧后（已由 app_frame_handler 保存到 app_link），
+ *  调用此接口通知状态机，由状态机决定是否转换状态。
+ *  
+ *  流程说明：
+ *  1. app_frame_handler 解析 FREQ_PAIR 帧
+ *  2. app_frame_handler 调用 app_link_set_uplink/downlink 保存频点
+ *  3. app_frame_handler 调用本接口
+ *  4. 状态机从 app_link 读取频点，决定是否转入 LINKED
+ *  
+ *  职责分离：
+ *  - app_link: 负责频点存储
+ *  - app_node_fsm: 负责状态转换逻辑
+ *  
+ *  状态转换规则：
+ *  - SCAN_LISTEN + 收到上级频点 → LINKED
+ *  - LINKED + 收到任意频点 → 保持 LINKED
+ *  - 其他状态 → 不转换
+ */
+void app_node_fsm_on_freq_pair_received(uint8_t peer_addr, uint32_t now_tick);
 
 #ifdef __cplusplus
 }

@@ -34,9 +34,9 @@
  *   // 初始化
  *   app_msg_send_init();
  *
- *   // 发送一个帧（超时 1 秒）
+ *   // 发送一个帧（内部使用 5 秒超时）
  *   proto_frame_t frame = {...};
- *   app_msg_send_frame(&frame, 1000);
+ *   app_msg_send_frame(&frame);
  *
  *   // 在定时器中周期调用（例如每 10ms）
  *   void timer_callback(void) {
@@ -80,9 +80,10 @@ typedef enum
 
 /**
  * @brief 默认超时时间（毫秒）
- * @rationale: 等待 ACK 的时间，超过此时间自动重传
+ * @rationale: 等待 ACK/NACK 的时间，从帧发送完毕后开始计时，超时则自动重传
+ * @value 5000ms（5 秒）- 考虑物理链路延迟 + 对方处理时间 + 回复传输时间
  */
-#define MSG_SEND_DEFAULT_TIMEOUT_MS (1000)
+#define MSG_SEND_DEFAULT_TIMEOUT_MS (5000U)
 
 /* ========== 公共 API ========== */
 
@@ -101,19 +102,23 @@ void app_msg_send_init(void);
 /**
  * @brief 发送一个协议帧（带重传保护）
  * @param p_frame 待发送的帧指针
- * @param timeout_ms 等待 ACK 的超时时间（毫秒）
  * @return msg_send_ret_t - 成功返回 MSG_SEND_OK
  *
  * @pre   app_msg_send_init() 已调用
  * @pre   p_frame 指向有效的 proto_frame_t 结构体
- * @pre   timeout_ms > 0
  *
  * @details
  * 功能：
  * - 打包帧到内部缓冲区
  * - 立即调用调制器发送帧
- * - 记录序列号、发送时间戳和超时时间
+ * - 记录序列号、发送时间戳
+ * - 等待 ACK/NACK 回复（超时时间固定为 MSG_SEND_DEFAULT_TIMEOUT_MS）
  * - 设置 is_waiting_ack 标志
+ *
+ * 超时计时：
+ * - 起点：bsw_bfsk_mod_send() 返回 OK（帧发送完毕）
+ * - 等待对象：ACK 或 NACK 回复
+ * - 超时处理：自动重传（最多 MSG_SEND_MAX_RETRY 次）
  *
  * 失败情况：
  * - MSG_SEND_ERR_BUSY：上一个帧还在等待 ACK
@@ -123,7 +128,7 @@ void app_msg_send_init(void);
  *
  * 线程安全：仅从主任务调用，不支持中断或多任务并发
  */
-msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame, uint32_t timeout_ms);
+msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame);
 
 /**
  * @brief 发送 ACK/NACK 帧（无需等待对方的 ACK，不重传）
@@ -170,24 +175,11 @@ msg_send_ret_t app_msg_send_ack(const proto_frame_t *p_frame);
 void app_msg_send_notify_ack(uint8_t seq);
 
 /**
- * @brief 通知模块收到了 NACK（或错误码）
- * @param seq 帧序列号
- * @param err_code 错误码（取决于协议定义）
- * @return void
- *
- * @details
- * 功能：
- * - 验证 seq 与缓冲区帧的 seq 匹配
- * - 匹配则触发重传（如未达到最大次数）
- * - 不匹配则忽略
- *
- * 何时调用：
- * - app_frame_handler 收到 NACK 帧后调用
- * - NACK 表示对方无法处理我们的帧
- *
- * @note err_code 当前仅用于日志记录，不影响重传行为
+ * @brief 通知发送模块收到 NACK
+ * @param seq 序列号
+ * @note NACK 帧不携带错误码（payload_len = 0），收到即重传
  */
-void app_msg_send_notify_nack(uint8_t seq, uint8_t err_code);
+void app_msg_send_notify_nack(uint8_t seq);
 
 /**
  * @brief 周期调用此函数检测超时并自动重传

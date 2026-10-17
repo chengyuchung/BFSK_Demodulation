@@ -38,6 +38,11 @@
 #include "main.h"
 #include "bsw_adc_ringbuf.h"
 #include "bsw_ad9833.h"
+#include "app_frame_handler.h"
+#include "app_msg_send.h"
+#include "app_scan.h"
+#include "app_scan_listen.h"
+#include "app_msg_freq.h"
 #include "bsw_node_id.h"
 #include "mcal_timer.h"
 #include "bsw_bfsk_demod.h"
@@ -46,6 +51,7 @@
 #include "bsw_freq_storage.h"
 #include "bsw_version.h"
 #include "app_frame_handler.h"
+#include "app_link.h"
 
 // ============================================================================
 // 内部类型定义
@@ -89,9 +95,6 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick);
 // ============================================================================
 
 static void _state_entry_boot(uint32_t now_tick);
-static void _state_entry_scan_listen(uint32_t now_tick);
-static void _state_entry_scan(uint32_t now_tick);
-static void _state_entry_scan_wait_reply(uint32_t now_tick);
 static void _state_entry_pre_linked(uint32_t now_tick);
 static void _state_entry_linked(uint32_t now_tick);
 static void _state_entry_sleep(uint32_t now_tick);
@@ -117,73 +120,6 @@ static void _state_run_fault(uint32_t now_tick);
 static void _phase_quiet_observe(uint32_t now_tick);
 static void _phase_self_reply(uint32_t now_tick);
 static void _phase_wait_ack(uint32_t now_tick);
-
-/**
- * @brief 频率 → 扫频表索引映射
- * @param f_hz 频率值（Hz）
- * @return 0~18 表示合法索引；SWEEP_FREQ_INDEX_INVALID 表示频率超出容差
- * 
- * @details
- *  19 个频点：125, 175, 225, ..., 1025 Hz
- *  步进：50 Hz
- *  容差：±15 Hz
- *  
- *  算法：
- *  1. 检查下界（SWEEP_FREQ_START - TOLERANCE）
- *  2. 计算相对偏移和最近的表内频点
- *  3. 检查上界（SWEEP_FREQ_START + TOLERANCE）
- *  4. 验证偏差在容差范围内
- */
-static uint8_t _sweep_freq_to_index(uint16_t f_hz)
-{
-    // 下界检查
-    if (f_hz < (uint16_t)(SWEEP_FREQ_START - SWEEP_FREQ_TOLERANCE_HZ))
-    {
-        return SWEEP_FREQ_INDEX_INVALID;
-    }
-
-    // 计算相对起始频点的偏移
-    int32_t delta = (int32_t)f_hz - (int32_t)SWEEP_FREQ_START;
-    if (delta < 0)
-    {
-        delta = 0;
-    }
-
-    // 计算最近的表内频点索引
-    int32_t idx    = delta / (int32_t)SWEEP_FREQ_STEP;
-    int32_t offset = delta % (int32_t)SWEEP_FREQ_STEP;
-
-    // 四舍五入：如果余数 > 步进的一半，则进到下一个频点
-    if (offset > (int32_t)(SWEEP_FREQ_STEP / 2))
-    {
-        ++idx;
-        offset = (int32_t)SWEEP_FREQ_STEP - offset;
-    }
-
-    // 索引范围检查
-    if (idx < 0 || idx >= (int32_t)SWEEP_FREQ_COUNT)
-    {
-        return SWEEP_FREQ_INDEX_INVALID;
-    }
-
-    // 容差范围检查
-    if (offset > (int32_t)SWEEP_FREQ_TOLERANCE_HZ)
-    {
-        return SWEEP_FREQ_INDEX_INVALID;
-    }
-
-    return (uint8_t)idx;
-}
-
-/**
- * @brief 校验频点是否在有效频点表内
- * @param f_hz 待校验的频点（Hz）
- * @return true = 在表内且容差范围内，false = 不在表内
- */
-static bool _is_freq_in_table(uint16_t f_hz)
-{
-    return (_sweep_freq_to_index(f_hz) != SWEEP_FREQ_INDEX_INVALID);
-}
 
 /**
  * @brief 根据频点有效性和节点角色选择初始状态
@@ -227,146 +163,9 @@ static void _select_initial_state(uint32_t now_tick)
 }
 
 /**
- * @brief 更新幅度表（保留各频点的最大幅值）
- * @param idx 频点索引（0~18）
- * @param amplitude 当前检测到的幅度
- * 
- * @details
- *  策略：只记录最大值，不淘汰
- *  用于扫频过程中累积各频点的信号强度
+ * @brief 频对决选算法已迁移到 app_scan_listen 模块
+ * @details 使用 app_scan_listen_select_freq_pair() 替代
  */
-static void _update_amp_table(uint8_t idx, uint16_t amplitude)
-{
-    // 索引范围检查
-    if (idx >= SWEEP_FREQ_COUNT)
-    {
-        return;
-    }
-    
-    // 只更新更大的幅值
-    if (amplitude > s_ctx.sweep_amp_table[idx])
-    {
-        s_ctx.sweep_amp_table[idx] = amplitude;
-    }
-}
-
-/**
- * @brief 频对决选算法
- * @param[out] p_out_f0 选出的低频点（输出）
- * @param[out] p_out_f1 选出的高频点（输出）
- * @return 0 = 成功选出频对，-1 = 有效频点不足，-2 = 找不到满足间距的频对
- * 
- * @details
- *  算法步骤：
- *  1. 找出幅值最大的频点
- *  2. 计算强度门限 = max_amp * 70%
- *  3. 筛选超过门限的频点
- *  4. 在强频点中找幅值最接近的两个，且满足最小间隔要求（≥150Hz）
- *  
- *  决策依据：
- *  - 幅值相近的频点更可能是同一对信号源
- *  - 最小间隔保证频点可区分
- */
-static int32_t _select_freq_pair(uint16_t *p_out_f0, uint16_t *p_out_f1)
-{
-    // 参数检查
-    if (p_out_f0 == NULL || p_out_f1 == NULL)
-    {
-        return -1;
-    }
-
-    // 步骤 1：找到幅值最大的频点
-    uint16_t max_amp = 0;
-    
-    for (uint8_t i = 0; i < SWEEP_FREQ_COUNT; ++i)
-    {
-        if (s_ctx.sweep_amp_table[i] > max_amp)
-        {
-            max_amp = s_ctx.sweep_amp_table[i];
-        }
-    }
-    
-    if (max_amp == 0)
-    {
-        return -1;  // 无有效信号
-    }
-    
-    // 步骤 2：计算强度门限 = max_amp * 70%
-    uint16_t strength_threshold = (max_amp * SWEEP_AMP_STRENGTH_THRESHOLD_PERCENT) / 100u;
-    
-    // 步骤 3：筛选超过门限的频点
-    uint8_t strong_idx[SWEEP_FREQ_COUNT];
-    uint8_t strong_cnt = 0;
-    
-    for (uint8_t i = 0; i < SWEEP_FREQ_COUNT; ++i)
-    {
-        if (s_ctx.sweep_amp_table[i] >= strength_threshold)
-        {
-            strong_idx[strong_cnt++] = i;
-        }
-    }
-    
-    if (strong_cnt < SWEEP_MIN_VALID_FREQ_CNT)
-    {
-        return -1;  // 强度足够的频点不足
-    }
-    
-    // 步骤 4：在强频点中找幅值最接近的两个，且满足最小间隔
-    uint8_t  best_f0_idx = SWEEP_FREQ_INDEX_INVALID;
-    uint8_t  best_f1_idx = SWEEP_FREQ_INDEX_INVALID;
-    uint16_t best_amp_diff = 0xFFFFU;  // 幅值差异最小为目标
-    
-    for (uint8_t i = 0; i < strong_cnt; ++i)
-    {
-        for (uint8_t j = i + 1; j < strong_cnt; ++j)
-        {
-            uint8_t  idx_a = strong_idx[i];
-            uint8_t  idx_b = strong_idx[j];
-            uint16_t amp_a = s_ctx.sweep_amp_table[idx_a];
-            uint16_t amp_b = s_ctx.sweep_amp_table[idx_b];
-            
-            // 检查频率间隔是否满足最小要求
-            uint8_t  gap_idx = (idx_b > idx_a) ? (idx_b - idx_a) : (idx_a - idx_b);
-            uint16_t gap_hz  = (uint16_t)gap_idx * SWEEP_FREQ_STEP;
-            
-            if (gap_hz < SWEEP_MIN_FREQ_GAP_HZ)
-            {
-                continue;  // 间隔不足，跳过
-            }
-            
-            // 计算幅值差异
-            uint16_t amp_diff = (amp_a > amp_b) ? (amp_a - amp_b) : (amp_b - amp_a);
-            
-            // 选择差异最小的那一对
-            if (amp_diff < best_amp_diff)
-            {
-                best_amp_diff = amp_diff;
-                
-                // f0 为幅值较大的，f1 为幅值较小的
-                if (amp_a >= amp_b)
-                {
-                    best_f0_idx = idx_a;
-                    best_f1_idx = idx_b;
-                }
-                else
-                {
-                    best_f0_idx = idx_b;
-                    best_f1_idx = idx_a;
-                }
-            }
-        }
-    }
-    
-    if (best_f0_idx == SWEEP_FREQ_INDEX_INVALID)
-    {
-        return -2;  // 找不到满足间隔要求的频点对
-    }
-
-    // 输出选中的频点
-    *p_out_f0 = (uint16_t)SWEEP_FREQ_START + (uint16_t)best_f0_idx * SWEEP_FREQ_STEP;
-    *p_out_f1 = (uint16_t)SWEEP_FREQ_START + (uint16_t)best_f1_idx * SWEEP_FREQ_STEP;
-    return 0;
-}
 
 /**
  * @brief 状态转移处理
@@ -395,9 +194,9 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick)
     typedef void (*state_entry_t)(uint32_t);
     static const state_entry_t s_entry_table[] = {
         [NODE_BOOT]             = _state_entry_boot,
-        [NODE_SCAN_LISTEN]      = _state_entry_scan_listen,
-        [NODE_SCAN]             = _state_entry_scan,
-        [NODE_SCAN_WAIT_REPLY]  = _state_entry_scan_wait_reply,
+        [NODE_SCAN_LISTEN]      = (state_entry_t)app_scan_listen_start,
+        [NODE_SCAN]             = (state_entry_t)app_scan_start,
+        [NODE_SCAN_WAIT_REPLY]  = (state_entry_t)app_scan_enter_wait_reply,
         [NODE_PRE_LINKED]       = _state_entry_pre_linked,
         [NODE_LINKED]           = _state_entry_linked,
         [NODE_SLEEP]            = _state_entry_sleep,
@@ -413,21 +212,6 @@ static void _state_transition(node_state_t next_state, uint32_t now_tick)
             entry_fn(now_tick);
         }
     }
-}
-
-/**
- * @brief 判断总线是否静默超时
- * @param now_tick 当前时刻（ms）
- * @return true = 总线静默超时，false = 未超时或静默未开始
- * 
- * @details
- *  用于检测通信链路是否断裂：
- *  - 静默开始后超过 BUS_QUIET_TIMEOUT_MS 未收到任何信号
- */
-static bool _is_bus_quiet(uint32_t now_tick)
-{
-    return (s_ctx.quiet_start_tick != QUIET_NOT_STARTED)
-           && ((now_tick - s_ctx.quiet_start_tick) >= BUS_QUIET_TIMEOUT_MS);
 }
 
 /**
@@ -466,102 +250,6 @@ static void _state_entry_boot(uint32_t now_tick)
     bsw_adc_ringbuf_disable();
     mcal_timer_ic_stop(MCAL_TIMER_TIM1);
     bsw_led_set_state(LED_STATE_ALL_OFF);
-}
-
-/**
- * @brief SCAN_LISTEN 状态进入函数
- * @param now_tick 当前时刻（ms）
- * 
- * @details
- *  被动监听状态：等待上级扫频信号
- *  - 启用 ADC 环形缓冲（接收信号）
- *  - 停止定时器输入捕获（不解调）
- *  - 清空幅度表
- *  - 重置扫频计时器
- *  - LED 显示监听状态
- */
-static void _state_entry_scan_listen(uint32_t now_tick)
-{
-    (void)now_tick;
-    bsw_adc_ringbuf_enable();
-    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-    memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
-    s_ctx.sweep_start_tick   = 0;
-    s_ctx.sweep_timeout_tick = 0;
-    bsw_led_set_state(LED_STATE_LISTEN);
-}
-
-/**
- * @brief SCAN 状态进入函数
- * @param now_tick 当前时刻（ms）
- * 
- * @details
- *  主动扫频状态：向下级发送 19 个频点
- *  - 禁用 ADC 环形缓冲（发送模式）
- *  - 停止定时器输入捕获
- *  - 启动扫频会话计时器
- *  - 初始化扫频索引
- *  - 唤醒 AD9833 并发送第一个频点
- *  - LED 显示扫频状态
- */
-static void _state_entry_scan(uint32_t now_tick)
-{
-    bsw_adc_ringbuf_disable();
-    mcal_timer_ic_stop(MCAL_TIMER_TIM1);
-    
-    // 启动扫频会话计时器（首次扫频）
-    if (s_ctx.sweep_start_tick == APP_NODE_FSM_SWEEP_NOT_STARTED)
-    {
-        s_ctx.sweep_start_tick   = now_tick;
-        s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
-    }
-    
-    // 初始化扫频参数
-    s_ctx.scan_freq_index     = 0;
-    s_ctx.scan_freq_next_tick = now_tick + SCAN_FREQ_DURATION_MS;
-    
-    // 发送第一个频点
-    uint16_t first_freq = SWEEP_FREQ_START;
-    (void)bsw_ad9833_sleep(false);
-    (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, first_freq);
-    (void)bsw_ad9833_select(BSW_AD9833_REG_0);
-    
-    bsw_led_set_state(LED_STATE_SCAN);
-}
-
-/**
- * @brief SCAN_WAIT_REPLY 状态进入函数
- * @param now_tick 当前时刻（ms）
- * 
- * @details
- *  等待下级回应状态：监听下级的 1010 交替波形
- *  - AD9833 进入休眠（停止发送）
- *  - 启用 ADC 环形缓冲（接收模式）
- *  - 清空幅度表
- *  - 初始化回应检测参数
- *  - LED 显示监听状态
- */
-static void _state_entry_scan_wait_reply(uint32_t now_tick)
-{
-    // 停止发送，进入接收模式
-    (void)bsw_ad9833_sleep(true);
-    bsw_adc_ringbuf_enable();
-    
-    // 清空幅度表
-    memset(s_ctx.sweep_amp_table, 0, sizeof(s_ctx.sweep_amp_table));
-    
-    // 初始化回应检测参数
-    s_ctx.scan_wait_reply_start_tick = now_tick;
-    s_ctx.scan_wait_reply_phase      = SCAN_WAIT_1010;
-    s_ctx.scan_ack_sent_tick         = QUIET_NOT_STARTED;
-    s_ctx.scan_ack_retry_count       = 0;
-    s_ctx.scan_1010_detected_tick    = QUIET_NOT_STARTED;
-    s_ctx.reply_last_freq            = FREQ_NOT_LOCKED;
-    s_ctx.reply_detected_f0          = FREQ_NOT_LOCKED;
-    s_ctx.reply_detected_f1          = FREQ_NOT_LOCKED;
-    s_ctx.reply_toggle_count         = 0;
-    
-    bsw_led_set_state(LED_STATE_LISTEN);
 }
 
 /**
@@ -925,20 +613,18 @@ static void _state_run_boot(uint32_t now_tick)
  */
 static void _state_run_scan_listen(uint32_t now_tick)
 {
-    // 850 ms 会话硬超时检查（协议 §二 机制 A）
+    /* 850 ms 会话硬超时检查（协议 §二 机制 A） */
     if (s_ctx.sweep_start_tick != APP_NODE_FSM_SWEEP_NOT_STARTED
         && (now_tick - s_ctx.sweep_start_tick) >= SWEEP_SESSION_TIMEOUT_MS)
     {
-        uint8_t cnt = 0;
-        for (int i = 0; i < SWEEP_FREQ_COUNT; ++i)
-        {
-            if (s_ctx.sweep_amp_table[i] > APP_NODE_FSM_SWEEP_AMP_VALID_THRESHOLD)
-            {
-                ++cnt;
-            }
-        }
+        /* 统计有效频点数 */
+        uint8_t cnt = app_scan_listen_get_valid_freq_count();
+        
+        /* 重置扫频计时器 */
         s_ctx.sweep_start_tick   = APP_NODE_FSM_SWEEP_NOT_STARTED;
         s_ctx.sweep_timeout_tick = APP_NODE_FSM_SWEEP_NOT_STARTED;
+        
+        /* 触发扫频完成回调 */
         app_node_fsm_on_sweep_complete(cnt, now_tick);  /* 传入系统时刻 */
     }
 }
@@ -961,10 +647,10 @@ static void _state_run_scan(uint32_t now_tick)
         // 移动到下一个频点
         s_ctx.scan_freq_index++;
         
-        if (s_ctx.scan_freq_index < SWEEP_FREQ_COUNT)
+        if (s_ctx.scan_freq_index < APP_MSG_FREQ_COUNT)
         {
             // 计算并发送下一个频点
-            uint16_t next_freq = SWEEP_FREQ_START + (s_ctx.scan_freq_index * SWEEP_FREQ_STEP);
+            uint16_t next_freq = APP_MSG_FREQ_START + (s_ctx.scan_freq_index * APP_MSG_FREQ_STEP);
             (void)bsw_ad9833_set_freq(BSW_AD9833_REG_0, next_freq);
             (void)bsw_ad9833_select(BSW_AD9833_REG_0);
             
@@ -1206,7 +892,7 @@ static void _state_run_linked(uint32_t now_tick)
         && (s_ctx.flags.flag_rx_dn_ok  == 0)
         && (s_ctx.flags.flag_fwd_up_ok == 0))
     {
-        if (_is_bus_quiet(now_tick))
+        if (app_link_is_bus_quiet_timeout(now_tick))
         {
             // 井上节点不会进入这里（rx_up 永远为 1）
             // 井下和中继节点：完全孤立，进入监听
@@ -1226,7 +912,7 @@ static void _state_run_linked(uint32_t now_tick)
         if (((s_ctx.flags.flag_fwd_dn_ok != 0) || (s_ctx.flags.flag_rx_dn_ok != 0))
             && (s_ctx.flags.flag_fwd_up_ok == 0))
         {
-            if (_is_bus_quiet(now_tick))
+            if (app_link_is_bus_quiet_timeout(now_tick))
             {
                 _state_transition(NODE_SCAN_LISTEN, now_tick);
                 return;
@@ -1293,7 +979,6 @@ void app_node_fsm_init(uint8_t hard_id, uint32_t now_tick)
     memset(&s_ctx, 0, sizeof(s_ctx));
 
     s_ctx.hard_id = hard_id;
-    s_ctx.noise_floor = SWEEP_DEFAULT_NOISE_FLOOR;
     
     // 初始化频点为未锁定状态（Flash 读取失败时的默认值）
     s_ctx.uplink_freq.f0_hz   = FREQ_NOT_LOCKED;
@@ -1330,10 +1015,10 @@ void app_node_fsm_init(uint8_t hard_id, uint32_t now_tick)
     // APP 层二次校验：精确匹配频点表（防止 Flash 垃圾数据）
     // BSW 层只做范围检查（100~2000 Hz），这里做精确表内校验
     // 只有频点对的两个频点都在表内才认为有效，否则清零
-    bool uf0_in_table = (saved_uf0 != 0) && _is_freq_in_table(saved_uf0);
-    bool uf1_in_table = (saved_uf1 != 0) && _is_freq_in_table(saved_uf1);
-    bool df0_in_table = (saved_df0 != 0) && _is_freq_in_table(saved_df0);
-    bool df1_in_table = (saved_df1 != 0) && _is_freq_in_table(saved_df1);
+    bool uf0_in_table = (saved_uf0 != 0) && app_msg_freq_is_valid(saved_uf0);
+    bool uf1_in_table = (saved_uf1 != 0) && app_msg_freq_is_valid(saved_uf1);
+    bool df0_in_table = (saved_df0 != 0) && app_msg_freq_is_valid(saved_df0);
+    bool df1_in_table = (saved_df1 != 0) && app_msg_freq_is_valid(saved_df1);
     
     if (uf0_in_table && uf1_in_table)
     {
@@ -1495,13 +1180,13 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
     // SCAN_LISTEN 状态：下级节点监听上级的 19 频点扫频
     if (s_ctx.state == NODE_SCAN_LISTEN)
     {
-        uint8_t idx = _sweep_freq_to_index(f_hz);
-        if (idx == SWEEP_FREQ_INDEX_INVALID)
+        uint8_t idx = app_msg_freq_to_index(f_hz);
+        if (idx == APP_MSG_FREQ_INVALID_INDEX)
         {
             return;
         }
 
-        _update_amp_table(idx, amplitude);
+        app_scan_listen_update_amp_table(idx, amplitude);
 
         // 首次命中 → 启动 850 ms 会话倒计时（协议 §二 机制 A）
         if (s_ctx.sweep_start_tick == APP_NODE_FSM_SWEEP_NOT_STARTED)
@@ -1510,7 +1195,7 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
             s_ctx.sweep_timeout_tick = now_tick + SWEEP_SESSION_TIMEOUT_MS;
         }
 
-        s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+        app_link_stop_bus_quiet_monitor();
         return;
     }
     
@@ -1601,7 +1286,7 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
                 }
                 
                 // 验证频率间隔 >= 150Hz
-                if ((f1 - f0) < SWEEP_MIN_FREQ_GAP_HZ)
+                if ((f1 - f0) < APP_SCAN_LISTEN_MIN_FREQ_GAP_HZ)
                 {
                     // 频率间隔太小，重置检测
                     s_ctx.reply_detected_f0  = FREQ_NOT_LOCKED;
@@ -1657,7 +1342,7 @@ void app_node_fsm_on_sweep_detected(uint16_t f_hz, uint16_t amplitude, uint32_t 
 void app_node_fsm_on_sweep_complete(uint8_t valid_freq_count, uint32_t now_tick)
 {
     uint16_t best_f0 = 0, best_f1 = 0;
-    int32_t dr = _select_freq_pair(&best_f0, &best_f1);
+    int32_t dr = app_scan_listen_select_freq_pair(&best_f0, &best_f1);
     
     if (dr == -1)
     {
@@ -1722,42 +1407,42 @@ void app_node_fsm_on_ack_received(uint16_t f0, uint16_t f1, uint32_t now_tick)
 
 /**
  * @brief 设置上行接收标志
- * @details 收到上级信号时调用，重置静默计时器
+ * @details 收到上级信号时调用，停止静默监控
  */
 void app_node_fsm_flag_set_rx_up(void)
 {
     s_ctx.flags.flag_rx_up_ok = FLAG_SET;
-    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+    app_link_stop_bus_quiet_monitor();
 }
 
 /**
  * @brief 设置下行转发标志
- * @details 成功转发给下级时调用，重置静默计时器
+ * @details 成功转发给下级时调用，停止静默监控
  */
 void app_node_fsm_flag_set_fwd_dn(void)
 {
     s_ctx.flags.flag_fwd_dn_ok = FLAG_SET;
-    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+    app_link_stop_bus_quiet_monitor();
 }
 
 /**
  * @brief 设置下行接收标志
- * @details 收到下级信号时调用，重置静默计时器
+ * @details 收到下级信号时调用，停止静默监控
  */
 void app_node_fsm_flag_set_rx_dn(void)
 {
     s_ctx.flags.flag_rx_dn_ok = FLAG_SET;
-    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+    app_link_stop_bus_quiet_monitor();
 }
 
 /**
  * @brief 设置上行转发标志
- * @details 成功转发给上级时调用，重置静默计时器
+ * @details 成功转发给上级时调用，停止静默监控
  */
 void app_node_fsm_flag_set_fwd_up(void)
 {
     s_ctx.flags.flag_fwd_up_ok = FLAG_SET;
-    s_ctx.quiet_start_tick = QUIET_NOT_STARTED;
+    app_link_stop_bus_quiet_monitor();
 }
 
 /**
@@ -1843,7 +1528,7 @@ void app_node_fsm_on_quiet_timeout(uint32_t now_tick)
 {
     if (app_node_fsm_is_clean())
     {
-        s_ctx.quiet_start_tick = now_tick;
+        app_link_start_bus_quiet_monitor(now_tick);
         _state_transition(NODE_SLEEP, now_tick);
     }
     else
@@ -1876,6 +1561,90 @@ void app_node_fsm_on_fault(uint32_t fault_code, uint32_t now_tick)
 void app_node_fsm_on_wdt_timeout(uint32_t now_tick)
 {
     _state_transition(NODE_FAULT, now_tick);  /* 使用传入的时间戳 */
+}
+
+/**
+ * @brief 收到 FREQ_PAIR 帧事件注入
+ * @param peer_addr 对端节点地址
+ * @param now_tick 当前系统时刻（ms）
+ * 
+ * @details
+ *  职责：只负责状态转换逻辑，不处理频点存储（已由 app_link 完成）
+ *  
+ *  状态转换规则：
+ *  - SCAN_LISTEN + 收到上级频点 → LINKED（被动建立上行链路）
+ *  - LINKED + 收到任意频点 → 保持 LINKED（更新已由 app_link 完成）
+ *  - 其他状态 → 不转换
+ *  
+ *  架构说明：
+ *  - 频点存储由 app_link 模块负责
+ *  - 状态机只关注"何时转换状态"
+ *  - 保持单一职责原则
+ */
+void app_node_fsm_on_freq_pair_received(uint8_t peer_addr, uint32_t now_tick)
+{
+    uint8_t local_addr = bsw_node_id_get();
+    uint8_t is_uplink = (peer_addr < local_addr) ? 1 : 0;  /* peer < local = 上级 */
+    
+    /* 为什么：只处理状态转换，不处理数据存储 */
+    switch (s_ctx.state)
+    {
+        case NODE_SCAN_LISTEN:
+            /* 被动监听状态收到上级频点 → 进入 LINKED */
+            if (is_uplink)
+            {
+                /* 标记当前激活链路为上行 */
+                s_ctx.active_link_is_uplink = LINK_UPLINK;
+                
+                /* 从 app_link 读取频点并保存到 Flash */
+                app_link_freq_pair_t freq;
+                if (app_link_get_uplink(&freq, NULL) == APP_LINK_OK)
+                {
+                    /* 同步状态机内部副本（用于 AD9833 和解调器配置） */
+                    s_ctx.uplink_freq.f0_hz = freq.f0_hz;
+                    s_ctx.uplink_freq.f1_hz = freq.f1_hz;
+                    
+                    /* 备份到 Flash */
+                    app_link_freq_pair_t downlink_freq;
+                    app_link_get_downlink(&downlink_freq, NULL);
+                    int32_t ret = bsw_freq_storage_save_all(
+                        freq.f0_hz, freq.f1_hz,
+                        downlink_freq.f0_hz, downlink_freq.f1_hz);
+                    (void)ret;
+                }
+                
+                /* 状态转换：进入 LINKED */
+                _state_transition(NODE_LINKED, now_tick);
+            }
+            /* else: 收到下级频点，不转换状态 */
+            break;
+            
+        case NODE_LINKED:
+            /* 已链接状态收到频点 → 更新内部副本但不转换状态 */
+            if (is_uplink)
+            {
+                app_link_freq_pair_t freq;
+                if (app_link_get_uplink(&freq, NULL) == APP_LINK_OK)
+                {
+                    s_ctx.uplink_freq.f0_hz = freq.f0_hz;
+                    s_ctx.uplink_freq.f1_hz = freq.f1_hz;
+                }
+            }
+            else
+            {
+                app_link_freq_pair_t freq;
+                if (app_link_get_downlink(&freq, NULL) == APP_LINK_OK)
+                {
+                    s_ctx.downlink_freq.f0_hz = freq.f0_hz;
+                    s_ctx.downlink_freq.f1_hz = freq.f1_hz;
+                }
+            }
+            break;
+            
+        default:
+            /* 其他状态：不触发状态转换 */
+            break;
+    }
 }
 
 // ============================================================================

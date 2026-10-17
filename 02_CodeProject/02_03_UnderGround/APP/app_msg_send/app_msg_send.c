@@ -141,7 +141,7 @@ void app_msg_send_init(void)
     s_is_initialized = true;
 }
 
-msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame, uint32_t timeout_ms)
+msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame)
 {
     /* 参数检查 */
     if (!s_is_initialized)
@@ -150,11 +150,6 @@ msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame, uint32_t timeout
     }
     
     if (p_frame == NULL)
-    {
-        return MSG_SEND_ERR_PARAM;
-    }
-    
-    if (timeout_ms == 0)
     {
         return MSG_SEND_ERR_PARAM;
     }
@@ -172,11 +167,11 @@ msg_send_ret_t app_msg_send_frame(const proto_frame_t *p_frame, uint32_t timeout
         return result;
     }
     
-    /* 为什么：保存序列号和超时参数，用于 ACK 匹配和重传管理 */
+    /* 为什么：保存序列号，内部使用固定的超时时间 MSG_SEND_DEFAULT_TIMEOUT_MS */
     s_tx_buffer.seq = p_frame->seq;
     s_tx_buffer.retry_count = 0;
     s_tx_buffer.last_send_time_ms = 0;  /* 稍后由 tick 函数设置 */
-    s_tx_buffer.timeout_ms = timeout_ms;
+    s_tx_buffer.timeout_ms = MSG_SEND_DEFAULT_TIMEOUT_MS;  /* 固定为 5 秒 */
     s_tx_buffer.is_waiting_ack = true;
     
     return MSG_SEND_OK;
@@ -244,7 +239,7 @@ void app_msg_send_notify_ack(uint8_t seq)
     /* 否则：不匹配，可能是迟到的 ACK，忽略 */
 }
 
-void app_msg_send_notify_nack(uint8_t seq, uint8_t err_code)
+void app_msg_send_notify_nack(uint8_t seq)
 {
     if (!s_is_initialized)
     {
